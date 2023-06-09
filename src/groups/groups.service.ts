@@ -9,7 +9,8 @@ export class GroupsService {
   }
 
   findAll() {
-    return `This action returns all groups`;
+    // const groups = await this.groupModel.find();
+    // return groups;
   }
 
   findOne(id: number) {
