@@ -8,6 +8,7 @@ import {
 import { UsersService } from '../users/users.service';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
+import { UserDocument } from 'src/users/schemas/users.schema';
 
 @Injectable()
 export class AuthService {
@@ -15,6 +16,14 @@ export class AuthService {
     private usersService: UsersService,
     private jwtService: JwtService,
   ) {}
+
+  async generateToken(user: UserDocument) {
+    const payload = { username: user.username, sub: user._id };
+    return {
+      access_token: await this.jwtService.sign(payload),
+    };
+  }
+
   async signIn(username: string, pass: string): Promise<any> {
     const user = await this.usersService.findOneByUsername(username);
     console.log({ user });
@@ -25,26 +34,25 @@ export class AuthService {
     if (!match) {
       return null;
     }
-    const { password, ...result } = user.toObject();
+    const { password, ...result } = user;
 
-    const payload = { sub: user._id, username: user.username };
     return {
       ...result,
-      access_token: await this.jwtService.signAsync(payload),
+      access_token: await this.generateToken(user),
     };
   }
-  async signUp(signUpDTO: CreateUserDto): Promise<any> {
+  async signUp(signUpDTO: CreateUserDto) {
     // Check if user exists by email and username
     const isTaken = await this.usersService.isEmailOrUsernameTaken(
       signUpDTO.email,
       signUpDTO.username,
     );
     if (isTaken) {
-      throw new HttpException(isTaken, HttpStatus.BAD_REQUEST);
+      throw new Error(isTaken);
     }
     const user = await this.usersService.create(signUpDTO);
     const { password: pass, ...result } = user.toObject();
 
-    return result;
+    return { ...result, access_token: await this.generateToken(user) };
   }
 }

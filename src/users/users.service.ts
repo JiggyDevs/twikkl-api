@@ -3,14 +3,14 @@ import * as bcrypt from 'bcrypt';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectModel } from '@nestjs/mongoose';
-import { User } from './schemas/users.schema';
+import { User, UserDocument } from './schemas/users.schema';
 import { Model } from 'mongoose';
 
 @Injectable()
 export class UsersService {
   constructor(@InjectModel(User.name) private userModel: Model<User>) {}
 
-  async create(createUserDto: CreateUserDto) {
+  async create(createUserDto: CreateUserDto): Promise<UserDocument> {
     const salt = await bcrypt.genSalt();
     const hashPassword = await bcrypt.hash(createUserDto.password, salt);
     createUserDto.password = hashPassword;
@@ -18,12 +18,11 @@ export class UsersService {
     return await createdUser.save();
   }
 
-  async findAll() {
-    const users = await this.userModel.find();
-    return users;
+  async findAll(): Promise<UserDocument[]> {
+    return await this.userModel.find();
   }
 
-  async findOne(id: string) {
+  async findOne(id: string): Promise<UserDocument> {
     try {
       const user = await this.userModel.findById(id);
       if (!user) {
@@ -35,7 +34,7 @@ export class UsersService {
     }
   }
 
-  async findOneByUsername(username: string) {
+  async findOneByUsername(username: string): Promise<UserDocument> {
     const user = await this.userModel.findOne({ username });
     if (!user) {
       throw new Error('User not found');
@@ -43,7 +42,7 @@ export class UsersService {
     return user;
   }
 
-  async findOneByEmail(email: string) {
+  async findOneByEmail(email: string): Promise<UserDocument> {
     const user = await this.userModel.findOne({ email });
     if (!user) {
       throw new Error('User not found');

@@ -27,17 +27,14 @@ export class AuthController {
         HttpStatus.UNAUTHORIZED,
       );
     }
+
+    return user;
   }
 
   @HttpCode(HttpStatus.CREATED)
   @Post('register')
   async signUp(@Body() signUpDto: CreateUserDto) {
     const user = await this.authService.signUp(signUpDto);
-    if (!user) {
-      throw new HttpException(
-        'Bad request: Username already exists',
-        HttpStatus.BAD_REQUEST,
-      );
-    }
+    return user;
   }
 }
