@@ -1,5 +1,10 @@
 import { CreateUserDto } from './../users/dto/create-user.dto';
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { UsersService } from '../users/users.service';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
@@ -14,11 +19,11 @@ export class AuthService {
     const user = await this.usersService.findOneByUsername(username);
     console.log({ user });
     if (!user) {
-      throw new UnauthorizedException();
+      return null;
     }
     const match = await bcrypt.compare(pass, user.password);
     if (!match) {
-      throw new UnauthorizedException();
+      return null;
     }
     const { password, ...result } = user.toObject();
 
@@ -29,6 +34,14 @@ export class AuthService {
     };
   }
   async signUp(signUpDTO: CreateUserDto): Promise<any> {
+    // Check if user exists by email and username
+    const isTaken = await this.usersService.isEmailOrUsernameTaken(
+      signUpDTO.email,
+      signUpDTO.username,
+    );
+    if (isTaken) {
+      throw new HttpException(isTaken, HttpStatus.BAD_REQUEST);
+    }
     const user = await this.usersService.create(signUpDTO);
     const { password: pass, ...result } = user.toObject();
 

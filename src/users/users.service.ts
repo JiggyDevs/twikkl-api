@@ -24,11 +24,15 @@ export class UsersService {
   }
 
   async findOne(id: string) {
-    const user = await this.userModel.findById(id);
-    if (!user) {
+    try {
+      const user = await this.userModel.findById(id);
+      if (!user) {
+        throw new Error('User not found');
+      }
+      return user;
+    } catch (err) {
       throw new Error('User not found');
     }
-    return user;
   }
 
   async findOneByUsername(username: string) {
@@ -37,6 +41,41 @@ export class UsersService {
       throw new Error('User not found');
     }
     return user;
+  }
+
+  async findOneByEmail(email: string) {
+    const user = await this.userModel.findOne({ email });
+    if (!user) {
+      throw new Error('User not found');
+    }
+    return user;
+  }
+
+  async isEmailOrUsernameTaken(
+    email: string,
+    username: string,
+  ): Promise<string | null> {
+    // const userExists = await this.userModel.exists({
+    //   $or: [{ email }, { username }],
+    // });
+
+    const existingUser = await this.userModel.findOne(
+      {
+        $or: [{ email }, { username }],
+      },
+      { _id: 0, email: 1, username: 1 },
+    );
+    console.log({ existingUser });
+    if (existingUser) {
+      if (existingUser.email === email) {
+        return 'Email already exists';
+      }
+      if (existingUser.username === username) {
+        return 'Username is already taken';
+      }
+    }
+
+    return null;
   }
 
   update(id: number, updateUserDto: UpdateUserDto) {
