@@ -17,10 +17,10 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  async generateToken(user: UserDocument) {
+  generateToken(user: UserDocument) {
     const payload = { username: user.username, sub: user._id };
     return {
-      access_token: await this.jwtService.sign(payload),
+      access_token: this.jwtService.sign(payload),
     };
   }
 
@@ -38,7 +38,7 @@ export class AuthService {
 
     return {
       ...result,
-      access_token: await this.generateToken(user),
+      ...this.generateToken(user),
     };
   }
   async signUp(signUpDTO: CreateUserDto) {
@@ -53,6 +53,6 @@ export class AuthService {
     const user = await this.usersService.create(signUpDTO);
     const { password: pass, ...result } = user.toObject();
 
-    return { ...result, access_token: await this.generateToken(user) };
+    return { ...result, ...this.generateToken(user) };
   }
 }
