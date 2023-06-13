@@ -50,4 +50,19 @@ export class GroupsService {
     user.groups.push(groupId);
     return group.save();
   }
+
+  async leaveGroup(groupId: string, userId: string): Promise<void> {
+    const group = await this.groupModel.findByIdAndUpdate(groupId, {
+      $pull: { members: userId },
+    });
+
+    if (!group) {
+      // Handle error if group not found
+      throw new Error('Group not found.');
+    }
+
+    // Optional: You can perform additional validation or checks here
+
+    return;
+  }
 }

@@ -46,6 +46,15 @@ export class GroupsController {
     return this.groupsService.update(+id, updateGroupDto);
   }
 
+  @Delete(':groupId/members/:userId')
+  async leaveGroup(
+    @Param('groupId') groupId: string,
+    @Param('userId') userId: string,
+  ) {
+    await this.groupsService.leaveGroup(groupId, userId);
+    return { message: 'User has left the group successfully.' };
+  }
+
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.groupsService.remove(+id);
