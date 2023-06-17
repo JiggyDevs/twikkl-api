@@ -21,6 +21,7 @@ export class PostsController {
   @Post()
   @UseGuards(AuthGuard)
   create(@Request() req, @Body() createPostDto: CreatePostDto) {
+    //TODO: Add check for wrong Data
     return this.postsService.create({ ...createPostDto, author: req.user.sub });
   }
 
