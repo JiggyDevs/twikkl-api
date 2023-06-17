@@ -22,8 +22,8 @@ export class GroupsController {
   }
 
   @Get()
-  findAll(@Query('ids') ids: string) {
-    const idArray = ids.split(',');
+  findAll(@Query('ids') ids?: string) {
+    const idArray = ids?.split(',') ?? [];
     return this.groupsService.find(ids);
   }
 
