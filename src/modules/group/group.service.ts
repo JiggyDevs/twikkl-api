@@ -13,8 +13,9 @@ export class GroupService {
     @InjectModel('User') private readonly userModel: Model<User>,
   ) {}
 
-  create(createGroupDto: CreateGroupDto) {
-    return 'This action adds a new group';
+  async create(createGroupDto: CreateGroupDto): Promise<Group> {
+    const createdGroup = new this.groupModel(createGroupDto);
+    return createdGroup.save();
   }
 
   async find(ids?: string | string[]): Promise<Group[]> {
@@ -29,12 +30,12 @@ export class GroupService {
     return query.exec();
   }
 
-  update(id: number, updateGroupDto: UpdateGroupDto) {
-    return `This action updates a #${id} group`;
+  async update(id: string, updateGroupDto: UpdateGroupDto): Promise<Group> {
+    return this.groupModel.findByIdAndUpdate(id, updateGroupDto, { new: true }).exec();
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} group`;
+  async remove(id: string): Promise<Group> {
+    return this.groupModel.findByIdAndUpdate(id, { isDeleted: true }, { new: true }).exec();
   }
 
   async joinGroup(groupId: string, userId: string): Promise<Group> {

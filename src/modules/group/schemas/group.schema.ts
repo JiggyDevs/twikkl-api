@@ -10,12 +10,12 @@ export class Group {
   name: string;
 
   @Prop({ required: true })
-  body: string;
+  description: string;
 
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })
   createdBy: User;
 
-  @Prop({ type: [{ type: Types.ObjectId, ref: 'User' }] })
+  @Prop({ type: [{ type: Types.ObjectId, ref: 'User' }], default: [] })
   members: string[];
 
   @Prop({ default: false })

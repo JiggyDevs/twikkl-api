@@ -1,19 +1,19 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getModelToken } from '@nestjs/mongoose';
-import { GroupsService } from './groups.service';
+import { GroupService } from './group.service';
 import { Model } from 'mongoose';
-import { Group } from './schemas/groups.schema';
-import { User } from '../users/schemas/users.schema';
+import { Group } from './schemas/group.schema';
+import { User } from '../user/schemas/user.schema';
 
-describe('GroupsService', () => {
-  let service: GroupsService;
+describe('GroupService', () => {
+  let service: GroupService;
   let groupModel: Model<Group>;
   let userModel: Model<User>;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
-        GroupsService,
+        GroupService,
         {
           provide: getModelToken('Group'),
           useValue: {
@@ -32,7 +32,7 @@ describe('GroupsService', () => {
       ],
     }).compile();
 
-    service = module.get<GroupsService>(GroupsService);
+    service = module.get<GroupService>(GroupService);
     groupModel = module.get<Model<Group>>(getModelToken('Group'));
     userModel = module.get<Model<User>>(getModelToken('User'));
   });
@@ -46,7 +46,7 @@ describe('GroupsService', () => {
       group.members = [];
 
       const user = new User();
-      user.groups = [];
+      user.group = [];
 
       jest.spyOn(groupModel, 'findById').mockResolvedValueOnce(group);
       jest.spyOn(userModel, 'findById').mockResolvedValueOnce(user);
@@ -59,7 +59,7 @@ describe('GroupsService', () => {
       expect(groupModel.findById).toHaveBeenCalledWith(groupId);
       expect(userModel.findById).toHaveBeenCalledWith(userId);
       expect(group.members).toEqual([userId]);
-      expect(user.groups).toEqual([groupId]);
+      expect(user.group).toEqual([groupId]);
       expect(group.constructor.prototype.save).toHaveBeenCalled();
     });
 

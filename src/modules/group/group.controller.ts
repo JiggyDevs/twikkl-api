@@ -43,7 +43,7 @@ export class GroupController {
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateGroupDto: UpdateGroupDto) {
-    return this.groupsService.update(+id, updateGroupDto);
+    return this.groupsService.update(id, updateGroupDto);
   }
 
   @Delete(':groupId/members/:userId')
@@ -57,6 +57,6 @@ export class GroupController {
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.groupsService.remove(+id);
+    return this.groupsService.remove(id);
   }
 }
