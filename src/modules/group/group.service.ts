@@ -16,7 +16,7 @@ export class GroupService {
   ) {}
 
   async create(createGroupDto: CreateGroupDto): Promise<Group> {
-    const createdGroup = new this.groupModel(createGroupDto);
+    const createdGroup = new this.groupModel({...createGroupDto, members: [createGroupDto.createdBy]});
     return createdGroup.save();
   }
 
