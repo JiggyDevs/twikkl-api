@@ -6,10 +6,16 @@ export type GroupDocument = HydratedDocument<Group>;
 
 @Schema()
 export class Group {
-  @Prop({ required: true })
+  @Prop({ type: String, required: true })
   name: string;
 
-  @Prop({ required: true })
+  @Prop({ type: String })
+  coverImg: string;
+
+  @Prop({ type: String })
+  avatar: string;
+
+  @Prop({ type: String, required: true })
   description: string;
 
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })
