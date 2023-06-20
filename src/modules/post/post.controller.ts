@@ -9,14 +9,14 @@ import {
   UseGuards,
   Request,
 } from '@nestjs/common';
-import { PostsService } from './posts.service';
+import { PostService } from './post.service';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { AuthGuard } from '../auth/auth.guard';
 
 @Controller('posts')
-export class PostsController {
-  constructor(private readonly postsService: PostsService) {}
+export class PostController {
+  constructor(private readonly postsService: PostService) {}
 
   @Post()
   @UseGuards(AuthGuard)

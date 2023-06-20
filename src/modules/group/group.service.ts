@@ -3,11 +3,11 @@ import { CreateGroupDto } from './dto/create-group.dto';
 import { UpdateGroupDto } from './dto/update-group.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { Group } from './schemas/groups.schema';
-import { User } from '../users/schemas/users.schema';
+import { Group } from './schemas/group.schema';
+import { User } from '../user/schemas/user.schema';
 
 @Injectable()
-export class GroupsService {
+export class GroupService {
   constructor(
     @InjectModel('Group') private readonly groupModel: Model<Group>,
     @InjectModel('User') private readonly userModel: Model<User>,

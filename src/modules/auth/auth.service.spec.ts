@@ -1,15 +1,15 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AuthService } from './auth.service';
-import { UsersService } from '../users/users.service';
+import { UserService } from '../user/user.service';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
-import { CreateUserDto } from '../users/dto/create-user.dto';
+import { CreateUserDto } from '../user/dto/create-user.dto';
 import { Document } from 'mongoose';
-import { User, UserDocument } from '../users/schemas/users.schema';
+import { User, UserDocument } from '../user/schemas/user.schema';
 
 describe('AuthService', () => {
   let service: AuthService;
-  let usersService: UsersService;
+  let userService: UserService;
   let jwtService: JwtService;
 
   beforeEach(async () => {
@@ -17,7 +17,7 @@ describe('AuthService', () => {
       providers: [
         AuthService,
         {
-          provide: UsersService,
+          provide: UserService,
           useValue: {
             findOneByUsername: jest.fn(),
             isEmailOrUsernameTaken: jest.fn(),
@@ -34,7 +34,7 @@ describe('AuthService', () => {
     }).compile();
 
     service = module.get<AuthService>(AuthService);
-    usersService = module.get<UsersService>(UsersService);
+    userService = module.get<UserService>(UserService);
     jwtService = module.get<JwtService>(JwtService);
   });
 
@@ -43,11 +43,11 @@ describe('AuthService', () => {
       const username = 'testuser';
       const password = 'testpassword';
 
-      jest.spyOn(usersService, 'findOneByUsername').mockResolvedValueOnce(null);
+      jest.spyOn(userService, 'findOneByUsername').mockResolvedValueOnce(null);
 
       const result = await service.signIn(username, password);
 
-      expect(usersService.findOneByUsername).toHaveBeenCalledWith(username);
+      expect(userService.findOneByUsername).toHaveBeenCalledWith(username);
       expect(result).toBeNull();
     });
 
@@ -63,13 +63,13 @@ describe('AuthService', () => {
       };
 
       jest
-        .spyOn(usersService, 'findOneByUsername')
+        .spyOn(userService, 'findOneByUsername')
         .mockResolvedValueOnce(user as UserDocument);
       jest.spyOn(bcrypt, 'compare').mockResolvedValueOnce(false);
 
       const result = await service.signIn(username, password);
 
-      expect(usersService.findOneByUsername).toHaveBeenCalledWith(username);
+      expect(userService.findOneByUsername).toHaveBeenCalledWith(username);
       expect(bcrypt.compare).toHaveBeenCalledWith(password, user.password);
       expect(result).toBeNull();
     });
@@ -86,7 +86,7 @@ describe('AuthService', () => {
       const token = 'accesstoken';
 
       jest
-        .spyOn(usersService, 'findOneByUsername')
+        .spyOn(userService, 'findOneByUsername')
         .mockResolvedValueOnce(user as UserDocument);
       jest.spyOn(bcrypt, 'compare').mockResolvedValueOnce(true);
       jest
@@ -101,7 +101,7 @@ describe('AuthService', () => {
 
       const result = await service.signIn(username, password);
 
-      expect(usersService.findOneByUsername).toHaveBeenCalledWith(username);
+      expect(userService.findOneByUsername).toHaveBeenCalledWith(username);
       expect(bcrypt.compare).toHaveBeenCalledWith(password, user.password);
       expect(service.generateToken).toHaveBeenCalledWith(user);
       expect(result).toEqual(expectedResult);
@@ -119,13 +119,13 @@ describe('AuthService', () => {
       const errorMessage = 'Email or username is already taken';
 
       jest
-        .spyOn(usersService, 'isEmailOrUsernameTaken')
+        .spyOn(userService, 'isEmailOrUsernameTaken')
         .mockResolvedValueOnce(errorMessage);
 
       await expect(service.signUp(signUpDto)).rejects.toThrowError(
         errorMessage,
       );
-      expect(usersService.isEmailOrUsernameTaken).toHaveBeenCalledWith(
+      expect(userService.isEmailOrUsernameTaken).toHaveBeenCalledWith(
         signUpDto.email,
         signUpDto.username,
       );
@@ -148,10 +148,10 @@ describe('AuthService', () => {
       const token = 'accesstoken';
 
       jest
-        .spyOn(usersService, 'isEmailOrUsernameTaken')
+        .spyOn(userService, 'isEmailOrUsernameTaken')
         .mockResolvedValueOnce('false');
       jest
-        .spyOn(usersService, 'create')
+        .spyOn(userService, 'create')
         .mockResolvedValueOnce(createdUser as UserDocument);
       jest
         .spyOn(service, 'generateToken')
@@ -166,11 +166,11 @@ describe('AuthService', () => {
 
       const result = await service.signUp(signUpDto);
 
-      expect(usersService.isEmailOrUsernameTaken).toHaveBeenCalledWith(
+      expect(userService.isEmailOrUsernameTaken).toHaveBeenCalledWith(
         signUpDto.email,
         signUpDto.username,
       );
-      expect(usersService.create).toHaveBeenCalledWith(signUpDto);
+      expect(userService.create).toHaveBeenCalledWith(signUpDto);
       expect(service.generateToken).toHaveBeenCalledWith(createdUser);
       expect(result).toEqual(expectedResult);
     });

@@ -8,13 +8,13 @@ import {
   Delete,
   Query,
 } from '@nestjs/common';
-import { GroupsService } from './groups.service';
+import { GroupService } from './group.service';
 import { CreateGroupDto } from './dto/create-group.dto';
 import { UpdateGroupDto } from './dto/update-group.dto';
 
 @Controller('groups')
-export class GroupsController {
-  constructor(private readonly groupsService: GroupsService) {}
+export class GroupController {
+  constructor(private readonly groupsService: GroupService) {}
 
   @Post()
   create(@Body() createGroupDto: CreateGroupDto) {

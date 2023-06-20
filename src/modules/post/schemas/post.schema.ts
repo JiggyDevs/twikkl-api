@@ -1,4 +1,4 @@
-import { User } from './../../users/entities/user.entity';
+import { User } from './../../user/schemas/user.schema';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument } from 'mongoose';
 
@@ -13,10 +13,10 @@ export class Post {
   caption: string;
 
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true })
-  author: User;
+  author: string;
 
   @Prop([{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }])
-  likes: User[];
+  likes: string[];
 
   // @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Post' })
   // replyTo: Post;

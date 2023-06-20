@@ -1,19 +1,19 @@
-import { CreateUserDto } from './../users/dto/create-user.dto';
+import { CreateUserDto } from './../user/dto/create-user.dto';
 import {
   HttpException,
   HttpStatus,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
-import { UsersService } from '../users/users.service';
+import { UserService } from '../user/user.service';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
-import { UserDocument } from '../users/schemas/users.schema';
+import { UserDocument } from '../user/schemas/user.schema';
 
 @Injectable()
 export class AuthService {
   constructor(
-    private usersService: UsersService,
+    private userService: UserService,
     private jwtService: JwtService,
   ) {}
 
@@ -25,7 +25,7 @@ export class AuthService {
   }
 
   async signIn(username: string, pass: string): Promise<any> {
-    const user = await this.usersService.findOneByUsername(username);
+    const user = await this.userService.findOneByUsername(username);
     console.log({ user });
     if (!user) {
       return null;
@@ -43,14 +43,14 @@ export class AuthService {
   }
   async signUp(signUpDTO: CreateUserDto) {
     // Check if user exists by email and username
-    const isTaken = await this.usersService.isEmailOrUsernameTaken(
+    const isTaken = await this.userService.isEmailOrUsernameTaken(
       signUpDTO.email,
       signUpDTO.username,
     );
     if (isTaken) {
       throw new Error(isTaken);
     }
-    const user = await this.usersService.create(signUpDTO);
+    const user = await this.userService.create(signUpDTO);
     const { password: pass, ...result } = user.toObject();
 
     return { ...result, ...this.generateToken(user) };

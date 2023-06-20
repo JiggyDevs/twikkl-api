@@ -1,21 +1,22 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { GroupsController } from './groups.controller';
-import { GroupsService } from './groups.service';
+import { GroupController } from './group.controller';
+import { GroupService } from './group.service';
 import { CreateGroupDto } from './dto/create-group.dto';
 import { UpdateGroupDto } from './dto/update-group.dto';
+import { Group } from './schemas/group.schema';
 
-describe('GroupsController', () => {
-  let controller: GroupsController;
-  let groupsService: GroupsService;
+describe('GroupController', () => {
+  let controller: GroupController;
+  let groupsService: GroupService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      controllers: [GroupsController],
-      providers: [GroupsService],
+      controllers: [GroupController],
+      providers: [GroupService],
     }).compile();
 
-    controller = module.get<GroupsController>(GroupsController);
-    groupsService = module.get<GroupsService>(GroupsService);
+    controller = module.get<GroupController>(GroupController);
+    groupsService = module.get<GroupService>(GroupService);
   });
 
   describe('create', () => {
@@ -53,7 +54,7 @@ describe('GroupsController', () => {
     it('should call groupsService.find with id and return the result', () => {
       const id = 'groupId';
 
-      const expectedResult = {}; // provide expected result here
+      const expectedResult = [{}] as Group[]; // provide expected result here
       jest.spyOn(groupsService, 'find').mockResolvedValueOnce(expectedResult);
 
       const result = controller.findOne(id);
@@ -68,7 +69,7 @@ describe('GroupsController', () => {
       const groupId = 'groupId';
       const userId = 'userId';
 
-      const expectedResult = {}; // provide expected result here
+      const expectedResult = {} as Group; // provide expected result here
       jest
         .spyOn(groupsService, 'joinGroup')
         .mockResolvedValueOnce(expectedResult);

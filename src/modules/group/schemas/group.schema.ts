@@ -1,4 +1,4 @@
-import { User } from '../../users/entities/user.entity';
+import { User } from '../../user/schemas/user.schema';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument, Types } from 'mongoose';
 
@@ -16,7 +16,7 @@ export class Group {
   createdBy: User;
 
   @Prop({ type: [{ type: Types.ObjectId, ref: 'User' }] })
-  members: User[];
+  members: string[];
 
   @Prop({ default: false })
   isDeleted: boolean;
