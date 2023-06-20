@@ -39,9 +39,9 @@ export class PostController {
     return this.postsService.likePost(id, req.user.sub);
   }
 
-  @Post('/reply/:id')
+  @Post('/repost/:id')
   @UseGuards(AuthGuard)
-  replyPost(
+  repostPost(
     @Param('id', ParseIntPipe) id: string,
     @Body() reply: CreatePostDto,
     @Request() req,
