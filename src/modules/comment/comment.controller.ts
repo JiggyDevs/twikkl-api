@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
 import { CommentService } from './comment.service';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { UpdateCommentDto } from './dto/update-comment.dto';
@@ -9,15 +9,15 @@ export class CommentController {
 
   @Post()
   async createComment(
-    @Param('postId') postId: string,
     @Body() createCommentDto: CreateCommentDto,
   ) {
-    const { content, userId } = createCommentDto;
-    return this.commentService.createComment({postId, content, userId});
+    
+    const { content, user, post } = createCommentDto;
+    return this.commentService.createComment({post, content, user});
   }
 
   @Get()
-  async getCommentsByPostId(@Param('postId') postId: string) {
+  async getCommentsByPostId(@Query('post') postId: string) {
     return this.commentService.getCommentsByPostId(postId);
   }
 

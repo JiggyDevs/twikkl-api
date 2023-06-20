@@ -12,12 +12,13 @@ export class CommentService {
 
 
   async createComment(createCommentDto: CreateCommentDto): Promise<Comment> {
+    console.log({createCommentDto})
     const createdComment = new this.commentModel(createCommentDto);
     return createdComment.save();
   }
 
   async getCommentsByPostId(postId: string): Promise<Comment[]> {
-    return this.commentModel.find({ postId }).exec();
+    return this.commentModel.find({ post: postId }).exec();
   }
   findOne(id: number) {
     return `This action returns a #${id} comment`;
