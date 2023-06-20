@@ -5,6 +5,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { User, UserDocument } from './schemas/user.schema';
 import { Model } from 'mongoose';
+import { FollowUserDto } from './dto/follow-user.dto';
 
 @Injectable()
 export class UserService {
@@ -19,7 +20,7 @@ export class UserService {
   }
 
   async findAll(): Promise<UserDocument[]> {
-    return await this.userModel.find();
+    return await this.userModel.find().lean();
   }
 
   async findOne(id: string): Promise<UserDocument> {
@@ -83,5 +84,36 @@ export class UserService {
 
   remove(id: number) {
     return `This action removes a #${id} user`;
+  }
+
+  async followUser(followUserDto: FollowUserDto): Promise<User> {
+    const { userId, userToFollowId } = followUserDto;
+    console.log({ userId, userToFollowId });
+    return this.userModel
+      .findByIdAndUpdate(
+        userId,
+        { $addToSet: { following: userToFollowId } },
+        { new: true },
+      )
+      .exec();
+  }
+
+  async unfollowUser(unfollowUserDto: FollowUserDto): Promise<User> {
+    const { userId, userToFollowId: userToUnfollowId } = unfollowUserDto;
+    const user = await this.userModel.findByIdAndUpdate(
+      userId,
+      {
+        $pull: { following: userToUnfollowId },
+      },
+      { new: true },
+    );
+
+    if (!user) {
+      throw new Error('User not found.');
+    }
+
+    // Optional: You can perform additional validation or checks here
+
+    return user;
   }
 }

@@ -24,23 +24,23 @@ import { UserInterceptor } from './interceptor/user.interceptor';
 // @UseInterceptors(UserInterceptor)
 @Controller('users')
 export class UserController {
-  constructor(private readonly usersService: UserService) {}
+  constructor(private readonly userService: UserService) {}
 
   @Post()
   create(@Body() createUserDto: CreateUserDto) {
-    return this.usersService.create(createUserDto);
+    return this.userService.create(createUserDto);
   }
 
   @Get()
   findAll(): Promise<GetUserDto[]> {
-    return this.usersService.findAll();
+    return this.userService.findAll();
   }
 
   @Get('profile')
   @UseGuards(AuthGuard)
   async findUserProfile(@Request() req): Promise<GetUserDto> {
     try {
-      const user = await this.usersService.findOne(req.user.sub);
+      const user = await this.userService.findOne(req.user.sub);
       if (!user) {
         throw new HttpException('Could not find user', HttpStatus.NOT_FOUND);
       }
@@ -53,7 +53,7 @@ export class UserController {
   @Get(':id')
   async findOne(@Param('id') id: string): Promise<GetUserDto> {
     try {
-      const user = await this.usersService.findOne(id);
+      const user = await this.userService.findOne(id);
       if (!user) {
         throw new HttpException('Could not find user', HttpStatus.NOT_FOUND);
       }
@@ -63,16 +63,44 @@ export class UserController {
     }
   }
 
+  @Post('/follow/:userToFollowId')
+  @UseGuards(AuthGuard)
+  async followUser(
+    @Request() req,
+    @Param('userToFollowId') userToFollowId: string,
+  ): Promise<any> {
+    console.log('userToFollowId', userToFollowId);
+    const user = await this.userService.followUser({
+      userId: req.user.sub,
+      userToFollowId,
+    });
+    return { message: 'User followed successfully', user };
+  }
+
+  @Post('/unfollow/:userToUnfollowId')
+  @UseGuards(AuthGuard)
+  async unfollowUser(
+    @Request() req,
+    @Param('userToUnfollowId') userToUnfollowId: string,
+  ): Promise<any> {
+    console.log('userToUnfollowId', userToUnfollowId);
+    const user = await this.userService.unfollowUser({
+      userId: req.user.sub,
+      userToFollowId: userToUnfollowId,
+    });
+    return { message: 'User unfollowed successfully', user };
+  }
+
   @Patch(':id')
   update(
     @Param('id', ParseIntPipe) id: string,
     @Body() updateUserDto: UpdateUserDto,
   ) {
-    return this.usersService.update(+id, updateUserDto);
+    return this.userService.update(+id, updateUserDto);
   }
 
   @Delete(':id')
   remove(@Param('id', ParseIntPipe) id: string) {
-    return this.usersService.remove(+id);
+    return this.userService.remove(+id);
   }
 }
