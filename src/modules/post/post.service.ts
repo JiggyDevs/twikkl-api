@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
+import { GetPostDto } from './dto/get-post.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Post } from './schemas/post.schema';
 import { Model } from 'mongoose';

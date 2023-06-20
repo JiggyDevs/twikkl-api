@@ -1,4 +1,9 @@
+import { IsNotEmpty } from 'class-validator';
+
 export class JoinGroupDto {
-    groupId: string;
-    userId: string;
+  @IsNotEmpty()
+  groupId: string;
+
+  @IsNotEmpty()
+  userId: string;
 }

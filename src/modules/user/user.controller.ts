@@ -10,6 +10,7 @@ import {
   HttpException,
   HttpStatus,
   Request,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -43,7 +44,7 @@ export class UserController {
     }
   }
   @Get(':id')
-  async findOne(@Param('id') id: string) {
+  async findOne(@Param('id', ParseIntPipe) id: string) {
     try {
       const user = await this.usersService.findOne(id);
       if (!user) {
@@ -55,12 +56,15 @@ export class UserController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
+  update(
+    @Param('id', ParseIntPipe) id: string,
+    @Body() updateUserDto: UpdateUserDto,
+  ) {
     return this.usersService.update(+id, updateUserDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
+  remove(@Param('id', ParseIntPipe) id: string) {
     return this.usersService.remove(+id);
   }
 }

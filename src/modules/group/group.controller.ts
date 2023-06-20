@@ -8,7 +8,8 @@ import {
   Delete,
   Query,
   UseGuards,
-  Request
+  Request,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { GroupService } from './group.service';
 import { CreateGroupDto } from './dto/create-group.dto';
@@ -23,8 +24,14 @@ export class GroupController {
 
   @Post()
   @UseGuards(AuthGuard)
-  create(@Request() req, @Body() createGroupDto: Omit<CreateGroupDto, "createdBy">) {
-    return this.groupService.create({...createGroupDto, createdBy: req.user.sub});
+  create(
+    @Request() req,
+    @Body() createGroupDto: Omit<CreateGroupDto, 'createdBy'>,
+  ) {
+    return this.groupService.create({
+      ...createGroupDto,
+      createdBy: req.user.sub,
+    });
   }
 
   @Get()
@@ -34,7 +41,7 @@ export class GroupController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id', ParseIntPipe) id: string) {
     return this.groupService.find(id);
   }
 
@@ -58,7 +65,10 @@ export class GroupController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateGroupDto: UpdateGroupDto) {
+  update(
+    @Param('id', ParseIntPipe) id: string,
+    @Body() updateGroupDto: UpdateGroupDto,
+  ) {
     return this.groupService.update(id, updateGroupDto);
   }
 
@@ -72,7 +82,7 @@ export class GroupController {
   // }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
+  remove(@Param('id', ParseIntPipe) id: string) {
     return this.groupService.remove(id);
   }
 }

@@ -10,9 +10,8 @@ export class CommentService {
     @InjectModel('Comment') private readonly commentModel: Model<Comment>,
   ) {}
 
-
   async createComment(createCommentDto: CreateCommentDto): Promise<Comment> {
-    console.log({createCommentDto})
+    console.log({ createCommentDto });
     const createdComment = new this.commentModel(createCommentDto);
     return createdComment.save();
   }

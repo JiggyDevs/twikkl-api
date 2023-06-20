@@ -44,11 +44,13 @@ export class GroupService {
     // const group = await this.groupModel.findById(groupId);
     // const user = await this.userModel.findById(userId);
     const { groupId, userId } = joinGroupDto;
-    return this.groupModel.findByIdAndUpdate(
-      groupId,
-      { $addToSet: { members: userId } },
-      { new: true },
-    ).exec();
+    return this.groupModel
+      .findByIdAndUpdate(
+        groupId,
+        { $addToSet: { members: userId } },
+        { new: true },
+      )
+      .exec();
 
     // if (!group || !user) {
     //   // Handle error if group or user not found
