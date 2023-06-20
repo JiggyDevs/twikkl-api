@@ -15,7 +15,7 @@ export class Post {
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true })
   author: string;
 
-  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Group' })
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Group', default: null })
   group: string;
 
   @Prop([{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }])

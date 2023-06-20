@@ -38,14 +38,17 @@ export class PostService {
   }
 
   async getUserFeed(userId: string): Promise<Post[]> {
-    const user = await this.userModel.findById(userId);
-
+    const user = await this.userModel.findById(userId).lean();
+    console.log({
+      user,
+      userId,
+    });
     const feedPosts = await this.postModel
       .find({
         $or: [
-          { user: userId }, // Include user's own posts
-          { user: { $in: user.following } }, // Include followed users' posts
-          { group: { $in: user.groups } }, // Include followed users' posts
+          // { author: userId }, // Include user's own posts
+          { author: { $in: user.following.map((a) => a.toString()) } }, // Include followed users' posts
+          { group: { $in: user.groups, $exists: true } }, // Include followed users' posts
         ],
       })
       .exec();
@@ -53,17 +56,17 @@ export class PostService {
     return feedPosts;
   }
 
-  async getUserFeed2(userId: string): Promise<Post[]> {
-    const userPosts = await this.postModel.find({ user: userId }).exec();
+  // async getUserFeed2(userId: string): Promise<Post[]> {
+  //   const userPosts = await this.postModel.find({ user: userId }).exec();
 
-    const groupPosts = await this.postModel
-      .find({ groupId: { $ne: null } })
-      .exec();
+  //   const groupPosts = await this.postModel
+  //     .find({ groupId: { $ne: null } })
+  //     .exec();
 
-    const feedPosts = [...userPosts, ...groupPosts];
+  //   const feedPosts = [...userPosts, ...groupPosts];
 
-    return feedPosts;
-  }
+  //   return feedPosts;
+  // }
 
   async likePost(id: string, user: string) {
     const post = await this.postModel.findById(id);
