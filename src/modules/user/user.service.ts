@@ -28,7 +28,7 @@ export class UserService {
       if (!user) {
         throw new Error('User not found');
       }
-      return user;
+      return user.toObject();
     } catch (err) {
       throw new Error('User not found');
     }
