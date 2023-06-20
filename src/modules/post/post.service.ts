@@ -5,10 +5,14 @@ import { GetPostDto } from './dto/get-post.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Post } from './schemas/post.schema';
 import { Model } from 'mongoose';
+import { User } from '../user/schemas/user.schema';
 
 @Injectable()
 export class PostService {
-  constructor(@InjectModel(Post.name) private postModel: Model<Post>) {}
+  constructor(
+    @InjectModel(Post.name) private postModel: Model<Post>,
+    @InjectModel(User.name) private userModel: Model<User>,
+  ) {}
 
   async create(createPostDto: CreatePostDto) {
     const post = new this.postModel(createPostDto);
@@ -31,6 +35,34 @@ export class PostService {
       delete post.caption;
     }
     return post;
+  }
+
+  async getUserFeed(userId: string): Promise<Post[]> {
+    const user = await this.userModel.findById(userId);
+
+    const feedPosts = await this.postModel
+      .find({
+        $or: [
+          { user: userId }, // Include user's own posts
+          { user: { $in: user.following } }, // Include followed users' posts
+          { group: { $in: user.groups } }, // Include followed users' posts
+        ],
+      })
+      .exec();
+
+    return feedPosts;
+  }
+
+  async getUserFeed2(userId: string): Promise<Post[]> {
+    const userPosts = await this.postModel.find({ user: userId }).exec();
+
+    const groupPosts = await this.postModel
+      .find({ groupId: { $ne: null } })
+      .exec();
+
+    const feedPosts = [...userPosts, ...groupPosts];
+
+    return feedPosts;
   }
 
   async likePost(id: string, user: string) {

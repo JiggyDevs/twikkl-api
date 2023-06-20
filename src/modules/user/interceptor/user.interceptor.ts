@@ -19,7 +19,7 @@ export class UserInterceptor implements NestInterceptor {
         return plainToInstance(GetUserDto, data, {
           // By using excludeExtraneousValues we are ensuring that only properties decorated with Expose() decorator are included in response.
 
-          excludeExtraneousValues: true,
+          excludeExtraneousValues: false,
         });
       }),
     );

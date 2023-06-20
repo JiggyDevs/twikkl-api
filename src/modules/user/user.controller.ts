@@ -50,7 +50,6 @@ export class UserController {
     }
   }
 
-  @UseInterceptors(ClassSerializerInterceptor)
   @Get(':id')
   async findOne(@Param('id') id: string): Promise<GetUserDto> {
     try {
