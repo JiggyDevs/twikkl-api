@@ -21,7 +21,7 @@ import { AuthGuard } from '../auth/auth.guard';
 import { GetUserDto } from './dto/get-user.dto';
 import { UserInterceptor } from './interceptor/user.interceptor';
 
-@UseInterceptors(UserInterceptor)
+// @UseInterceptors(UserInterceptor)
 @Controller('users')
 export class UserController {
   constructor(private readonly usersService: UserService) {}

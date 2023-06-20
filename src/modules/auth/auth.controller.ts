@@ -12,7 +12,7 @@ import { AuthService } from './auth.service';
 import { SigninRequestDto, SigninResponseDto } from './dto/signin.dto';
 import { AuthInterceptor } from './interceptor/auth.interceptor';
 
-@UseInterceptors(AuthInterceptor)
+// @UseInterceptors(AuthInterceptor)
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
