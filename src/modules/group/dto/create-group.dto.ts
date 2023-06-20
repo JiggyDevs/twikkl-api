@@ -1,4 +1,4 @@
-import { IsNotEmpty } from 'class-validator';
+import { IsNotEmpty, IsString } from 'class-validator';
 
 export class CreateGroupDto {
   @IsNotEmpty()
@@ -10,7 +10,11 @@ export class CreateGroupDto {
   @IsNotEmpty()
   createdBy: string;
 
+  category: string;
+
+  @IsString()
   coverImg?: string;
 
+  @IsString()
   avatar?: string;
 }
