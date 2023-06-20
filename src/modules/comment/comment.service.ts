@@ -1,17 +1,24 @@
+import { Model } from 'mongoose';
 import { Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { UpdateCommentDto } from './dto/update-comment.dto';
 
 @Injectable()
 export class CommentService {
-  create(createCommentDto: CreateCommentDto) {
-    return 'This action adds a new comment';
+  constructor(
+    @InjectModel('Comment') private readonly commentModel: Model<Comment>,
+  ) {}
+
+
+  async createComment(createCommentDto: CreateCommentDto): Promise<Comment> {
+    const createdComment = new this.commentModel(createCommentDto);
+    return createdComment.save();
   }
 
-  findAll() {
-    return `This action returns all comments`;
+  async getCommentsByPostId(postId: string): Promise<Comment[]> {
+    return this.commentModel.find({ postId }).exec();
   }
-
   findOne(id: number) {
     return `This action returns a #${id} comment`;
   }

@@ -1,22 +1,20 @@
-import { User } from '../../user/schemas/user.schema';
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument, Types } from 'mongoose';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { User } from '../../user/schemas/user.schema';
+import { Post } from 'src/modules/post/schemas/post.schema';
 
-export type GroupDocument = HydratedDocument<Group>;
+export type CommentDocument = HydratedDocument<Comment>;
 
 @Schema()
-export class Group {
+export class Comment {
   @Prop({ required: true })
-  name: string;
-
-  @Prop({ required: true })
-  body: string;
+  content: string;
 
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })
-  createdBy: User;
+  user: User;
 
-  @Prop({ type: [{ type: Types.ObjectId, ref: 'User' }] })
-  members: User[];
+  @Prop({ type: Types.ObjectId, ref: 'Post', required: true })
+  post: Post;
 
   @Prop({ default: false })
   isDeleted: boolean;
@@ -25,4 +23,4 @@ export class Group {
   isAdminDeleted: boolean;
 }
 
-export const GroupSchema = SchemaFactory.createForClass(Group);
+export const CommentSchema = SchemaFactory.createForClass(Comment);
