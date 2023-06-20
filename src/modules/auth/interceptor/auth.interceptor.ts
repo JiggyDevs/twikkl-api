@@ -6,17 +6,17 @@ import {
 } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
 import { map, Observable } from 'rxjs';
-import { GetUserDto } from '../dto/get-user.dto';
+import { SigninResponseDto } from '../dto/signin.dto';
 
 @Injectable()
-export class UserInterceptor implements NestInterceptor {
+export class AuthInterceptor implements NestInterceptor {
   intercept(context: ExecutionContext, handler: CallHandler): Observable<any> {
     return handler.handle().pipe(
       map((data: any) => {
         // run something before the response is sent out.
         // Please note that plainToClass is deprecated & is now called plainToInstance
 
-        return plainToInstance(GetUserDto, data, {
+        return plainToInstance(SigninResponseDto, data, {
           // By using excludeExtraneousValues we are ensuring that only properties decorated with Expose() decorator are included in response.
 
           excludeExtraneousValues: true,
