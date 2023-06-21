@@ -59,6 +59,12 @@ export class PostController {
     return this.postsService.deletePost(id, req.user.sub);
   }
 
+  @Get('feed')
+  @UseGuards(AuthGuard)
+  getUserFeed(@Request() req) {
+    return this.postsService.getUserFeed(req.user.sub);
+  }
+
   @Get(':id')
   @UseGuards(AuthGuard)
   findOne(@Param('id', ObjectIdValidationPipe) id: string) {

@@ -6,6 +6,7 @@ import { PaginationDto } from './dto/pagination.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { User, UserDocument } from './schemas/user.schema';
 import { Model } from 'mongoose';
+import { FollowUserDto } from './dto/follow-user.dto';
 
 @Injectable()
 export class UserService {
@@ -19,11 +20,14 @@ export class UserService {
     return await createdUser.save();
   }
 
-  async findAll(pagination: PaginationDto): Promise<UserDocument[]> {
+  async findAll(
+    pagination: PaginationDto
+  ): Promise<{ data: UserDocument[]; total: number }> {
     const { page, limit = 1 } = pagination;
     const skip = page ? (page - 1) * limit : 0;
     const total = await this.userModel.countDocuments();
-    return await this.userModel.find().skip(skip).limit(limit);
+    const users = await this.userModel.find().skip(skip).limit(limit);
+    return { data: users, total };
   }
 
   async findOne(id: string): Promise<UserDocument> {
@@ -32,7 +36,7 @@ export class UserService {
       if (!user) {
         throw new Error('User not found');
       }
-      return user;
+      return user.toObject();
     } catch (err) {
       throw new Error('User not found');
     }
@@ -87,5 +91,36 @@ export class UserService {
 
   remove(id: number) {
     return `This action removes a #${id} user`;
+  }
+
+  async followUser(followUserDto: FollowUserDto): Promise<User> {
+    const { userId, userToFollowId } = followUserDto;
+    console.log({ userId, userToFollowId });
+    return this.userModel
+      .findByIdAndUpdate(
+        userId,
+        { $addToSet: { following: userToFollowId } },
+        { new: true },
+      )
+      .exec();
+  }
+
+  async unfollowUser(unfollowUserDto: FollowUserDto): Promise<User> {
+    const { userId, userToFollowId: userToUnfollowId } = unfollowUserDto;
+    const user = await this.userModel.findByIdAndUpdate(
+      userId,
+      {
+        $pull: { following: userToUnfollowId },
+      },
+      { new: true },
+    );
+
+    if (!user) {
+      throw new Error('User not found.');
+    }
+
+    // Optional: You can perform additional validation or checks here
+
+    return user;
   }
 }

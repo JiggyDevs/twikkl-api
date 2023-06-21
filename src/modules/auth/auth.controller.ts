@@ -6,17 +6,22 @@ import {
   HttpException,
   HttpStatus,
   Post,
+  UseInterceptors,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { SigninAuthDto } from './dto/signin.dto';
+import { SigninRequestDto, SigninResponseDto } from './dto/signin.dto';
+import { AuthInterceptor } from './interceptor/auth.interceptor';
 
+// @UseInterceptors(AuthInterceptor)
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
 
   @HttpCode(HttpStatus.OK)
   @Post('login')
-  async signIn(@Body() signInDto: SigninAuthDto) {
+  async signIn(
+    @Body() signInDto: SigninRequestDto,
+  ): Promise<SigninResponseDto> {
     const user = await this.authService.signIn(
       signInDto.username,
       signInDto.password,

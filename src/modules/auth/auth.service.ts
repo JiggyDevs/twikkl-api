@@ -34,7 +34,7 @@ export class AuthService {
     if (!match) {
       return null;
     }
-    const { password, ...result } = user.toObject();
+    const result = user.toObject();
 
     return {
       ...result,
