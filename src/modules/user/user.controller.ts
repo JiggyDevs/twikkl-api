@@ -11,12 +11,9 @@ import {
   HttpStatus,
   Request,
   ParseIntPipe,
-<<<<<<< HEAD
   Query,
-=======
   UseInterceptors,
   ClassSerializerInterceptor,
->>>>>>> b2d71e7c96450f96a881b4b8b42ef67c512c693f
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
