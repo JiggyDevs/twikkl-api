@@ -16,13 +16,16 @@ export class GroupService {
   ) {}
 
   async create(createGroupDto: CreateGroupDto): Promise<Group> {
-    const createdGroup = new this.groupModel({...createGroupDto, members: [createGroupDto.createdBy]});
+    const createdGroup = new this.groupModel({
+      ...createGroupDto,
+      members: [createGroupDto.createdBy],
+    });
     return createdGroup.save();
   }
 
   async find(ids?: string | string[]): Promise<Group[]> {
     let query = this.groupModel.find();
-    if(!ids) return await query.exec()
+    if (!ids) return await query.exec();
     if (Array.isArray(ids)) {
       query = query.where('_id').in(ids);
     } else {
@@ -33,11 +36,15 @@ export class GroupService {
   }
 
   async update(id: string, updateGroupDto: UpdateGroupDto): Promise<Group> {
-    return this.groupModel.findByIdAndUpdate(id, updateGroupDto, { new: true }).exec();
+    return this.groupModel
+      .findByIdAndUpdate(id, updateGroupDto, { new: true })
+      .exec();
   }
 
   async remove(id: string): Promise<Group> {
-    return this.groupModel.findByIdAndUpdate(id, { isDeleted: true }, { new: true }).exec();
+    return this.groupModel
+      .findByIdAndUpdate(id, { isDeleted: true }, { new: true })
+      .exec();
   }
 
   async joinGroup(joinGroupDto: JoinGroupDto): Promise<Group> {
@@ -64,9 +71,11 @@ export class GroupService {
 
   async leaveGroup(leaveGroupDto: LeaveGroupDto): Promise<Group> {
     const { groupId, userId } = leaveGroupDto;
-    const group = await this.groupModel.findByIdAndUpdate(groupId, {
-      $pull: { members: userId },
-    },
+    const group = await this.groupModel.findByIdAndUpdate(
+      groupId,
+      {
+        $pull: { members: userId },
+      },
       { new: true },
     );
 

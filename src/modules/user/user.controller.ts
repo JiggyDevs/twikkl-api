@@ -11,10 +11,12 @@ import {
   HttpStatus,
   Request,
   ParseIntPipe,
+  Query,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { PaginationDto } from './dto/pagination.dto';
 import { AuthGuard } from '../auth/auth.guard';
 
 @Controller('users')
@@ -27,8 +29,8 @@ export class UserController {
   }
 
   @Get()
-  findAll() {
-    return this.usersService.findAll();
+  findAll(@Query() pagination: PaginationDto) {
+    return this.usersService.findAll(pagination);
   }
   @Get('profile')
   @UseGuards(AuthGuard)
