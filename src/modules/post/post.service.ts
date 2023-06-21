@@ -47,7 +47,10 @@ export class PostService {
       .find({
         $or: [
           // { author: userId }, // Include user's own posts
-          { author: { $in: user.following.map((a) => a.toString()) } }, // Include followed users' posts
+          {
+            author: { $in: user.following.map((a) => a.toString()) },
+            group: { $exists: false },
+          }, // Include followed users' posts
           { group: { $in: user.groups, $exists: true } }, // Include followed users' posts
         ],
       })
