@@ -38,7 +38,7 @@ $ yarn run test:cov
 
 ## TODO
 
-- [x] Implement User Feed
+- [x] Implement User Feed (Currently fetches all posts from users that the user follows, groups he is in, and sorts them by date. Would sort by likes and comments in the future.)
 - [] Implement Pagination
 - [] Remove password from responses
 - [] Group only posts
@@ -46,3 +46,5 @@ $ yarn run test:cov
 - [] Test repost
 - [] Implement file upload
 - [] Implement file streaming
+- [] Implement file download
+- [] Implement caching
