@@ -11,12 +11,14 @@ import {
   HttpStatus,
   Request,
   ParseIntPipe,
+  Query,
   UseInterceptors,
   ClassSerializerInterceptor,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { PaginationDto } from './dto/pagination.dto';
 import { AuthGuard } from '../auth/auth.guard';
 import { GetUserDto } from './dto/get-user.dto';
 import { UserInterceptor } from './interceptor/user.interceptor';
@@ -32,8 +34,8 @@ export class UserController {
   }
 
   @Get()
-  findAll(): Promise<GetUserDto[]> {
-    return this.userService.findAll();
+  findAll(@Query() pagination: PaginationDto) {
+    return this.userService.findAll(pagination);
   }
 
   @Get('profile')

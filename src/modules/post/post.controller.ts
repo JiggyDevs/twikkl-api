@@ -8,13 +8,17 @@ import {
   Delete,
   UseGuards,
   Request,
-  ParseIntPipe,
+  Query,
 } from '@nestjs/common';
 import { PostService } from './post.service';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
+import { PaginationCursorDto } from './dto/pagination.dto';
 import { GetPostDto } from './dto/get-post.dto';
 import { AuthGuard } from '../auth/auth.guard';
+import { ObjectIdValidationPipe } from './object-id-validation.pipe';
+import { Post as PostModel } from './schemas/post.schema';
+
 
 @Controller('posts')
 export class PostController {
@@ -29,20 +33,20 @@ export class PostController {
 
   @Get()
   // @UseGuards(AuthGuard)
-  findAll() {
-    return this.postsService.findAll();
+  findAll(@Query() pagination: PaginationCursorDto) {
+    return this.postsService.findAll(pagination);
   }
 
   @Post('/like/:id')
   @UseGuards(AuthGuard)
-  likePost(@Param('id', ParseIntPipe) id: string, @Request() req) {
+  likePost(@Param('id', ObjectIdValidationPipe) id: string, @Request() req) {
     return this.postsService.likePost(id, req.user.sub);
   }
 
   @Post('/repost/:id')
   @UseGuards(AuthGuard)
   repostPost(
-    @Param('id', ParseIntPipe) id: string,
+    @Param('id', ObjectIdValidationPipe) id: string,
     @Body() reply: CreatePostDto,
     @Request() req,
   ) {
@@ -51,7 +55,7 @@ export class PostController {
 
   @Post('/delete/:id')
   @UseGuards(AuthGuard)
-  delete(@Param('id', ParseIntPipe) id: string, @Request() req) {
+  delete(@Param('id', ObjectIdValidationPipe) id: string, @Request() req) {
     return this.postsService.deletePost(id, req.user.sub);
   }
 
@@ -63,14 +67,14 @@ export class PostController {
 
   @Get(':id')
   @UseGuards(AuthGuard)
-  findOne(@Param('id', ParseIntPipe) id: string) {
+  findOne(@Param('id', ObjectIdValidationPipe) id: string) {
     return this.postsService.findOne(id);
   }
 
   @Patch(':id')
   @UseGuards(AuthGuard)
   update(
-    @Param('id', ParseIntPipe) id: string,
+    @Param('id', ObjectIdValidationPipe) id: string,
     @Body() updatePostDto: UpdatePostDto,
   ) {
     return this.postsService.update(+id, updatePostDto);
@@ -78,7 +82,7 @@ export class PostController {
 
   @Delete(':id')
   @UseGuards(AuthGuard)
-  remove(@Param('id', ParseIntPipe) id: string) {
+  remove(@Param('id', ObjectIdValidationPipe) id: string) {
     return this.postsService.remove(+id);
   }
 }

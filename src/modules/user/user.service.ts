@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { PaginationDto } from './dto/pagination.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { User, UserDocument } from './schemas/user.schema';
 import { Model } from 'mongoose';
@@ -19,8 +20,14 @@ export class UserService {
     return await createdUser.save();
   }
 
-  async findAll(): Promise<UserDocument[]> {
-    return await this.userModel.find().lean();
+  async findAll(
+    pagination: PaginationDto
+  ): Promise<{ data: UserDocument[]; total: number }> {
+    const { page, limit = 1 } = pagination;
+    const skip = page ? (page - 1) * limit : 0;
+    const total = await this.userModel.countDocuments();
+    const users = await this.userModel.find().skip(skip).limit(limit);
+    return { data: users, total };
   }
 
   async findOne(id: string): Promise<UserDocument> {

@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
+import { PaginationCursorDto } from './dto/pagination.dto';
 import { GetPostDto } from './dto/get-post.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Post } from './schemas/post.schema';
@@ -19,9 +20,16 @@ export class PostService {
     return await post.save();
   }
 
-  async findAll() {
-    const posts = await this.postModel.find();
-    return posts;
+  async findAll(pagination: PaginationCursorDto) {
+    const { cursor, limit = 1 } = pagination;
+    const query = cursor ? { _id: { $lt: cursor } } : {};
+    const posts = await this.postModel
+      .find(query)
+      .sort({ _id: -1 })
+      .limit(limit)
+      .lean();
+    const total = await this.postModel.countDocuments();
+    return { data: posts, total, limit };
   }
 
   async findOne(id: string) {
