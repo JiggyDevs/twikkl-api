@@ -87,4 +87,4 @@ export const INCOMPLETE_AUTH_TOKEN_VALID_TIME: number = 1
   ]
 
 export const PLATFORM_NAME = 'twikkL'
-export const GITHUB_LINK = 'https://github.com/'
+export const GITHUB_LINK = 'https://github.com/JiggyDevs/twikkl-api.git'
