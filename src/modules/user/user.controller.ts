@@ -12,8 +12,8 @@ import {
   Request,
   ParseIntPipe,
   Query,
-  UseInterceptors,
-  ClassSerializerInterceptor,
+  // UseInterceptors,
+  // ClassSerializerInterceptor,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -28,19 +28,22 @@ import { UserInterceptor } from './interceptor/user.interceptor';
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
-  @Post()
+  @Post('/')
   create(@Body() createUserDto: CreateUserDto) {
     return this.userService.create(createUserDto);
   }
 
-  @Get()
-  findAll(@Query() pagination: PaginationDto) {
-    return this.userService.findAll(pagination);
+  @Get('/')
+  findAll(@Query() query: any) {
+    const payload = { ...query }
+    return this.userService.findAll(payload)
   }
 
-  @Get('profile')
+  @Get('/profile')
   @UseGuards(AuthGuard)
-  async findUserProfile(@Request() req): Promise<GetUserDto> {
+  async findUserProfile(@Request() req)
+  // : Promise<GetUserDto> 
+  {
     try {
       const user = await this.userService.findOne(req.user.sub);
       if (!user) {
@@ -52,8 +55,10 @@ export class UserController {
     }
   }
 
-  @Get(':id')
-  async findOne(@Param('id') id: string): Promise<GetUserDto> {
+  @Get('/:id')
+  async findOne(@Param('id') id: string)
+  // : Promise<GetUserDto> 
+  {
     try {
       const user = await this.userService.findOne(id);
       if (!user) {
@@ -93,7 +98,7 @@ export class UserController {
     return { message: 'User unfollowed successfully', user };
   }
 
-  @Patch(':id')
+  @Patch('/:id')
   update(
     @Param('id', ParseIntPipe) id: string,
     @Body() updateUserDto: UpdateUserDto,

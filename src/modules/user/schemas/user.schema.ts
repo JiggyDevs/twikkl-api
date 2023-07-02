@@ -1,7 +1,8 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument, Types } from 'mongoose';
+import { Types } from 'mongoose';
 
-export type UserDocument = HydratedDocument<User>;
+// export type UserDocument = HydratedDocument<User>;
+export type UserDocument = User & Document
 
 @Schema()
 export class User {
@@ -22,3 +23,17 @@ export class User {
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
+UserSchema.index(
+  {
+    userName: 'text',
+    email: 'text',
+    _id: 'text'
+  },
+  {
+    weights: {
+      userName: 5,
+      email: 3,
+      _id: 1
+    }
+  }
+)
