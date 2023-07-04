@@ -11,6 +11,9 @@ export class UserFactoryService {
         if (data.groups) user.groups = data.groups
         if (data.password) user.password = data.password
         if (data.username) user.username = data.username
+        if (data.lastLoginDate) user.lastLoginDate = data.lastLoginDate
+        if (data.createdAt) user.createdAt = data.createdAt
+        if (data.updatedAt) user.updatedAt = data.updatedAt
 
 
         return user

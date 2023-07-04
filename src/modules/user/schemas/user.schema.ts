@@ -20,6 +20,15 @@ export class User {
 
   @Prop({ type: [{ type: Types.ObjectId, ref: 'Group' }] })
   groups: string[]; // Array of group IDs that the user is a member of
+
+  @Prop()
+  lastLoginDate: Date
+
+  @Prop()
+  createdAt: Date
+
+  @Prop()
+  updatedAt: Date
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

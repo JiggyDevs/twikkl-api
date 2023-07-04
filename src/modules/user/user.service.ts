@@ -2,7 +2,7 @@ import { HttpException, HttpStatus, Injectable, Logger, NotFoundException } from
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User, UserDocument } from './schemas/user.schema';
-import { FollowUserDto } from './dto/follow-user.dto';
+// import { FollowUserDto } from './dto/follow-user.dto';
 import { IDataServices } from 'src/core/abstracts';
 import { hash } from 'src/lib/utils'
 import { OptionalQuery } from 'src/core/types/database';
@@ -113,66 +113,66 @@ export class UserService {
     }
   }
 
-  async isEmailOrUsernameTaken(
-    email: string,
-    username: string,
-  ): Promise<string | null> {
+  // async isEmailOrUsernameTaken(
+  //   email: string,
+  //   username: string,
+  // ): Promise<string | null> {
 
-    const existingUser = await this.userModel.findOne(
-      {
-        $or: [{ email }, { username }],
-      },
-      { _id: 0, email: 1, username: 1 },
-    );
-    console.log({ existingUser });
-    if (existingUser) {
-      if (existingUser.email === email) {
-        return 'Email already exists';
-      }
-      if (existingUser.username === username) {
-        return 'Username is already taken';
-      }
-    }
+  //   const existingUser = await this.userModel.findOne(
+  //     {
+  //       $or: [{ email }, { username }],
+  //     },
+  //     { _id: 0, email: 1, username: 1 },
+  //   );
+  //   console.log({ existingUser });
+  //   if (existingUser) {
+  //     if (existingUser.email === email) {
+  //       return 'Email already exists';
+  //     }
+  //     if (existingUser.username === username) {
+  //       return 'Username is already taken';
+  //     }
+  //   }
 
-    return null;
-  }
+  //   return null;
+  // }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
-  }
+  // update(id: number, updateUserDto: UpdateUserDto) {
+  //   return `This action updates a #${id} user`;
+  // }
 
-  remove(id: number) {
-    return `This action removes a #${id} user`;
-  }
+  // remove(id: number) {
+  //   return `This action removes a #${id} user`;
+  // }
 
-  async followUser(followUserDto: FollowUserDto): Promise<User> {
-    const { userId, userToFollowId } = followUserDto;
-    console.log({ userId, userToFollowId });
-    return this.userModel
-      .findByIdAndUpdate(
-        userId,
-        { $addToSet: { following: userToFollowId } },
-        { new: true },
-      )
-      .exec();
-  }
+  // async followUser(followUserDto: FollowUserDto): Promise<User> {
+  //   const { userId, userToFollowId } = followUserDto;
+  //   console.log({ userId, userToFollowId });
+  //   return this.userModel
+  //     .findByIdAndUpdate(
+  //       userId,
+  //       { $addToSet: { following: userToFollowId } },
+  //       { new: true },
+  //     )
+  //     .exec();
+  // }
 
-  async unfollowUser(unfollowUserDto: FollowUserDto): Promise<User> {
-    const { userId, userToFollowId: userToUnfollowId } = unfollowUserDto;
-    const user = await this.userModel.findByIdAndUpdate(
-      userId,
-      {
-        $pull: { following: userToUnfollowId },
-      },
-      { new: true },
-    );
+  // async unfollowUser(unfollowUserDto: FollowUserDto): Promise<User> {
+  //   const { userId, userToFollowId: userToUnfollowId } = unfollowUserDto;
+  //   const user = await this.userModel.findByIdAndUpdate(
+  //     userId,
+  //     {
+  //       $pull: { following: userToUnfollowId },
+  //     },
+  //     { new: true },
+  //   );
 
-    if (!user) {
-      throw new Error('User not found.');
-    }
+  //   if (!user) {
+  //     throw new Error('User not found.');
+  //   }
 
-    // Optional: You can perform additional validation or checks here
+  //   // Optional: You can perform additional validation or checks here
 
-    return user;
-  }
+  //   return user;
+  // }
 }

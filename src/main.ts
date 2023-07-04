@@ -4,9 +4,7 @@ import { AppModule } from './app.module';
 import { PORT } from './config';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, {
-    logger: LOGS_LEVEL(),
-  });
+  const app = await NestFactory.create(AppModule);
   
   app.enableCors();
   app.useGlobalPipes(new ValidationPipe());
@@ -22,7 +20,3 @@ async function bootstrap() {
 }
 
 bootstrap();
-function LOGS_LEVEL(): false | import("@nestjs/common").LoggerService | import("@nestjs/common").LogLevel[] {
-  throw new Error('Function not implemented.');
-}
-

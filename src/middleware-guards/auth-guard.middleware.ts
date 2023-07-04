@@ -1,6 +1,6 @@
 import { CanActivate, ExecutionContext, Injectable, Logger } from "@nestjs/common";
 import { IDataServices } from "src/core/abstracts";
-import { USER_SIGNUP_STATUS_TYPE, VERIFICATION_VALUE_TYPE } from "src/lib/constants";
+// import { USER_SIGNUP_STATUS_TYPE, VERIFICATION_VALUE_TYPE } from "src/lib/constants";
 import jwtLib from "src/lib/jwtLib";
 import { DoesNotExistsException, UnAuthorizedException } from "src/lib/exceptions";
 import { ADMIN_CYPHER_SECRET } from "src/config";
@@ -22,9 +22,9 @@ export class StrictAuthGuard implements CanActivate {
 
       const decoded = await jwtLib.jwtVerify(token);
       if (!decoded) throw new UnAuthorizedException("Unauthorized")
-      if (decoded.authStatus !== USER_SIGNUP_STATUS_TYPE.COMPLETED) throw new UnAuthorizedException('Unauthorized. Please verify account')
-      if (decoded.emailVerified === VERIFICATION_VALUE_TYPE.FALSE) throw new UnAuthorizedException('Unauthorized. Please verify email')
-      if (decoded.phoneVerified === VERIFICATION_VALUE_TYPE.FALSE) throw new UnAuthorizedException('Unauthorized. Please verify phone')
+      // if (decoded.authStatus !== USER_SIGNUP_STATUS_TYPE.COMPLETED) throw new UnAuthorizedException('Unauthorized. Please verify account')
+      // if (decoded.emailVerified === VERIFICATION_VALUE_TYPE.FALSE) throw new UnAuthorizedException('Unauthorized. Please verify email')
+      // if (decoded.phoneVerified === VERIFICATION_VALUE_TYPE.FALSE) throw new UnAuthorizedException('Unauthorized. Please verify phone')
 
       const user = await this.dataServices.users.findOne({ _id: decoded._id })
       if (!user) throw new DoesNotExistsException('user does not exists')
