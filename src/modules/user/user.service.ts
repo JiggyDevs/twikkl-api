@@ -1,126 +1,178 @@
-import { Injectable } from '@nestjs/common';
-import * as bcrypt from 'bcrypt';
+import { HttpException, HttpStatus, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { PaginationDto } from './dto/pagination.dto';
-import { InjectModel } from '@nestjs/mongoose';
 import { User, UserDocument } from './schemas/user.schema';
-import { Model } from 'mongoose';
-import { FollowUserDto } from './dto/follow-user.dto';
+// import { FollowUserDto } from './dto/follow-user.dto';
+import { IDataServices } from 'src/core/abstracts';
+import { hash } from 'src/lib/utils'
+import { OptionalQuery } from 'src/core/types/database';
+import { AlreadyExistsException } from 'src/lib/exceptions';
+import { UserFactoryService } from './user-factory.service';
+import { IGetAllUsers } from './user.type';
 
 @Injectable()
 export class UserService {
-  constructor(@InjectModel(User.name) private userModel: Model<User>) {}
+  constructor(
+    private data: IDataServices,
+    private userFactory: UserFactoryService
+    ) 
+    {}
+
+  cleanUserQuery(data: IGetAllUsers) {
+    let key = {}
+
+    if (data._id) key['_id'] = data._id
+    if (data.email) key['email'] = data.email
+    if (data.following) key['following'] = data.following
+    if (data.groups) key['groups'] = data.groups
+    if (data.page) key['page'] = data.page
+    if (data.perpage) key['perpage'] = data.perpage
+    if (data.sort) key['sort'] = data.sort
+    if (data.username) key['username'] = data.username
+
+    return key
+  }  
 
   async create(createUserDto: CreateUserDto): Promise<UserDocument> {
-    const salt = await bcrypt.genSalt();
-    const hashPassword = await bcrypt.hash(createUserDto.password, salt);
-    createUserDto.password = hashPassword;
-    const createdUser = new this.userModel(createUserDto);
-    return await createdUser.save();
+    try {
+      const { email, password, username } = createUserDto
+
+      const user = await this.data.users.findOne({ email })
+      if (user) {
+        throw new AlreadyExistsException('User with that email already exists!')
+      }
+
+      const hashedPassword = await hash(password)
+      const userPayload: OptionalQuery<User> = {
+        email,
+        password: hashedPassword,
+        username
+      }
+
+      const userFactory = this.userFactory.create(userPayload)
+      const data = await this.data.users.create(userFactory)
+
+      return data
+    } catch (error) {
+      Logger.error(error)
+      if (error.name === 'TypeError') throw new HttpException(error.message, 500)
+      throw error
+    }
   }
 
-  async findAll(
-    pagination: PaginationDto
-  ): Promise<{ data: UserDocument[]; total: number }> {
-    const { page, limit = 1 } = pagination;
-    const skip = page ? (page - 1) * limit : 0;
-    const total = await this.userModel.countDocuments();
-    const users = await this.userModel.find().skip(skip).limit(limit);
-    return { data: users, total };
+  async findAll(payload: IGetAllUsers) {
+    const filterQuery = this.cleanUserQuery(payload)
+    const { data, pagination } = await this.data.users.findAllWithPagination(filterQuery)
+    return {
+      data,
+      pagination
+    }
   }
 
   async findOne(id: string): Promise<UserDocument> {
     try {
-      const user = await this.userModel.findById(id);
+      const user = await this.data.users.findOne({ _id: id })
       if (!user) {
-        throw new Error('User not found');
+        throw new NotFoundException('User not found!')
       }
-      return user.toObject();
-    } catch (err) {
-      throw new Error('User not found');
+
+      return user
+    } catch (error) {
+      Logger.error(error)
+      if (error.name === 'TypeError') throw new HttpException(error.message, 500)
+      throw error
     }
   }
 
   async findOneByUsername(username: string): Promise<UserDocument> {
-    const user = await this.userModel.findOne({ username });
-    if (!user) {
-      throw new Error('User not found');
+    try {
+      const user = await this.data.users.findOne({ username })
+      if (!user) {
+        throw new NotFoundException('User not found!')
+      }
+
+      return user
+    } catch (error) {
+      Logger.error(error)
+      if (error.name === 'TypeError') throw new HttpException(error.message, 500)
+      throw error
     }
-    return user;
   }
 
   async findOneByEmail(email: string): Promise<UserDocument> {
-    const user = await this.userModel.findOne({ email });
-    if (!user) {
-      throw new Error('User not found');
-    }
-    return user;
-  }
-
-  async isEmailOrUsernameTaken(
-    email: string,
-    username: string,
-  ): Promise<string | null> {
-    // const userExists = await this.userModel.exists({
-    //   $or: [{ email }, { username }],
-    // });
-
-    const existingUser = await this.userModel.findOne(
-      {
-        $or: [{ email }, { username }],
-      },
-      { _id: 0, email: 1, username: 1 },
-    );
-    console.log({ existingUser });
-    if (existingUser) {
-      if (existingUser.email === email) {
-        return 'Email already exists';
+    try {
+      const user = await this.data.users.findOne({ email })
+      if (!user) {
+        throw new NotFoundException('User not found!')
       }
-      if (existingUser.username === username) {
-        return 'Username is already taken';
-      }
+      return user
+    } catch (error) {
+      Logger.error(error)
+      if (error.name === 'TypeError') throw new HttpException(error.message, 500)
+      throw error
     }
-
-    return null;
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
-  }
+  // async isEmailOrUsernameTaken(
+  //   email: string,
+  //   username: string,
+  // ): Promise<string | null> {
 
-  remove(id: number) {
-    return `This action removes a #${id} user`;
-  }
+  //   const existingUser = await this.userModel.findOne(
+  //     {
+  //       $or: [{ email }, { username }],
+  //     },
+  //     { _id: 0, email: 1, username: 1 },
+  //   );
+  //   console.log({ existingUser });
+  //   if (existingUser) {
+  //     if (existingUser.email === email) {
+  //       return 'Email already exists';
+  //     }
+  //     if (existingUser.username === username) {
+  //       return 'Username is already taken';
+  //     }
+  //   }
 
-  async followUser(followUserDto: FollowUserDto): Promise<User> {
-    const { userId, userToFollowId } = followUserDto;
-    console.log({ userId, userToFollowId });
-    return this.userModel
-      .findByIdAndUpdate(
-        userId,
-        { $addToSet: { following: userToFollowId } },
-        { new: true },
-      )
-      .exec();
-  }
+  //   return null;
+  // }
 
-  async unfollowUser(unfollowUserDto: FollowUserDto): Promise<User> {
-    const { userId, userToFollowId: userToUnfollowId } = unfollowUserDto;
-    const user = await this.userModel.findByIdAndUpdate(
-      userId,
-      {
-        $pull: { following: userToUnfollowId },
-      },
-      { new: true },
-    );
+  // update(id: number, updateUserDto: UpdateUserDto) {
+  //   return `This action updates a #${id} user`;
+  // }
 
-    if (!user) {
-      throw new Error('User not found.');
-    }
+  // remove(id: number) {
+  //   return `This action removes a #${id} user`;
+  // }
 
-    // Optional: You can perform additional validation or checks here
+  // async followUser(followUserDto: FollowUserDto): Promise<User> {
+  //   const { userId, userToFollowId } = followUserDto;
+  //   console.log({ userId, userToFollowId });
+  //   return this.userModel
+  //     .findByIdAndUpdate(
+  //       userId,
+  //       { $addToSet: { following: userToFollowId } },
+  //       { new: true },
+  //     )
+  //     .exec();
+  // }
 
-    return user;
-  }
+  // async unfollowUser(unfollowUserDto: FollowUserDto): Promise<User> {
+  //   const { userId, userToFollowId: userToUnfollowId } = unfollowUserDto;
+  //   const user = await this.userModel.findByIdAndUpdate(
+  //     userId,
+  //     {
+  //       $pull: { following: userToUnfollowId },
+  //     },
+  //     { new: true },
+  //   );
+
+  //   if (!user) {
+  //     throw new Error('User not found.');
+  //   }
+
+  //   // Optional: You can perform additional validation or checks here
+
+  //   return user;
+  // }
 }

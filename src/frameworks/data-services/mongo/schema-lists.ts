@@ -1,4 +1,5 @@
-import { User, UserSchema } from "./model/user.model";
+// import { User } from "src/core/entities/user.entity";
+import { User, UserSchema } from "src/modules/user/schemas/user.schema";
 
 export const SCHEMA_LIST = [
     {

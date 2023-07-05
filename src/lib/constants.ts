@@ -47,22 +47,13 @@ export enum API_VERSIONS {
 
   export type JWT_USER_PAYLOAD_TYPE = {
     _id?: string
-    firstName?: string
-    lastName?: string
-    email?: string
-    userType:USER_TYPE
-    authStatus?: USER_SIGNUP_STATUS_TYPE
-    lock?: USER_LOCK
-    referralCode?: string
-    deviceToken?: string
-    emailVerified?: string
-    phoneVerified?: string
-    verified?: string
+    username: string
+    email: string
   }
 
   export const JWT_EXPIRY_TIME: number = 5
   export const SIGNUP_CODE_EXPIRY: number = 600
-export const INCOMPLETE_AUTH_TOKEN_VALID_TIME: number = 1
+  export const INCOMPLETE_AUTH_TOKEN_VALID_TIME: number = 1
 
   export enum VERIFICATION_VALUE_TYPE {
     TRUE = 'true',
@@ -88,3 +79,15 @@ export const INCOMPLETE_AUTH_TOKEN_VALID_TIME: number = 1
 
 export const PLATFORM_NAME = 'twikkL'
 export const GITHUB_LINK = 'https://github.com/JiggyDevs/twikkl-api.git'
+
+export enum RedisPrefix {
+  signupEmailCode = 'twikkL/signUpEmailCode',
+  signupPhoneCode = 'twikkL/signUpPhoneCode',
+  passwordResetCount = "twikkL/passwordResetCount",
+  resetCode = "twikkL/resetCode",
+  resetpassword = "twikkL/resetPassword",
+  changeEmailResetCount = "twikkL/changeEmailResetCount",
+  emailResetCode = "twikkL/emailResetCode"
+}
+
+export const RESET_PASSWORD_EXPIRY = 600
