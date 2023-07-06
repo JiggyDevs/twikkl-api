@@ -22,67 +22,67 @@ import { Post as PostModel } from './schemas/post.schema';
 
 @Controller('posts')
 export class PostController {
-  constructor(private readonly postsService: PostService) {}
+  // constructor(private readonly postsService: PostService) {}
 
-  @Post()
-  @UseGuards(AuthGuard)
-  create(@Request() req, @Body() createPostDto: Omit<CreatePostDto, 'author'>) {
-    //TODO: Add check for wrong Data
-    return this.postsService.create({ ...createPostDto, author: req.user.sub });
-  }
-
-  @Get()
+  // @Post()
   // @UseGuards(AuthGuard)
-  findAll(@Query() pagination: PaginationCursorDto) {
-    return this.postsService.findAll(pagination);
-  }
+  // create(@Request() req, @Body() createPostDto: Omit<CreatePostDto, 'author'>) {
+  //   //TODO: Add check for wrong Data
+  //   return this.postsService.create({ ...createPostDto, author: req.user.sub });
+  // }
 
-  @Post('/like/:id')
-  @UseGuards(AuthGuard)
-  likePost(@Param('id', ObjectIdValidationPipe) id: string, @Request() req) {
-    return this.postsService.likePost(id, req.user.sub);
-  }
+  // @Get()
+  // // @UseGuards(AuthGuard)
+  // findAll(@Query() pagination: PaginationCursorDto) {
+  //   return this.postsService.findAll(pagination);
+  // }
 
-  @Post('/repost/:id')
-  @UseGuards(AuthGuard)
-  repostPost(
-    @Param('id', ObjectIdValidationPipe) id: string,
-    @Body() reply: CreatePostDto,
-    @Request() req,
-  ) {
-    return this.postsService.replyPost(id, { ...reply, author: req.user.sub });
-  }
+  // @Post('/like/:id')
+  // @UseGuards(AuthGuard)
+  // likePost(@Param('id', ObjectIdValidationPipe) id: string, @Request() req) {
+  //   return this.postsService.likePost(id, req.user.sub);
+  // }
 
-  @Post('/delete/:id')
-  @UseGuards(AuthGuard)
-  delete(@Param('id', ObjectIdValidationPipe) id: string, @Request() req) {
-    return this.postsService.deletePost(id, req.user.sub);
-  }
+  // @Post('/repost/:id')
+  // @UseGuards(AuthGuard)
+  // repostPost(
+  //   @Param('id', ObjectIdValidationPipe) id: string,
+  //   @Body() reply: CreatePostDto,
+  //   @Request() req,
+  // ) {
+  //   return this.postsService.replyPost(id, { ...reply, author: req.user.sub });
+  // }
 
-  @Get('feed')
-  @UseGuards(AuthGuard)
-  getUserFeed(@Request() req) {
-    return this.postsService.getUserFeed(req.user.sub);
-  }
+  // @Post('/delete/:id')
+  // @UseGuards(AuthGuard)
+  // delete(@Param('id', ObjectIdValidationPipe) id: string, @Request() req) {
+  //   return this.postsService.deletePost(id, req.user.sub);
+  // }
 
-  @Get(':id')
-  @UseGuards(AuthGuard)
-  findOne(@Param('id', ObjectIdValidationPipe) id: string) {
-    return this.postsService.findOne(id);
-  }
+  // @Get('feed')
+  // @UseGuards(AuthGuard)
+  // getUserFeed(@Request() req) {
+  //   return this.postsService.getUserFeed(req.user.sub);
+  // }
 
-  @Patch(':id')
-  @UseGuards(AuthGuard)
-  update(
-    @Param('id', ObjectIdValidationPipe) id: string,
-    @Body() updatePostDto: UpdatePostDto,
-  ) {
-    return this.postsService.update(+id, updatePostDto);
-  }
+  // @Get(':id')
+  // @UseGuards(AuthGuard)
+  // findOne(@Param('id', ObjectIdValidationPipe) id: string) {
+  //   return this.postsService.findOne(id);
+  // }
 
-  @Delete(':id')
-  @UseGuards(AuthGuard)
-  remove(@Param('id', ObjectIdValidationPipe) id: string) {
-    return this.postsService.remove(+id);
-  }
+  // @Patch(':id')
+  // @UseGuards(AuthGuard)
+  // update(
+  //   @Param('id', ObjectIdValidationPipe) id: string,
+  //   @Body() updatePostDto: UpdatePostDto,
+  // ) {
+  //   return this.postsService.update(+id, updatePostDto);
+  // }
+
+  // @Delete(':id')
+  // @UseGuards(AuthGuard)
+  // remove(@Param('id', ObjectIdValidationPipe) id: string) {
+  //   return this.postsService.remove(+id);
+  // }
 }

@@ -15,8 +15,8 @@ import { RedisServiceModule } from './frameworks/in-memory-database/redis/redis-
     DataServicesModule,
     AuthModule,
     UserModule,
-    RedisServiceModule
-    // PostsModule,
+    RedisServiceModule,
+    PostsModule,
     // GroupsModule,
     // CategoryModule,
     // CommentModule,

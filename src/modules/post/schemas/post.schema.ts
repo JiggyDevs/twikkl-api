@@ -1,34 +1,52 @@
-import { User } from './../../user/schemas/user.schema';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import mongoose, { HydratedDocument } from 'mongoose';
+import { Types } from 'mongoose';
 
-export type PostDocument = HydratedDocument<Post>;
+export type PostDocument = Post & Document
 
 @Schema()
 export class Post {
   @Prop({ required: true })
-  content: string;
+  contentUrl: string; 
 
   @Prop({ required: true })
-  caption: string;
+  description: string;
 
-  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true })
-  author: string;
+  @Prop({ type: Types.ObjectId, ref: 'User', required: true })
+  creator: string; 
 
-  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Group' })
+  @Prop({ type: Types.ObjectId, ref: 'Group' })
   group: string;
 
-  @Prop([{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }])
+  @Prop([{ type: Types.ObjectId, ref: 'User' }])
   likes: string[];
-
-  // @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Post' })
-  // replyTo: Post;
 
   @Prop({ default: false })
   isDeleted: boolean;
 
   @Prop({ default: false })
   isAdminDeleted: boolean;
+
+  @Prop()
+  createdAt: Date
+  
+  @Prop()
+  updatedAt: Date
 }
 
 export const PostSchema = SchemaFactory.createForClass(Post);
+PostSchema.index(
+  {
+    contentUrl: 'text',
+    description: 'text',
+    creator: 'text',
+    _id: 'text'
+  },
+  {
+    weights: {
+      contentUrl: 5,
+      description: 3,
+      creator: 3,
+      _id: 1
+    }
+  }
+)
