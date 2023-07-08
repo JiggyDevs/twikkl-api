@@ -7,6 +7,7 @@ import { User, UserSchema } from '../user/schemas/user.schema';
 import { PostFactoryService } from './post-factory-service.service';
 import { DataServicesModule } from '../mongoDb/data-services.module';
 import { DiscordServicesModule } from 'src/frameworks/notification-services/discord/discord-service.module';
+import { LikesFactoryService } from './likes-factory-service.service';
 
 @Module({
   imports: [
@@ -15,8 +16,8 @@ import { DiscordServicesModule } from 'src/frameworks/notification-services/disc
     DiscordServicesModule
   ],
   controllers: [PostController],
-  providers: [PostService, PostFactoryService],
-  exports: [PostService, PostFactoryService]
+  providers: [PostService, PostFactoryService, LikesFactoryService],
+  exports: [PostService, PostFactoryService, LikesFactoryService]
 })
 
 export class PostsModule {}

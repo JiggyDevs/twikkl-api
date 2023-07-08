@@ -8,3 +8,8 @@ export type PaginationType = {
   sort: string
   q: string;
 }
+
+export type DateType = {
+  to: string
+  from: string
+}

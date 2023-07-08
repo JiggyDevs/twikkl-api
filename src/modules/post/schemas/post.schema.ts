@@ -17,8 +17,8 @@ export class Post {
   @Prop({ type: Types.ObjectId, ref: 'Group' })
   group: string;
 
-  @Prop([{ type: Types.ObjectId, ref: 'User' }])
-  likes: string[];
+  // @Prop([{ type: Types.ObjectId, ref: 'User' }])
+  // likes: string[];
 
   @Prop({ default: false })
   isDeleted: boolean;

@@ -1,24 +1,208 @@
-import { Injectable } from '@nestjs/common';
-import { CreatePostDto } from './dto/create-post.dto';
-import { UpdatePostDto } from './dto/update-post.dto';
-import { PaginationCursorDto } from './dto/pagination.dto';
-import { GetPostDto } from './dto/get-post.dto';
-import { InjectModel } from '@nestjs/mongoose';
-import { Post } from './schemas/post.schema';
-import { Model } from 'mongoose';
-import { User } from '../user/schemas/user.schema';
+import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
+import { IDataServices } from 'src/core/abstracts';
+import { ICreatePost, IDeletePost, IGetPost, IGetUserPosts, ILikePost } from './post.type';
+import { OptionalQuery } from 'src/core/types/database';
+import { Post } from './entities/post.entity';
+import { PostFactoryService } from './post-factory-service.service';
+import { DoesNotExistsException, ForbiddenRequestException, AlreadyExistsException } from 'src/lib/exceptions';
+import { isEmpty } from 'src/lib/utils';
+import { LikesFactoryService } from './likes-factory-service.service';
+import { Likes } from './entities/likes.entity';
 
 @Injectable()
 export class PostService {
-  // constructor(
-  //   @InjectModel(Post.name) private postModel: Model<Post>,
-  //   @InjectModel(User.name) private userModel: Model<User>,
-  // ) {}
+  constructor(
+    private data: IDataServices,
+    private postFactory: PostFactoryService,
+    private likesFactory: LikesFactoryService
+  ) 
+  {}
 
-  // async create(createPostDto: CreatePostDto) {
-  //   const post = new this.postModel(createPostDto);
-  //   return await post.save();
-  // }
+  cleanGetUserPostsQuery(data: IGetUserPosts) {
+    let key = {}
+
+    if (data._id) key['_id'] = data._id
+    if (data.contentUrl) key['contentUrl'] = data.contentUrl
+    if (data.creator) key['creator'] = data.creator
+    if (data.description) key['description'] = data.description
+    if (data.group) key['group'] = data.group
+    if (data.isAdminDeleted === false || data.isAdminDeleted) key['isAdminDeleted'] = data.isAdminDeleted
+    if (data.isDeleted === false || data.isDeleted) key['isDeleted'] = data.isDeleted
+    if (data.page) key['page'] = data.page
+    if (data.perpage) key['perpage'] = data.perpage
+    if (data.sort) key['sort'] = data.sort
+
+    return key
+  }
+
+  async create(payload: ICreatePost) {
+    try {
+      const { contentUrl, description, userId, groupId } = payload
+
+      const postPayload: OptionalQuery<Post> = {
+        contentUrl,
+        description,
+        creator: userId,
+        group: groupId ? groupId : null,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      }
+
+      const factory = this.postFactory.create(postPayload)
+      const data = await this.data.post.create(factory)
+
+      return {
+        message: 'Post created successfully',
+        data,
+        status: HttpStatus.CREATED
+      }
+
+    } catch (error) {
+      Logger.error(error)
+      if (error.name === 'TypeError') throw new HttpException(error.message, 500)
+      throw error
+    }
+  }
+
+  async getUserFeed(payload: IGetUserPosts) {
+    try {
+      const filterQuery = this.cleanGetUserPostsQuery(payload)
+
+      const { data, pagination } = await this.data.post.findAllWithPagination(filterQuery)
+
+      return {
+        message: 'User Feed retrieved successfully',
+        data,
+        pagination,
+        status: HttpStatus.OK
+      }
+
+    } catch (error) {
+      Logger.error(error)
+      if (error.name === 'TypeError') throw new HttpException(error.message, 500)
+      throw error
+    }
+  }
+
+  async getUserPosts(payload: IGetUserPosts) {
+    try {
+      const filterQuery = this.cleanGetUserPostsQuery(payload)
+
+      const data = await this.data.post.findAllWithPagination(filterQuery)
+
+      return {
+        message: 'User Posts retrieved successfully',
+        data,
+        status: HttpStatus.OK
+      }
+
+    } catch (error) {
+      Logger.error(error)
+      if (error.name === 'TypeError') throw new HttpException(error.message, 500)
+      throw error
+    }
+  }
+
+  async deletePost(payload: IDeletePost) {
+    try {
+      const { postId, userId } = payload
+
+      const post = await this.data.post.findOne({ _id: postId })
+      if (!post) throw new DoesNotExistsException('Post not found')
+
+      if (post.creator !== userId) throw new ForbiddenRequestException('Not permitted to perform this action')
+
+      await this.data.post.update({ _id: post._id }, { $set: { isDeleted: true }})
+
+      return {
+        message: 'Post deleted',
+        status: HttpStatus.OK
+      }
+
+    } catch (error) {
+      Logger.error(error)
+      if (error.name === 'TypeError') throw new HttpException(error.message, 500)
+      throw error
+    }
+  }
+
+  async getPost(payload: IGetPost) {
+    try {
+      const { postId } = payload
+
+      const post = await this.data.post.findOne({ _id: postId })
+      if (!post) throw new DoesNotExistsException('Post not found')
+
+      return {
+        message: 'Post retrieved successfully',
+        data: post,
+        status: HttpStatus.OK
+      }
+
+    } catch (error) {
+      Logger.error(error)
+      if (error.name === 'TypeError') throw new HttpException(error.message, 500)
+      throw error
+    }
+  }
+
+  async likePost(payload: ILikePost) {
+    try {
+      const { postId, userId } = payload
+
+      const post = await this.data.post.findOne({ _id: postId })
+      if (!post) throw new DoesNotExistsException('Post not found')
+
+      const likedPost = await this.data.likes.findOne({ user: userId, post: postId })
+      if (likedPost) throw new AlreadyExistsException('Already liked post')
+
+      const likeFactoryPayload: OptionalQuery<Likes> = {
+        post: postId,
+        user: userId,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      }
+
+      const likeFactory = this.likesFactory.create(likeFactoryPayload)
+      await this.data.likes.create(likeFactory)
+
+      return {
+        message: 'Post liked successfully',
+        data: {},
+        status: HttpStatus.OK
+      }
+
+    } catch (error) {
+      Logger.error(error)
+      if (error.name === 'TypeError') throw new HttpException(error.message, 500)
+      throw error
+    }
+  }
+
+  async unlikePost(payload: ILikePost) {
+    try {
+      const { postId, userId } = payload
+
+      const post = await this.data.post.findOne({ _id: postId })
+      if (!post) throw new DoesNotExistsException('Post not found')
+
+      const likedPost = await this.data.likes.findOne({ user: userId, post: postId })
+      if (!likedPost) throw new DoesNotExistsException('Liked post not found')
+
+      await this.data.likes.delete({ _id: likedPost._id })
+
+      return {
+        message: 'Post unLiked successfully',
+        data: {},
+        status: HttpStatus.OK
+      }
+
+    } catch (error) {
+      Logger.error(error)
+      if (error.name === 'TypeError') throw new HttpException(error.message, 500)
+      throw error
+    }
+  }
 
   // async findAll(pagination: PaginationCursorDto) {
   //   const { cursor, limit = 1 } = pagination;

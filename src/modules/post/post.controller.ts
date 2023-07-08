@@ -1,88 +1,89 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-  UseGuards,
-  Request,
-  Query,
-} from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, Query, Req, Res, UseGuards } from '@nestjs/common';
 import { PostService } from './post.service';
+import { StrictAuthGuard } from 'src/middleware-guards/auth-guard.middleware';
+import { Request, Response } from 'express';
 import { CreatePostDto } from './dto/create-post.dto';
-import { UpdatePostDto } from './dto/update-post.dto';
-import { PaginationCursorDto } from './dto/pagination.dto';
-import { GetPostDto } from './dto/get-post.dto';
-import { AuthGuard } from '../auth/auth.guard';
-import { ObjectIdValidationPipe } from './object-id-validation.pipe';
-import { Post as PostModel } from './schemas/post.schema';
+import { FindPostById, ICreatePost, IDeletePost, IGetPost, IGetUserPosts, ILikePost } from './post.type';
 
 
 @Controller('posts')
 export class PostController {
-  // constructor(private readonly postsService: PostService) {}
+  constructor(
+    private readonly service: PostService
+    ) 
+    {}
 
-  // @Post()
-  // @UseGuards(AuthGuard)
-  // create(@Request() req, @Body() createPostDto: Omit<CreatePostDto, 'author'>) {
-  //   //TODO: Add check for wrong Data
-  //   return this.postsService.create({ ...createPostDto, author: req.user.sub });
-  // }
+    @Post('/')
+    @UseGuards(StrictAuthGuard)
+    async create(@Req() req: Request, @Res() res: Response, @Body() body: CreatePostDto) {
+      const userId = req.user._id
+      const payload: ICreatePost = { ...body, userId }
 
-  // @Get()
-  // // @UseGuards(AuthGuard)
-  // findAll(@Query() pagination: PaginationCursorDto) {
-  //   return this.postsService.findAll(pagination);
-  // }
+      const response = await this.service.create(payload)
+      return res.status(response.status).json(response)
+    }
 
-  // @Post('/like/:id')
-  // @UseGuards(AuthGuard)
-  // likePost(@Param('id', ObjectIdValidationPipe) id: string, @Request() req) {
-  //   return this.postsService.likePost(id, req.user.sub);
-  // }
+    @Get('/feed')
+    @UseGuards(StrictAuthGuard)
+    async getUserFeed(@Res() res: Response, @Query() query: any) {
+      query = { isDeleted: false }
+      const payload: IGetUserPosts = { ...query }
+      const response = await this.service.getUserFeed(payload)
 
-  // @Post('/repost/:id')
-  // @UseGuards(AuthGuard)
-  // repostPost(
-  //   @Param('id', ObjectIdValidationPipe) id: string,
-  //   @Body() reply: CreatePostDto,
-  //   @Request() req,
-  // ) {
-  //   return this.postsService.replyPost(id, { ...reply, author: req.user.sub });
-  // }
+      return res.status(response.status).json(response)
+    }
 
-  // @Post('/delete/:id')
-  // @UseGuards(AuthGuard)
-  // delete(@Param('id', ObjectIdValidationPipe) id: string, @Request() req) {
-  //   return this.postsService.deletePost(id, req.user.sub);
-  // }
+    @Get('/:userId')
+    @UseGuards(StrictAuthGuard)
+    async getUserPosts(@Req() req: Request, @Res() res: Response, @Query() query: any) {
+      const userId = req.user._id
+      query = { creator: userId, isDeleted: false }
+      const payload: IGetUserPosts = { ...query }
 
-  // @Get('feed')
-  // @UseGuards(AuthGuard)
-  // getUserFeed(@Request() req) {
-  //   return this.postsService.getUserFeed(req.user.sub);
-  // }
+      const response = await this.service.getUserPosts(payload)
+      return res.status(response.status).json(response)
+    }
 
-  // @Get(':id')
-  // @UseGuards(AuthGuard)
-  // findOne(@Param('id', ObjectIdValidationPipe) id: string) {
-  //   return this.postsService.findOne(id);
-  // }
+    @Patch('/:postId')
+    @UseGuards(StrictAuthGuard)
+    async deletePost(@Req() req: Request, @Res() res: Response, @Param() param: FindPostById) {
+      const userId = req.user._id
+      const { postId } = param
+      const payload: IDeletePost = { userId, postId }
 
-  // @Patch(':id')
-  // @UseGuards(AuthGuard)
-  // update(
-  //   @Param('id', ObjectIdValidationPipe) id: string,
-  //   @Body() updatePostDto: UpdatePostDto,
-  // ) {
-  //   return this.postsService.update(+id, updatePostDto);
-  // }
+      const response = await this.service.deletePost(payload)
+      return res.status(response.status).json(response)
+    }
 
-  // @Delete(':id')
-  // @UseGuards(AuthGuard)
-  // remove(@Param('id', ObjectIdValidationPipe) id: string) {
-  //   return this.postsService.remove(+id);
-  // }
+    @Get('/post/:postId')
+    @UseGuards(StrictAuthGuard)
+    async getPost(@Res() res: Response, @Param() param: FindPostById) {
+      const { postId } = param
+      const payload: IGetPost = { postId }
+
+      const response = await this.service.getPost(payload)
+      return res.status(response.status).json(response)
+    }
+
+    @Post('/post/like/:postId')
+    @UseGuards(StrictAuthGuard)
+    async likePost(@Req() req: Request, @Res() res: Response, @Param() param: FindPostById) {
+      const userId = req.user._id
+      const { postId } = param
+      const payload: ILikePost = { userId, postId }
+
+      const response = await this.service.likePost(payload)
+      return res.status(response.status).json(response)
+    }
+
+    @Post('/post/unlike/:postId')
+    @UseGuards(StrictAuthGuard)
+    async unlikePost(@Req() req: Request, @Res() res: Response, @Param() param: FindPostById) {
+      const userId = req.user._id
+      const { postId } = param
+      const payload: ILikePost = { userId, postId }
+
+      const response = await this.service.unlikePost(payload)
+      return res.status(response.status).json(response)
+    }
 }

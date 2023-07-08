@@ -12,7 +12,7 @@ export class PostFactoryService {
         if (data.group) post.group = data.group
         if (data.isAdminDeleted === false || data.isAdminDeleted) post.isAdminDeleted = data.isAdminDeleted
         if (data.isDeleted === false || data.isDeleted) post.isDeleted = data.isDeleted
-        if (data.likes) post.likes = data.likes
+        // if (data.likes) post.likes = data.likes
         if (data.createdAt) post.createdAt = data.createdAt
         if (data.updatedAt) post.updatedAt = data.updatedAt
 

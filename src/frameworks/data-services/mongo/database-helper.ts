@@ -67,7 +67,19 @@ const databaseHelper = {
       await session.endSession();
     }
 
-  }
+  },
+
+  // queryDbByDateFilter: (query: { from?: string, to?: string }, dateField: string = 'createdAt') => {
+  //   const to = query.to ? new Date(query.to) : query.to
+  //   const from = query.from ? new Date(query.from) : query.from
+  
+  //   if (to && !from) return { [dateField]: <= to }
+  //   if (!to && from) return { [dateField]: >= from }
+  //   if (to && from) return { [dateField]: from, to }
+  
+  //   return {}
+  
+  // }
 }
 
 export default databaseHelper
