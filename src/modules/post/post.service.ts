@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { IDataServices } from 'src/core/abstracts';
-import { ICreatePost, IDeletePost, IGetPost, IGetUserPosts, ILikePost } from './post.type';
+import { ICreatePost, IDeletePost, IGetLikes, IGetPost, IGetUserPosts, ILikePost } from './post.type';
 import { OptionalQuery } from 'src/core/types/database';
 import { Post } from './entities/post.entity';
 import { PostFactoryService } from './post-factory-service.service';
@@ -130,7 +130,7 @@ export class PostService {
     try {
       const { postId } = payload
 
-      const post = await this.data.post.findOne({ _id: postId })
+      const post = await this.data.post.findOne({ _id: postId, isDeleted: false })
       if (!post) throw new DoesNotExistsException('Post not found')
 
       return {
@@ -194,6 +194,28 @@ export class PostService {
       return {
         message: 'Post unLiked successfully',
         data: {},
+        status: HttpStatus.OK
+      }
+
+    } catch (error) {
+      Logger.error(error)
+      if (error.name === 'TypeError') throw new HttpException(error.message, 500)
+      throw error
+    }
+  }
+
+  async getLikes(payload: IGetLikes) {
+    try {
+      const { postId } = payload
+
+      const post = await this.data.post.findOne({ _id: postId })
+      if (!post) throw new DoesNotExistsException('Post not found')
+
+      const likes = await this.data.likes.find({ post: postId })
+
+      return {
+        message: 'Likes retrieved successfully',
+        data: likes,
         status: HttpStatus.OK
       }
 

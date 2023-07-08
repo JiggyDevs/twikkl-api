@@ -3,7 +3,7 @@ import { PostService } from './post.service';
 import { StrictAuthGuard } from 'src/middleware-guards/auth-guard.middleware';
 import { Request, Response } from 'express';
 import { CreatePostDto } from './dto/create-post.dto';
-import { FindPostById, ICreatePost, IDeletePost, IGetPost, IGetUserPosts, ILikePost } from './post.type';
+import { FindPostById, ICreatePost, IDeletePost, IGetLikes, IGetPost, IGetUserPosts, ILikePost } from './post.type';
 
 
 @Controller('posts')
@@ -84,6 +84,16 @@ export class PostController {
       const payload: ILikePost = { userId, postId }
 
       const response = await this.service.unlikePost(payload)
+      return res.status(response.status).json(response)
+    }
+
+    @Get('post/likes/:postId')
+    @UseGuards(StrictAuthGuard)
+    async getPostLikes(@Res() res: Response, @Param() param: FindPostById) {
+      const { postId } = param
+      const payload: IGetLikes = { postId }
+
+      const response = await this.service.getLikes(payload)
       return res.status(response.status).json(response)
     }
 }

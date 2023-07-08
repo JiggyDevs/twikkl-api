@@ -9,12 +9,15 @@ import { Post } from "src/modules/post/entities/post.entity";
 import { PostDocument } from "src/modules/post/schemas/post.schema";
 import { Likes } from "src/modules/post/entities/likes.entity";
 import { LikesDocument } from "src/modules/post/schemas/likes.schema";
+import { Comment } from "src/modules/comment/entities/comment.entity";
+import { CommentDocument } from "src/modules/comment/schemas/comment.schema";
 
 @Injectable()
 export class MongoDataServices implements IDataServices, OnApplicationBootstrap {
     users: MongoGenericRepository<User>
     post: MongoGenericRepository<Post>
     likes: MongoGenericRepository<Likes>
+    comments: MongoGenericRepository<Comment>
 
     constructor(
         @InjectModel(User.name)
@@ -24,7 +27,10 @@ export class MongoDataServices implements IDataServices, OnApplicationBootstrap 
         private PostRepository: Model<PostDocument>,
 
         @InjectModel(Likes.name)
-        private LikesRepository: Model<LikesDocument>
+        private LikesRepository: Model<LikesDocument>,
+
+        @InjectModel(Comment.name)
+        private CommentsRepository: Model<CommentDocument>
     )
     {}
 
@@ -32,5 +38,6 @@ export class MongoDataServices implements IDataServices, OnApplicationBootstrap 
         this.users = new MongoGenericRepository<User>(this.UserRepository)
         this.post = new MongoGenericRepository<Post>(this.PostRepository)
         this.likes = new MongoGenericRepository<Likes>(this.LikesRepository)
+        this.comments = new MongoGenericRepository<Comment>(this.CommentsRepository)
     }
 }

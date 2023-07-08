@@ -3,18 +3,19 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { CommentService } from './comment.service';
 import { CommentController } from './comment.controller';
 import { Comment, CommentSchema } from './schemas/comment.schema';
-import { User, UserSchema } from '../user/schemas/user.schema';
-import { Post, PostSchema } from '../post/schemas/post.schema';
+import { CommentsFactoryService } from './comments-factory-service.service';
+import { DataServicesModule } from '../mongoDb/data-services.module';
+import { DiscordServicesModule } from 'src/frameworks/notification-services/discord/discord-service.module';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([
-      { name: Comment.name, schema: CommentSchema },
-      { name: User.name, schema: UserSchema },
-      { name: Post.name, schema: PostSchema },
-    ]),
+    MongooseModule.forFeature([{ name: Comment.name, schema: CommentSchema }]),
+    DataServicesModule,
+    DiscordServicesModule
   ],
   controllers: [CommentController],
-  providers: [CommentService],
+  providers: [CommentService, CommentsFactoryService],
+  exports: [CommentsFactoryService, CommentService]
 })
+
 export class CommentModule {}

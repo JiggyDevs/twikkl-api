@@ -32,3 +32,7 @@ export type ILikePost = {
     postId: string
     userId: string
 }
+
+export type IGetLikes = {
+    postId: string
+}

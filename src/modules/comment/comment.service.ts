@@ -1,33 +1,114 @@
-import { Model } from 'mongoose';
-import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
+import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { CreateCommentDto } from './dto/create-comment.dto';
-import { UpdateCommentDto } from './dto/update-comment.dto';
+import { IDataServices } from 'src/core/abstracts';
+import { ICommentOnPost, IDeleteComment, IGetComment, IGetPostComments } from './comment.type';
+import { DoesNotExistsException, ForbiddenRequestException } from 'src/lib/exceptions';
+import { CommentsFactoryService } from './comments-factory-service.service';
+import { OptionalQuery } from 'src/core/types/database';
+import { Comment } from './entities/comment.entity';
 
 @Injectable()
 export class CommentService {
   constructor(
-    @InjectModel('Comment') private readonly commentModel: Model<Comment>,
-  ) {}
+    private data: IDataServices,
+    private commentFactory: CommentsFactoryService
+  ) 
+  {}
 
-  async createComment(createCommentDto: CreateCommentDto): Promise<Comment> {
-    console.log({ createCommentDto });
-    const createdComment = new this.commentModel(createCommentDto);
-    return createdComment.save();
+  async createComment(payload: ICommentOnPost) {
+    try {
+      const { comment, postId, userId } = payload
+
+      const post = await this.data.post.findOne({ _id: postId })
+      if (!post) throw new DoesNotExistsException('Post not found')
+
+      const commentPayload: OptionalQuery<Comment> = {
+        comment,
+        post: postId,
+        user: userId,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      }
+
+      const commentFactory = this.commentFactory.create(commentPayload)
+      const data = await this.data.comments.create(commentFactory)
+
+      return {
+        message: 'Comment created successfully',
+        data,
+        status: HttpStatus.OK
+      }
+
+    } catch (error) {
+      Logger.error(error)
+      if (error.name === 'TypeError') throw new HttpException(error.message, 500)
+      throw error
+    }
   }
 
-  async getCommentsByPostId(postId: string): Promise<Comment[]> {
-    return this.commentModel.find({ post: postId }).exec();
-  }
-  findOne(id: number) {
-    return `This action returns a #${id} comment`;
+  async getPostComments(payload: IGetPostComments) {
+    try {
+      const { postId } = payload
+
+      const post = await this.data.post.findOne({ _id: postId })
+      if (!post) throw new DoesNotExistsException('Post not found')
+
+      const { data, pagination } = await this.data.comments.findAllWithPagination({ post: postId, isDeleted: false })
+
+      return {
+        message: 'Comments retrieved successfully',
+        data,
+        pagination,
+        status: HttpStatus.OK
+      }
+    } catch (error) {
+      Logger.error(error)
+      if (error.name === 'TypeError') throw new HttpException(error.message, 500)
+      throw error
+    }
   }
 
-  update(id: number, updateCommentDto: UpdateCommentDto) {
-    return `This action updates a #${id} comment`;
+  async getComment(payload: IGetComment) {
+    try {
+      const { commentId } = payload
+
+      const comment = await this.data.comments.findOne({ _id: commentId, isDeleted: false })
+      if (!comment) throw new DoesNotExistsException('Comment not found')
+
+      return {
+        message: 'Comment retrieved successfully',
+        data: comment,
+        status: HttpStatus.OK
+      }
+
+    } catch (error) {
+      Logger.error(error)
+      if (error.name === 'TypeError') throw new HttpException(error.message, 500)
+      throw error
+    }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} comment`;
+  async deleteComment(payload: IDeleteComment) {
+    try {
+      const { commentId, userId } = payload
+
+      const comment = await this.data.comments.findOne({ _id: commentId })
+      if (!comment) throw new DoesNotExistsException('Comment not found')
+
+      if (comment.user !== userId) throw new ForbiddenRequestException('Not permitted to perform this action')
+
+      await this.data.comments.update({ _id: comment._id }, { $set: { isDeleted: true }})
+
+      return {
+        message: 'Comment deleted',
+        data: {},
+        status: HttpStatus.OK
+      }
+
+    } catch (error) {
+      Logger.error(error)
+      if (error.name === 'TypeError') throw new HttpException(error.message, 500)
+      throw error
+    }
   }
 }
