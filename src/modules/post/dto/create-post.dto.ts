@@ -1,12 +1,15 @@
-import { IsNotEmpty } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class CreatePostDto {
   @IsNotEmpty()
-  content: string;
+  @IsString()
+  contentUrl: string;
 
   @IsNotEmpty()
-  caption: string;
+  @IsString()
+  description: string;
 
-  @IsNotEmpty()
-  author: string;
+  @IsOptional()
+  @IsString()
+  groupId: string
 }

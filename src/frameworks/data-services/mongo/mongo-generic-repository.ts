@@ -55,9 +55,8 @@ export class MongoGenericRepository<T> implements IGenericRepository<T> {
       return Promise.reject(e);
     }
   }
-  async findAllWithPagination(options: { query?: Record<string, any>, fields?: FilterQuery<T>, populate?: string | string[] }) {
+  async findAllWithPagination(query: any, options?: { fields?: FilterQuery<T>, populate?: string | string[] }) {
     try {
-      const { query, fields } = options
       const perpage = Number(query.perpage) || 10;
       const page = Number(query.page) || 1;
       const dateFrom: any = query.dateFrom || 'Jan 1 1970';
@@ -73,7 +72,7 @@ export class MongoGenericRepository<T> implements IGenericRepository<T> {
       myDateFrom = convertDate(dateFrom);
       myDateTo = convertDate(dateTo);
 
-      const queryObj: any = { ...query, ...fields };
+      const queryObj: any = { ...query, ...options?.fields }
       const excludedFields = ['page', 'perpage', 'dateFrom', 'dateTo', 'search', 'sortBy', 'orderBy'];
       excludedFields.forEach((el) => delete queryObj[el]);
 

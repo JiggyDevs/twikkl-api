@@ -4,7 +4,7 @@ export abstract class IGenericRepository<T> {
     
     abstract find(fields: FilterQuery<T>, options?: { select?: string, isLean?: boolean })
 
-    abstract findAllWithPagination(options: { query?: Record<string, any>, fields?: FilterQuery<T>, populate?: string | string[] })
+    abstract findAllWithPagination(query: any, options?: { fields?: FilterQuery<T>, populate?: string | string[] })
 
     abstract findOne(key: FilterQuery<T>, session?: ClientSession, options?: { select?: string | string[], populate?: string | string[] })
 

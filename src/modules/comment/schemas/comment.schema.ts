@@ -1,26 +1,32 @@
-import mongoose, { HydratedDocument, Types } from 'mongoose';
+import { Types } from 'mongoose';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { User } from '../../user/schemas/user.schema';
 import { Post } from 'src/modules/post/schemas/post.schema';
 
-export type CommentDocument = HydratedDocument<Comment>;
+export type CommentDocument = Comment & Document;
 
 @Schema()
 export class Comment {
   @Prop({ required: true })
-  content: string;
+  comment: string;
 
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })
-  user: User;
+  user: string;
 
   @Prop({ type: Types.ObjectId, ref: 'Post', required: true })
-  post: Post;
+  post: string;
 
   @Prop({ default: false })
   isDeleted: boolean;
 
   @Prop({ default: false })
   isAdminDeleted: boolean;
+
+  @Prop()
+  createdAt: Date
+
+  @Prop()
+  updatedAt: Date
 }
 
 export const CommentSchema = SchemaFactory.createForClass(Comment);
