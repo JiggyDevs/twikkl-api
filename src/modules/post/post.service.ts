@@ -70,9 +70,61 @@ export class PostService {
 
       const { data, pagination } = await this.data.post.findAllWithPagination(filterQuery)
 
+      let returnedData = []
+
+      for (let i = 0; i < data.length; i++) {
+        const postId = data[i]._id.toString()
+        const likes = await this.data.likes.find({ post: postId })
+        const comments = await this.data.comments.find({ post: postId })
+
+        const newData = {
+          ...data[i]._doc,
+          likes,
+          comments
+        }
+
+        returnedData.push(newData)
+      }
+
       return {
         message: 'User Feed retrieved successfully',
-        data,
+        data: returnedData,
+        pagination,
+        status: HttpStatus.OK
+      }
+
+    } catch (error) {
+      Logger.error(error)
+      if (error.name === 'TypeError') throw new HttpException(error.message, 500)
+      throw error
+    }
+  }
+
+  async getUserPosts(payload: IGetUserPosts) {
+    try {
+      const filterQuery = this.cleanGetUserPostsQuery(payload)
+
+      const { data, pagination } = await this.data.post.findAllWithPagination(filterQuery)
+
+      let returnedData = []
+
+      for (let i = 0; i < data.length; i++) {
+        const postId = data[i]._id.toString()
+        const likes = await this.data.likes.find({ post: postId })
+        const comments = await this.data.comments.find({ post: postId })
+
+        const newData = {
+          ...data[i]._doc,
+          likes,
+          comments
+        }
+
+        returnedData.push(newData)
+      }
+
+      return {
+        message: 'User Posts retrieved successfully',
+        data: returnedData,
         pagination,
         status: HttpStatus.OK
       }
@@ -94,25 +146,6 @@ export class PostService {
         message: 'User Feed retrieved successfully',
         data,
         pagination,
-        status: HttpStatus.OK
-      }
-
-    } catch (error) {
-      Logger.error(error)
-      if (error.name === 'TypeError') throw new HttpException(error.message, 500)
-      throw error
-    }
-  }
-
-  async getUserPosts(payload: IGetUserPosts) {
-    try {
-      const filterQuery = this.cleanGetUserPostsQuery(payload)
-
-      const data = await this.data.post.findAllWithPagination(filterQuery)
-
-      return {
-        message: 'User Posts retrieved successfully',
-        data,
         status: HttpStatus.OK
       }
 
