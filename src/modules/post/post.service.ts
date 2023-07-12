@@ -70,9 +70,25 @@ export class PostService {
 
       const { data, pagination } = await this.data.post.findAllWithPagination(filterQuery)
 
+      let returnedData = []
+
+      for (let i = 0; i < data.length; i++) {
+        const postId = data[i]._id.toString()
+        const likes = await this.data.likes.find({ post: postId })
+        const comments = await this.data.comments.find({ post: postId })
+
+        const newData = {
+          ...data[i]._doc,
+          likes,
+          comments
+        }
+
+        returnedData.push(newData)
+      }
+
       return {
         message: 'User Feed retrieved successfully',
-        data,
+        data: returnedData,
         pagination,
         status: HttpStatus.OK
       }
@@ -88,11 +104,28 @@ export class PostService {
     try {
       const filterQuery = this.cleanGetUserPostsQuery(payload)
 
-      const data = await this.data.post.findAllWithPagination(filterQuery)
+      const { data, pagination } = await this.data.post.findAllWithPagination(filterQuery)
+
+      let returnedData = []
+
+      for (let i = 0; i < data.length; i++) {
+        const postId = data[i]._id.toString()
+        const likes = await this.data.likes.find({ post: postId })
+        const comments = await this.data.comments.find({ post: postId })
+
+        const newData = {
+          ...data[i]._doc,
+          likes,
+          comments
+        }
+
+        returnedData.push(newData)
+      }
 
       return {
         message: 'User Posts retrieved successfully',
-        data,
+        data: returnedData,
+        pagination,
         status: HttpStatus.OK
       }
 
