@@ -23,25 +23,45 @@ export class PostController {
       return res.status(response.status).json(response)
     }
 
+    @Get('/')
+    @UseGuards(StrictAuthGuard)
+    async getPosts(
+      @Req() req: Request,
+      @Res() res: Response,
+      @Query() query: any,
+    ) {
+      const userId = req.user._id;
+      query = { isDeleted: false };
+      const payload: IGetUserPosts = { ...query };
+  
+      const response = await this.service.getUserPosts(payload);
+      return res.status(response.status).json(response);
+    }
+  
     @Get('/feed')
     @UseGuards(StrictAuthGuard)
     async getUserFeed(@Res() res: Response, @Query() query: any) {
-      query = { isDeleted: false }
-      const payload: IGetUserPosts = { ...query }
-      const response = await this.service.getUserFeed(payload)
-
-      return res.status(response.status).json(response)
+      query = { isDeleted: false };
+      const payload: IGetUserPosts = { ...query };
+      const response = await this.service.getUserFeed(payload);
+  
+      return res.status(response.status).json(response);
     }
-
-    @Get('/:userId')
+  
+    @Get('user/:userId')
     @UseGuards(StrictAuthGuard)
-    async getUserPosts(@Req() req: Request, @Res() res: Response, @Query() query: any) {
-      const userId = req.user._id
-      query = { creator: userId, isDeleted: false }
-      const payload: IGetUserPosts = { ...query }
-
-      const response = await this.service.getUserPosts(payload)
-      return res.status(response.status).json(response)
+    async getUserPosts(
+      @Req() req: Request,
+      @Res() res: Response,
+      @Query() query: any,
+      @Param('userId') userId: string,
+    ) {
+      // const userId = req.user._id;
+      query = { creator: userId, isDeleted: false };
+      const payload: IGetUserPosts = { ...query };
+  
+      const response = await this.service.getUserPosts(payload);
+      return res.status(response.status).json(response);
     }
 
     @Patch('/:postId')

@@ -124,8 +124,7 @@ export class PostService {
 
       return {
         message: 'User Posts retrieved successfully',
-        data: returnedData,
-        pagination,
+        data,
         status: HttpStatus.OK
       }
 
