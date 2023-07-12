@@ -124,28 +124,7 @@ export class PostService {
 
       return {
         message: 'User Posts retrieved successfully',
-        data: returnedData,
-        pagination,
-        status: HttpStatus.OK
-      }
-
-    } catch (error) {
-      Logger.error(error)
-      if (error.name === 'TypeError') throw new HttpException(error.message, 500)
-      throw error
-    }
-  }
-
-   async getPosts(payload: IGetUserPosts) {
-    try {
-      const filterQuery = this.cleanGetUserPostsQuery(payload)
-
-      const { data, pagination } = await this.data.post.findAllWithPagination(filterQuery)
-
-      return {
-        message: 'User Feed retrieved successfully',
         data,
-        pagination,
         status: HttpStatus.OK
       }
 
