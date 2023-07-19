@@ -8,12 +8,14 @@ import { PostFactoryService } from './post-factory-service.service';
 import { DataServicesModule } from '../mongoDb/data-services.module';
 import { DiscordServicesModule } from 'src/frameworks/notification-services/discord/discord-service.module';
 import { LikesFactoryService } from './likes-factory-service.service';
+import { FileSystemModule } from '../file-system/file-system.module';
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: Post.name, schema: PostSchema }]),
     DataServicesModule,
-    DiscordServicesModule
+    DiscordServicesModule,
+    FileSystemModule
   ],
   controllers: [PostController],
   providers: [PostService, PostFactoryService, LikesFactoryService],
