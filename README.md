@@ -48,13 +48,13 @@ $ yarn run test:cov
 - [*] Implement file streaming
 - [*] Implement file download
 - [*] Implement caching
-- [] Use SIA
+- [*] Use SIA
+- [*] Implement bookmarks (favourites)
 - [] Host the API
 - [] Implement report with contract
 
 ### V2
 
-- [] Implement bookmarks (favourites)
 - [] Implement block
 - [] Implement not interested
 - [] Implement 2FA
