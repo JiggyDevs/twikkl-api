@@ -1,8 +1,10 @@
 import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { IDataServices } from 'src/core/abstracts';
 import {
+  IBookmarkPost,
   ICreatePost,
   IDeletePost,
+  IGetBookmarks,
   IGetLikes,
   IGetPost,
   IGetUserPosts,
@@ -20,6 +22,8 @@ import { isEmpty } from 'src/lib/utils';
 import { LikesFactoryService } from './likes-factory-service.service';
 import { Likes } from './entities/likes.entity';
 import { FileSystemService } from '../file-system/file-system.service';
+import { BookmarkedPost } from './entities/bookmarked-post.entity';
+import { BookmarkedPostFactoryService } from './bookmarked-post-factory.service';
 
 @Injectable()
 export class PostService {
@@ -27,6 +31,7 @@ export class PostService {
     private data: IDataServices,
     private postFactory: PostFactoryService,
     private likesFactory: LikesFactoryService,
+    private bookmarkedPostFactory: BookmarkedPostFactoryService,
     private fileSystemService: FileSystemService,
   ) {}
 
@@ -270,6 +275,74 @@ export class PostService {
     }
   }
 
+  async bookmarkPost(payload: IBookmarkPost) {
+    try {
+      const { postId, userId } = payload;
+
+      const post = await this.data.post.findOne({ _id: postId });
+      if (!post) throw new DoesNotExistsException('Post not found');
+
+      const bookmarkedPost = await this.data.bookmarkedPosts.findOne({
+        user: userId,
+        post: postId,
+      });
+      if (bookmarkedPost)
+        throw new AlreadyExistsException('Already bookmarked post');
+
+      const bookmarkedPostFactoryPayload: OptionalQuery<BookmarkedPost> = {
+        post: postId,
+        user: userId,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      const bookmarkedPostFactory = this.bookmarkedPostFactory.create(
+        bookmarkedPostFactoryPayload,
+      );
+      await this.data.bookmarkedPosts.create(bookmarkedPostFactory);
+
+      return {
+        message: 'Post bookmarked successfully',
+        data: {},
+        status: HttpStatus.OK,
+      };
+    } catch (error) {
+      Logger.error(error);
+      if (error.name === 'TypeError')
+        throw new HttpException(error.message, 500);
+      throw error;
+    }
+  }
+
+  async removeBookmarkedPost(payload: IBookmarkPost) {
+    try {
+      const { postId, userId } = payload;
+
+      const post = await this.data.post.findOne({ _id: postId });
+      if (!post) throw new DoesNotExistsException('Post not found');
+
+      const bookmarkedPost = await this.data.bookmarkedPosts.findOne({
+        user: userId,
+        post: postId,
+      });
+      if (!bookmarkedPost)
+        throw new DoesNotExistsException('Bookmarked post not found');
+
+      await this.data.bookmarkedPosts.delete({ _id: bookmarkedPost._id });
+
+      return {
+        message: 'Bookmark deleted successfully',
+        data: {},
+        status: HttpStatus.OK,
+      };
+    } catch (error) {
+      Logger.error(error);
+      if (error.name === 'TypeError')
+        throw new HttpException(error.message, 500);
+      throw error;
+    }
+  }
+
   async getLikes(payload: IGetLikes) {
     try {
       const { postId } = payload;
@@ -282,6 +355,25 @@ export class PostService {
       return {
         message: 'Likes retrieved successfully',
         data: likes,
+        status: HttpStatus.OK,
+      };
+    } catch (error) {
+      Logger.error(error);
+      if (error.name === 'TypeError')
+        throw new HttpException(error.message, 500);
+      throw error;
+    }
+  }
+
+  async getBookmarkedPosts(payload: IGetBookmarks) {
+    try {
+      const { userId } = payload;
+
+      const bookmarks = await this.data.bookmarkedPosts.find({ user: userId });
+
+      return {
+        message: 'Likes retrieved successfully',
+        data: bookmarks,
         status: HttpStatus.OK,
       };
     } catch (error) {
