@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
-import { STORAGE_KEY, STORAGE_URL } from "src/config";
+import { STORAGE_KEY, STORAGE_URL } from 'src/config';
 
 @Injectable()
 export class FileSystemService {
@@ -10,7 +10,6 @@ export class FileSystemService {
   constructor(private readonly httpService: HttpService) {
     this.storageUrl = STORAGE_URL;
     this.authToken = STORAGE_KEY;
-    
   }
 
   private bufferToBlob(buffer: Buffer): Blob {
@@ -18,10 +17,17 @@ export class FileSystemService {
     return new Blob([buffer]);
   }
 
-  async uploadFile(file: Express.Multer.File): Promise<string> {
+  async uploadFile(file: Express.Multer.File): Promise<{
+    url: string;
+    id: string;
+  }> {
     try {
       const formData = new FormData();
-      formData.append('file', this.bufferToBlob(file.buffer), file.originalname);
+      formData.append(
+        'file',
+        this.bufferToBlob(file.buffer),
+        file.originalname,
+      );
 
       const headers = {
         Authorization: `Bearer ${this.authToken}`,
@@ -29,12 +35,15 @@ export class FileSystemService {
       };
       const url = `${this.storageUrl}/s5/upload?auth_token=${this.authToken}`;
       const response = await this.httpService.axiosRef.post<{
-        cid: string
+        cid: string;
       }>(url, formData, {
         headers,
       });
 
-      return response?.data?.cid ?? ""; // Assuming the response contains the URL of the uploaded file
+      return {
+        url: `${this.storageUrl}/s5/blob/${response?.data?.cid}`,
+        id: response?.data?.cid ?? '',
+      };
     } catch (error) {
       throw new Error('Failed to upload file to storage.' + error);
     }
@@ -55,4 +64,3 @@ export class FileSystemService {
     }
   }
 }
-
