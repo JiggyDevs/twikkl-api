@@ -3,6 +3,7 @@ import { CreatePostDto } from "./dto/create-post.dto";
 
 export type ICreatePost = CreatePostDto & {
     userId: string
+    file: any
 }
 
 export type IGetUserPosts = PaginationType & {

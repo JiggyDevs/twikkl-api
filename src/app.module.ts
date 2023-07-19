@@ -9,6 +9,7 @@ import { CommentModule } from './modules/comment/comment.module';
 import { WalletModule } from './modules/wallet/wallet.module';
 import { RedisServiceModule } from './frameworks/in-memory-database/redis/redis-service.module';
 import { JWT_USER_PAYLOAD_TYPE } from './lib/constants';
+import { FileSystemModule } from './modules/file-system/file-system.module';
 
 
 declare global {
@@ -27,7 +28,8 @@ declare global {
     RedisServiceModule,
     PostsModule,
     CommentModule,
-    WalletModule
+    WalletModule,
+    FileSystemModule
     // GroupsModule,
     // CategoryModule
   ],

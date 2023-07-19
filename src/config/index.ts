@@ -29,3 +29,5 @@ export const REDIS_CLIENT_NAME = getEnv('REDIS_CLIENT_NAME')
 export const REDIS_HOST = getEnv('REDIS_HOST')
 export const REDIS_PASSWORD = getEnv('REDIS_PASSWORD')
 export const REDIS_PORT = getEnv('REDIS_PORT')
+export const STORAGE_URL = getEnv('STORAGE_URL')!
+export const STORAGE_KEY = getEnv('STORAGE_KEY')!
