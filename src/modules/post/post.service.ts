@@ -372,7 +372,7 @@ export class PostService {
       const bookmarks = await this.data.bookmarkedPosts.find({ user: userId });
 
       return {
-        message: 'Likes retrieved successfully',
+        message: 'Bookmarks retrieved successfully',
         data: bookmarks,
         status: HttpStatus.OK,
       };

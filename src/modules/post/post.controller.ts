@@ -105,6 +105,21 @@ export class PostController {
     return res.status(response.status).json(response);
   }
 
+  @Get('/post/bookmarks')
+  @UseGuards(StrictAuthGuard)
+  async getBookmarks(
+    @Req() req: Request,
+    @Res() res: Response,
+    @Param() param: FindPostById,
+  ) {
+    const userId = req.user._id;
+    const payload: IGetBookmarks = { userId };
+
+    const response = await this.service.getBookmarkedPosts(payload);
+    return res.status(response.status).json(response);
+  }
+
+  
   @Get('/post/:postId')
   @UseGuards(StrictAuthGuard)
   async getPost(@Res() res: Response, @Param() param: FindPostById) {
@@ -152,20 +167,6 @@ export class PostController {
     const payload: IGetLikes = { postId };
 
     const response = await this.service.getLikes(payload);
-    return res.status(response.status).json(response);
-  }
-
-  @Get('/post/bookmarks')
-  @UseGuards(StrictAuthGuard)
-  async getBookmarks(
-    @Req() req: Request,
-    @Res() res: Response,
-    @Param() param: FindPostById,
-  ) {
-    const userId = req.user._id;
-    const payload: IGetBookmarks = { userId };
-
-    const response = await this.service.getBookmarkedPosts(payload);
     return res.status(response.status).json(response);
   }
 
