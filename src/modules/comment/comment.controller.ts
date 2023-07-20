@@ -35,7 +35,7 @@ export class CommentController {
   }
 
   @Get('/comment/:commentId')
-  @UseGuards()
+  @UseGuards(StrictAuthGuard)
   async getComment(@Res() res: Response, @Param() param: FindCommentById) {
     const { commentId } = param
     const payload: IGetComment = { commentId }

@@ -17,13 +17,14 @@ import { UpdateGroupDto } from './dto/update-group.dto';
 import { AuthGuard } from '../auth/auth.guard';
 import { JoinGroupDto } from './dto/join-group.dto';
 import { LeaveGroupDto } from './dto/leave-group.dto';
+import { StrictAuthGuard } from 'src/middleware-guards/auth-guard.middleware';
 
 @Controller('groups')
 export class GroupController {
   constructor(private readonly groupService: GroupService) {}
 
   @Post()
-  @UseGuards(AuthGuard)
+  @UseGuards(StrictAuthGuard)
   create(
     @Request() req,
     @Body() createGroupDto: Omit<CreateGroupDto, 'createdBy'>,
@@ -35,12 +36,14 @@ export class GroupController {
   }
 
   @Get()
+  @UseGuards(StrictAuthGuard)
   findAll(@Query('ids') ids?: string) {
     const idArray = ids?.split(',') ?? [];
     return this.groupService.find(ids);
   }
 
   @Get(':id')
+  @UseGuards(StrictAuthGuard)
   findOne(@Param('id', ParseIntPipe) id: string) {
     return this.groupService.find(id);
   }
@@ -55,16 +58,19 @@ export class GroupController {
   // }
 
   @Post('/join')
+  @UseGuards(StrictAuthGuard)
   async joinGroup(@Body() joinGroupDto: JoinGroupDto) {
     return this.groupService.joinGroup(joinGroupDto);
   }
 
   @Post('/leave')
+  @UseGuards(StrictAuthGuard)
   async leaveGroup(@Body() leaveGroupDto: LeaveGroupDto) {
     return this.groupService.leaveGroup(leaveGroupDto);
   }
 
   @Patch(':id')
+  @UseGuards(StrictAuthGuard)
   update(
     @Param('id', ParseIntPipe) id: string,
     @Body() updateGroupDto: UpdateGroupDto,
@@ -82,6 +88,7 @@ export class GroupController {
   // }
 
   @Delete(':id')
+  @UseGuards(StrictAuthGuard)
   remove(@Param('id', ParseIntPipe) id: string) {
     return this.groupService.remove(id);
   }

@@ -20,6 +20,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 // import { PaginationDto } from './dto/pagination.dto';
 import { AuthGuard } from '../auth/auth.guard';
+import { StrictAuthGuard } from 'src/middleware-guards/auth-guard.middleware';
 // import { GetUserDto } from './dto/get-user.dto';
 // import { UserInterceptor } from './interceptor/user.interceptor';
 
@@ -34,18 +35,20 @@ export class UserController {
   }
 
   @Get('/')
+  @UseGuards(StrictAuthGuard)
   findAll(@Query() query: any) {
     const payload = { ...query }
     return this.userService.findAll(payload)
   }
 
   @Get('/profile')
-  @UseGuards(AuthGuard)
+  @UseGuards(StrictAuthGuard)
   async findUserProfile(@Request() req)
   // : Promise<GetUserDto> 
   {
     try {
-      const user = await this.userService.findOne(req.user.sub);
+      const userId = req.user._id;
+      const user = await this.userService.findOne(userId);
       if (!user) {
         throw new HttpException('Could not find user', HttpStatus.NOT_FOUND);
       }
@@ -56,6 +59,7 @@ export class UserController {
   }
 
   @Get('/:id')
+  @UseGuards(StrictAuthGuard)
   async findOne(@Param('id') id: string)
   // : Promise<GetUserDto> 
   {
