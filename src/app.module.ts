@@ -6,8 +6,10 @@ import { AuthModule } from './modules/auth/auth.module';
 import { PostsModule } from './modules/post/post.module';
 import { UserModule } from './modules/user/user.module';
 import { CommentModule } from './modules/comment/comment.module';
+import { WalletModule } from './modules/wallet/wallet.module';
 import { RedisServiceModule } from './frameworks/in-memory-database/redis/redis-service.module';
 import { JWT_USER_PAYLOAD_TYPE } from './lib/constants';
+import { FileSystemModule } from './modules/file-system/file-system.module';
 
 
 declare global {
@@ -25,7 +27,9 @@ declare global {
     UserModule,
     RedisServiceModule,
     PostsModule,
-    CommentModule
+    CommentModule,
+    WalletModule,
+    FileSystemModule
     // GroupsModule,
     // CategoryModule
   ],

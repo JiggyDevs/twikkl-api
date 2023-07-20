@@ -8,13 +8,16 @@ import { DoesNotExistsException, ForbiddenRequestException, AlreadyExistsExcepti
 import { isEmpty } from 'src/lib/utils';
 import { LikesFactoryService } from './likes-factory-service.service';
 import { Likes } from './entities/likes.entity';
+import { FileSystemService } from '../file-system/file-system.service';
 
 @Injectable()
 export class PostService {
   constructor(
     private data: IDataServices,
     private postFactory: PostFactoryService,
-    private likesFactory: LikesFactoryService
+    private likesFactory: LikesFactoryService,
+    private fileSystemService: FileSystemService
+
   ) 
   {}
 
@@ -36,11 +39,12 @@ export class PostService {
   }
 
   async create(payload: ICreatePost) {
-    try {
-      const { contentUrl, description, userId, groupId } = payload
 
+    try {
+      const { file, description, userId, groupId } = payload
+      const cid = await this.fileSystemService.uploadFile(file)
       const postPayload: OptionalQuery<Post> = {
-        contentUrl,
+        contentUrl: cid,
         description,
         creator: userId,
         group: groupId ? groupId : null,
