@@ -6,12 +6,15 @@ import { DoesNotExistsException, ForbiddenRequestException } from 'src/lib/excep
 import { CommentsFactoryService } from './comments-factory-service.service';
 import { OptionalQuery } from 'src/core/types/database';
 import { Comment } from './entities/comment.entity';
+import { NotificationFactoryService } from '../notifications/notification-factory.service';
+import { Notification } from '../notifications/entities/notification.entity';
 
 @Injectable()
 export class CommentService {
   constructor(
     private data: IDataServices,
-    private commentFactory: CommentsFactoryService
+    private commentFactory: CommentsFactoryService,
+    private notificationFactory: NotificationFactoryService
   ) 
   {}
 
@@ -32,6 +35,17 @@ export class CommentService {
 
       const commentFactory = this.commentFactory.create(commentPayload)
       const data = await this.data.comments.create(commentFactory)
+
+      const notificationPayload: OptionalQuery<Notification> = {
+        title: 'Comment posted',
+        content: 'Commented on TwikkL post',
+        user: userId,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      }
+
+      const notificationFactory = this.notificationFactory.create(notificationPayload)
+      await this.data.notification.create(notificationFactory)
 
       return {
         message: 'Comment created successfully',

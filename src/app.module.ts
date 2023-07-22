@@ -10,6 +10,7 @@ import { WalletModule } from './modules/wallet/wallet.module';
 import { RedisServiceModule } from './frameworks/in-memory-database/redis/redis-service.module';
 import { JWT_USER_PAYLOAD_TYPE } from './lib/constants';
 import { FileSystemModule } from './modules/file-system/file-system.module';
+import { NotificationServiceModule } from './modules/notifications/notification.module';
 
 
 declare global {
@@ -29,7 +30,8 @@ declare global {
     PostsModule,
     CommentModule,
     WalletModule,
-    FileSystemModule
+    FileSystemModule,
+    NotificationServiceModule
     // GroupsModule,
     // CategoryModule
   ],
