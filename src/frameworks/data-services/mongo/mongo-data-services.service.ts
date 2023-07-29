@@ -11,6 +11,8 @@ import { Likes } from "src/modules/post/entities/likes.entity";
 import { LikesDocument } from "src/modules/post/schemas/likes.schema";
 import { Comment } from "src/modules/comment/entities/comment.entity";
 import { CommentDocument } from "src/modules/comment/schemas/comment.schema";
+import { Notification } from "src/modules/notifications/entities/notification.entity";
+import { NotificationDocument } from "src/modules/notifications/schemas/notification.schema";
 
 @Injectable()
 export class MongoDataServices implements IDataServices, OnApplicationBootstrap {
@@ -18,6 +20,7 @@ export class MongoDataServices implements IDataServices, OnApplicationBootstrap 
     post: MongoGenericRepository<Post>
     likes: MongoGenericRepository<Likes>
     comments: MongoGenericRepository<Comment>
+    notification: MongoGenericRepository<Notification>
 
     constructor(
         @InjectModel(User.name)
@@ -30,7 +33,10 @@ export class MongoDataServices implements IDataServices, OnApplicationBootstrap 
         private LikesRepository: Model<LikesDocument>,
 
         @InjectModel(Comment.name)
-        private CommentsRepository: Model<CommentDocument>
+        private CommentsRepository: Model<CommentDocument>,
+
+        @InjectModel(Notification.name)
+        private NotificationRepository: Model<NotificationDocument>
     )
     {}
 
@@ -39,5 +45,6 @@ export class MongoDataServices implements IDataServices, OnApplicationBootstrap 
         this.post = new MongoGenericRepository<Post>(this.PostRepository)
         this.likes = new MongoGenericRepository<Likes>(this.LikesRepository)
         this.comments = new MongoGenericRepository<Comment>(this.CommentsRepository)
+        this.notification = new MongoGenericRepository<Notification>(this.NotificationRepository)
     }
 }

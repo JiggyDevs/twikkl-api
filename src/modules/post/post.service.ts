@@ -5,10 +5,12 @@ import { OptionalQuery } from 'src/core/types/database';
 import { Post } from './entities/post.entity';
 import { PostFactoryService } from './post-factory-service.service';
 import { DoesNotExistsException, ForbiddenRequestException, AlreadyExistsException } from 'src/lib/exceptions';
-import { isEmpty } from 'src/lib/utils';
+// import { isEmpty } from 'src/lib/utils';
 import { LikesFactoryService } from './likes-factory-service.service';
 import { Likes } from './entities/likes.entity';
 import { FileSystemService } from '../file-system/file-system.service';
+import { NotificationFactoryService } from '../notifications/notification-factory.service';
+import { Notification } from '../notifications/entities/notification.entity';
 
 @Injectable()
 export class PostService {
@@ -16,7 +18,8 @@ export class PostService {
     private data: IDataServices,
     private postFactory: PostFactoryService,
     private likesFactory: LikesFactoryService,
-    private fileSystemService: FileSystemService
+    private notificationFactory: NotificationFactoryService
+    // private fileSystemService: FileSystemService
 
   ) 
   {}
@@ -41,10 +44,9 @@ export class PostService {
   async create(payload: ICreatePost) {
 
     try {
-      const { file, description, userId, groupId } = payload
-      const cid = await this.fileSystemService.uploadFile(file)
+      const { contentUrl, description, userId, groupId } = payload
       const postPayload: OptionalQuery<Post> = {
-        contentUrl: cid,
+        contentUrl,
         description,
         creator: userId,
         group: groupId ? groupId : null,
@@ -54,6 +56,17 @@ export class PostService {
 
       const factory = this.postFactory.create(postPayload)
       const data = await this.data.post.create(factory)
+
+      const notificationPayload: OptionalQuery<Notification> = {
+        title: 'Post uploaded',
+        content: 'TwikkL post uploaded successfully',
+        user: data.creator,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      }
+
+      const notificationFactory = this.notificationFactory.create(notificationPayload)
+      await this.data.notification.create(notificationFactory)
 
       return {
         message: 'Post created successfully',
@@ -203,6 +216,17 @@ export class PostService {
       const likeFactory = this.likesFactory.create(likeFactoryPayload)
       await this.data.likes.create(likeFactory)
 
+      const notificationPayload: OptionalQuery<Notification> = {
+        title: 'Post liked',
+        content: 'TwikkL post liked',
+        user: userId,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      }
+
+      const notificationFactory = this.notificationFactory.create(notificationPayload)
+      await this.data.notification.create(notificationFactory)
+
       return {
         message: 'Post liked successfully',
         data: {},
@@ -262,110 +286,4 @@ export class PostService {
       throw error
     }
   }
-
-  // async findAll(pagination: PaginationCursorDto) {
-  //   const { cursor, limit = 1 } = pagination;
-  //   const query = cursor ? { _id: { $lt: cursor } } : {};
-  //   const posts = await this.postModel
-  //     .find(query)
-  //     .sort({ _id: -1 })
-  //     .limit(limit)
-  //     .lean();
-  //   const total = await this.postModel.countDocuments();
-  //   return { data: posts, total, limit };
-  // }
-
-  // async findOne(id: string) {
-  //   const post = await this.postModel.findById(id).lean();
-  //   if (!post) {
-  //     throw new Error('Post not found');
-  //   }
-
-  //   if (post.isDeleted || post.isAdminDeleted) {
-  //     delete post.contentUrl;
-  //     delete post.description;
-  //   }
-  //   return post;
-  // }
-
-  // async getUserFeed(userId: string): Promise<Post[]> {
-  //   const user = await this.userModel.findById(userId).lean();
-  //   console.log({
-  //     user,
-  //     userId,
-  //   });
-  //   const feedPosts = await this.postModel
-  //     .find({
-  //       $or: [
-  //         // { author: userId }, // Include user's own posts
-  //         {
-  //           author: { $in: user.following.map((a) => a.toString()) },
-  //           group: { $exists: false },
-  //         }, // Include followed users' posts
-  //         { group: { $in: user.groups, $exists: true } }, // Include followed users' posts
-  //       ],
-  //     })
-  //     .exec();
-
-  //   return feedPosts;
-  // }
-
-  // // async getUserFeed2(userId: string): Promise<Post[]> {
-  // //   const userPosts = await this.postModel.find({ user: userId }).exec();
-
-  // //   const groupPosts = await this.postModel
-  // //     .find({ groupId: { $ne: null } })
-  // //     .exec();
-
-  // //   const feedPosts = [...userPosts, ...groupPosts];
-
-  // //   return feedPosts;
-  // // }
-
-  // async likePost(id: string, user: string) {
-  //   const post = await this.postModel.findById(id);
-  //   // Remove the user from the likes array if they have already liked the post
-  //   if (post.likes.includes(user)) {
-  //     post.likes = post.likes.filter((like) => like !== user);
-  //   } else {
-  //     post.likes = [...post.likes, user];
-  //   }
-  //   await post.save();
-  //   return post;
-  // }
-
-  // async replyPost(id: string, reply: CreatePostDto) {
-  //   const post = await this.postModel.findById(id);
-  //   if (!post) {
-  //     throw new Error('Post not found');
-  //   }
-  //   const replyPost = new this.postModel({ ...reply, replyTo: id });
-  //   await replyPost.save();
-  //   return replyPost;
-  // }
-
-  // update(id: number, updatePostDto: UpdatePostDto) {
-  //   return `This action updates a #${id} post`;
-  // }
-
-  // async deletePost(id: string, user: string, isAdmin = false) {
-  //   const post = await this.postModel.findById(id);
-  //   if (!post) {
-  //     throw new Error('Post not found');
-  //   }
-  //   if (post.creator.toString() !== user) {
-  //     throw new Error('You are not the author of this post');
-  //   }
-  //   if (isAdmin) {
-  //     post.isAdminDeleted = true;
-  //   } else {
-  //     post.isDeleted = true;
-  //   }
-  //   await post.save();
-  //   return post;
-  // }
-
-  // remove(id: number) {
-  //   return `This action removes a #${id} post`;
-  // }
 }

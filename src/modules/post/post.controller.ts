@@ -1,10 +1,10 @@
-import { Body, Controller, Get, Param, Patch, Post, Query, Req, Res, UseGuards, UseInterceptors, UploadedFile } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, Query, Req, Res, UseGuards } from '@nestjs/common';
 import { PostService } from './post.service';
 import { StrictAuthGuard } from 'src/middleware-guards/auth-guard.middleware';
 import { Request, Response } from 'express';
 import { CreatePostDto } from './dto/create-post.dto';
 import { FindPostById, ICreatePost, IDeletePost, IGetLikes, IGetPost, IGetUserPosts, ILikePost } from './post.type';
-import { FileInterceptor } from '@nestjs/platform-express';
+// import { FileInterceptor } from '@nestjs/platform-express';
 
 
 @Controller('posts')
@@ -15,11 +15,11 @@ export class PostController {
     {}
 
     @Post('/')
-    // @UseGuards(StrictAuthGuard)
-    @UseInterceptors(FileInterceptor('file'))
-    async create(@Req() req: Request, @Res() res: Response, @Body() body: CreatePostDto, @UploadedFile() file: Express.Multer.File) {
-      const userId = "req.user._id"
-      const payload: ICreatePost = { ...body, userId, file }
+    @UseGuards(StrictAuthGuard)
+    // @UseInterceptors(FileInterceptor('file'))
+    async create(@Req() req: Request, @Res() res: Response, @Body() body: CreatePostDto) {
+      const userId = req.user._id
+      const payload: ICreatePost = { ...body, userId }
 
       const response = await this.service.create(payload)
       return res.status(response.status).json(response)

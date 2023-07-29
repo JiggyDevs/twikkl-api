@@ -8,3 +8,7 @@ export type IGetAllUsers = PaginationType & {
     following: string[]
     groups: string[]
 }
+
+export type FindByUserId = {
+    userId: string
+}
