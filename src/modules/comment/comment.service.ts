@@ -8,6 +8,8 @@ import { OptionalQuery } from 'src/core/types/database';
 import { Comment } from './entities/comment.entity';
 import { NotificationFactoryService } from '../notifications/notification-factory.service';
 import { Notification } from '../notifications/entities/notification.entity';
+import { Post } from '../post/entities/post.entity';
+import { User } from '../user/entities/user.entity';
 
 @Injectable()
 export class CommentService {
@@ -22,7 +24,7 @@ export class CommentService {
     try {
       const { comment, postId, userId } = payload
 
-      const post = await this.data.post.findOne({ _id: postId })
+      const post: Post = await this.data.post.findOne({ _id: postId })
       if (!post) throw new DoesNotExistsException('Post not found')
 
       const commentPayload: OptionalQuery<Comment> = {
@@ -36,16 +38,31 @@ export class CommentService {
       const commentFactory = this.commentFactory.create(commentPayload)
       const data = await this.data.comments.create(commentFactory)
 
+      const userDetails: User = await this.data.users.findOne({ _id: userId })
+
       const notificationPayload: OptionalQuery<Notification> = {
         title: 'Comment posted',
         content: 'Commented on TwikkL post',
+        type: 'comments',
         user: userId,
         createdAt: new Date(),
         updatedAt: new Date()
       }
 
+      const commentNotificationPayload: OptionalQuery<Notification> = {
+        title: 'Comment posted',
+        content: `${userDetails.username} commented on your video`,
+        type: 'comments',
+        user: post.creator,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      }
+
       const notificationFactory = this.notificationFactory.create(notificationPayload)
+      const commentNotificationFactory = this.notificationFactory.create(commentNotificationPayload)
+
       await this.data.notification.create(notificationFactory)
+      await this.data.notification.create(commentNotificationFactory)
 
       return {
         message: 'Comment created successfully',

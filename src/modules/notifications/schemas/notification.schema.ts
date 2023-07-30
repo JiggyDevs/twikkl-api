@@ -14,6 +14,9 @@ export class Notification {
   @Prop({ default: false })
   clicked: boolean
 
+  @Prop()
+  type: string
+
   @Prop({ type: Types.ObjectId, ref: 'User' })
   user: string
 
