@@ -37,6 +37,7 @@
     "dotenv": "^16.3.1",
     "ioredis": "^4.28.5",
     "json-web-token": "^3.2.0",
+    "lodash": "^4.17.21",
     "moment": "^2.29.4",
     "mongoose": "^7.3.1",
     "reflect-metadata": "^0.1.13",

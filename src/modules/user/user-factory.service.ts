@@ -12,6 +12,9 @@ export class UserFactoryService {
         if (data.password) user.password = data.password
         if (data.username) user.username = data.username
         if (data.lastLoginDate) user.lastLoginDate = data.lastLoginDate
+        if (data.avatar) user.avatar = data.avatar
+        if (data.bio) user.bio = data.bio
+        if (data.twitter) user.twitter = data.twitter
         if (data.createdAt) user.createdAt = data.createdAt
         if (data.updatedAt) user.updatedAt = data.updatedAt
 
