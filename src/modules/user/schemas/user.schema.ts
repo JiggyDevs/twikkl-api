@@ -24,6 +24,15 @@ export class User {
   lastLoginDate: Date
 
   @Prop()
+  avatar: string
+
+  @Prop()
+  bio: string
+
+  @Prop()
+  twitter: string
+
+  @Prop()
   createdAt: Date
 
   @Prop()

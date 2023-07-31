@@ -1,113 +1,43 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-  UseGuards,
-  HttpException,
-  HttpStatus,
-  Request,
-  ParseIntPipe,
-  Query,
-  // UseInterceptors,
-  // ClassSerializerInterceptor,
-} from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Query, Req, Res, UseGuards } from '@nestjs/common';
 import { UserService } from './user.service';
-import { CreateUserDto } from './dto/create-user.dto';
+import { StrictAuthGuard } from 'src/middleware-guards/auth-guard.middleware';
+import { Request, Response } from 'express';
+import { FindByUserId, IGetAllUsers, IGetUser, IUpdateUserProfile } from './user.type';
 import { UpdateUserDto } from './dto/update-user.dto';
-// import { PaginationDto } from './dto/pagination.dto';
-import { AuthGuard } from '../auth/auth.guard';
-// import { GetUserDto } from './dto/get-user.dto';
-// import { UserInterceptor } from './interceptor/user.interceptor';
-
-// @UseInterceptors(UserInterceptor)
 @Controller('users')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
-
-  @Post('/')
-  create(@Body() createUserDto: CreateUserDto) {
-    return this.userService.create(createUserDto);
-  }
+  constructor(
+    private service: UserService
+  )
+  {}
 
   @Get('/')
-  findAll(@Query() query: any) {
-    const payload = { ...query }
-    return this.userService.findAll(payload)
+  @UseGuards(StrictAuthGuard)
+  async getAllUsers(@Res() res: Response, @Query() query: any) {
+    const payload: IGetAllUsers = { ...query }
+
+    const response = await this.service.getAllUsers(payload)
+    return res.status(response.status).json(response)
   }
 
-  @Get('/profile')
-  @UseGuards(AuthGuard)
-  async findUserProfile(@Request() req)
-  // : Promise<GetUserDto> 
-  {
-    try {
-      const user = await this.userService.findOne(req.user.sub);
-      if (!user) {
-        throw new HttpException('Could not find user', HttpStatus.NOT_FOUND);
-      }
-      return user;
-    } catch (error) {
-      throw new HttpException('Could not find user', HttpStatus.NOT_FOUND);
-    }
+  @Get('/:userId')
+  @UseGuards(StrictAuthGuard)
+  async getUser(@Res() res: Response, @Param() params: FindByUserId) {
+    const { userId } = params
+    const payload: IGetUser = { userId }
+
+    const response = await this.service.getUser(payload)
+    return res.status(response.status).json(response)
   }
 
-  @Get('/:id')
-  async findOne(@Param('id') id: string)
-  // : Promise<GetUserDto> 
-  {
-    try {
-      const user = await this.userService.findOne(id);
-      if (!user) {
-        throw new HttpException('Could not find user', HttpStatus.NOT_FOUND);
-      }
-      return user;
-    } catch (error) {
-      throw new HttpException('Could not find user', HttpStatus.NOT_FOUND);
-    }
+  @Patch('/profile')
+  @UseGuards(StrictAuthGuard)
+  async updateProfile(@Req() req: Request, @Res() res: Response, @Body() body: UpdateUserDto) {
+    const userId = req.user._id
+    const payload: IUpdateUserProfile = { userId, ...body }
+
+    const response = await this.service.updateUserProfile(payload)
+    return res.status(response.status).json(response)
   }
 
-  // @Post('/follow/:userToFollowId')
-  // @UseGuards(AuthGuard)
-  // async followUser(
-  //   @Request() req,
-  //   @Param('userToFollowId') userToFollowId: string,
-  // ): Promise<any> {
-  //   console.log('userToFollowId', userToFollowId);
-  //   const user = await this.userService.followUser({
-  //     userId: req.user.sub,
-  //     userToFollowId,
-  //   });
-  //   return { message: 'User followed successfully', user };
-  // }
-
-  // @Post('/unfollow/:userToUnfollowId')
-  // @UseGuards(AuthGuard)
-  // async unfollowUser(
-  //   @Request() req,
-  //   @Param('userToUnfollowId') userToUnfollowId: string,
-  // ): Promise<any> {
-  //   console.log('userToUnfollowId', userToUnfollowId);
-  //   const user = await this.userService.unfollowUser({
-  //     userId: req.user.sub,
-  //     userToFollowId: userToUnfollowId,
-  //   });
-  //   return { message: 'User unfollowed successfully', user };
-  // }
-
-  // @Patch('/:id')
-  // update(
-  //   @Param('id', ParseIntPipe) id: string,
-  //   @Body() updateUserDto: UpdateUserDto,
-  // ) {
-  //   return this.userService.update(+id, updateUserDto);
-  // }
-
-  // @Delete(':id')
-  // remove(@Param('id', ParseIntPipe) id: string) {
-  //   return this.userService.remove(+id);
-  // }
 }

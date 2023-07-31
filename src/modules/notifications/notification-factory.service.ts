@@ -9,6 +9,7 @@ export class NotificationFactoryService {
 
         if (data.clicked === false || data.clicked) notification.clicked = data.clicked
         if (data.content) notification.content = data.content
+        if (data.type) notification.type = data.type
         if (data.title) notification.title = data.title
         if (data.user) notification.user = data.user
         if (data.createdAt) notification.createdAt = data.createdAt

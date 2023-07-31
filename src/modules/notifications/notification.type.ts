@@ -4,6 +4,7 @@ import { MarkAllNotificationsDto } from "./dto/mark-all-notifications.dto"
 export type ICreateNotification = {
     title: string
     content: string
+    type: string
     user: string
 }
 
@@ -11,6 +12,7 @@ export type IGetNotifications = PaginationType & {
     _id: string
     title: string
     content: string
+    type: string
     clicked: boolean
     user: string
 }

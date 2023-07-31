@@ -11,6 +11,7 @@ import { Likes } from './entities/likes.entity';
 import { FileSystemService } from '../file-system/file-system.service';
 import { NotificationFactoryService } from '../notifications/notification-factory.service';
 import { Notification } from '../notifications/entities/notification.entity';
+import { User } from '../user/entities/user.entity';
 
 @Injectable()
 export class PostService {
@@ -200,7 +201,7 @@ export class PostService {
     try {
       const { postId, userId } = payload
 
-      const post = await this.data.post.findOne({ _id: postId })
+      const post: Post = await this.data.post.findOne({ _id: postId })
       if (!post) throw new DoesNotExistsException('Post not found')
 
       const likedPost = await this.data.likes.findOne({ user: userId, post: postId })
@@ -216,16 +217,31 @@ export class PostService {
       const likeFactory = this.likesFactory.create(likeFactoryPayload)
       await this.data.likes.create(likeFactory)
 
+      const userDetails: User = await this.data.users.findOne({ _id: userId })
+
       const notificationPayload: OptionalQuery<Notification> = {
         title: 'Post liked',
         content: 'TwikkL post liked',
+        type: 'likes',
         user: userId,
         createdAt: new Date(),
         updatedAt: new Date()
       }
 
+      const likedNotificationPayload: OptionalQuery<Notification> = {
+        title: 'Post liked',
+        content: `${userDetails.username} liked your video`,
+        type: 'likes',
+        user: post.creator,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      }
+
       const notificationFactory = this.notificationFactory.create(notificationPayload)
+      const likedNotificationFactory = this.notificationFactory.create(likedNotificationPayload)
+
       await this.data.notification.create(notificationFactory)
+      await this.data.notification.create(likedNotificationFactory)
 
       return {
         message: 'Post liked successfully',

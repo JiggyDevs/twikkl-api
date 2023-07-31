@@ -11,6 +11,7 @@ import { RedisServiceModule } from './frameworks/in-memory-database/redis/redis-
 import { JWT_USER_PAYLOAD_TYPE } from './lib/constants';
 import { FileSystemModule } from './modules/file-system/file-system.module';
 import { NotificationServiceModule } from './modules/notifications/notification.module';
+import { FollowingModule } from './modules/following/following.module';
 
 
 declare global {
@@ -31,7 +32,8 @@ declare global {
     CommentModule,
     WalletModule,
     FileSystemModule,
-    NotificationServiceModule
+    NotificationServiceModule,
+    FollowingModule
     // GroupsModule,
     // CategoryModule
   ],

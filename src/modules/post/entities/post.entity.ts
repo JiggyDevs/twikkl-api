@@ -4,7 +4,6 @@ export class Post {
     description: string
     creator: string
     group: string
-    // likes: string[]
     isDeleted: boolean
     isAdminDeleted: boolean
     createdAt: Date
