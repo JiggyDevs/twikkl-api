@@ -10,17 +10,23 @@ import { DiscordServicesModule } from 'src/frameworks/notification-services/disc
 import { LikesFactoryService } from './likes-factory-service.service';
 import { FileSystemModule } from '../file-system/file-system.module';
 import { NotificationFactoryService } from '../notifications/notification-factory.service';
+import { FirebaseService } from '../firebase/firebase.service';
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: Post.name, schema: PostSchema }]),
     DataServicesModule,
     DiscordServicesModule,
-    FileSystemModule
+    FileSystemModule,
   ],
   controllers: [PostController],
-  providers: [PostService, PostFactoryService, LikesFactoryService, NotificationFactoryService],
-  exports: [PostService, PostFactoryService, LikesFactoryService]
+  providers: [
+    PostService,
+    PostFactoryService,
+    LikesFactoryService,
+    NotificationFactoryService,
+    FirebaseService,
+  ],
+  exports: [PostService, PostFactoryService, LikesFactoryService],
 })
-
 export class PostsModule {}

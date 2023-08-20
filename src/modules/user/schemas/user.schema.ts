@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Types } from 'mongoose';
 
-export type UserDocument = User & Document
+export type UserDocument = User & Document;
 
 @Schema()
 export class User {
@@ -21,22 +21,25 @@ export class User {
   groups: string[]; // Array of group IDs that the user is a member of
 
   @Prop()
-  lastLoginDate: Date
+  lastLoginDate: Date;
 
   @Prop()
-  avatar: string
+  avatar: string;
 
   @Prop()
-  bio: string
+  bio: string;
 
   @Prop()
-  twitter: string
+  twitter: string;
 
   @Prop()
-  createdAt: Date
+  deviceToken: string;
 
   @Prop()
-  updatedAt: Date
+  createdAt: Date;
+
+  @Prop()
+  updatedAt: Date;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
@@ -44,13 +47,13 @@ UserSchema.index(
   {
     userName: 'text',
     email: 'text',
-    _id: 'text'
+    _id: 'text',
   },
   {
     weights: {
       userName: 5,
       email: 3,
-      _id: 1
-    }
-  }
-)
+      _id: 1,
+    },
+  },
+);

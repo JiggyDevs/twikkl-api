@@ -7,16 +7,21 @@ import { CommentsFactoryService } from './comments-factory-service.service';
 import { DataServicesModule } from '../mongoDb/data-services.module';
 import { DiscordServicesModule } from 'src/frameworks/notification-services/discord/discord-service.module';
 import { NotificationFactoryService } from '../notifications/notification-factory.service';
+import { FirebaseService } from '../firebase/firebase.service';
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: Comment.name, schema: CommentSchema }]),
     DataServicesModule,
-    DiscordServicesModule
+    DiscordServicesModule,
   ],
   controllers: [CommentController],
-  providers: [CommentService, CommentsFactoryService, NotificationFactoryService],
-  exports: [CommentsFactoryService, CommentService]
+  providers: [
+    CommentService,
+    CommentsFactoryService,
+    NotificationFactoryService,
+    FirebaseService,
+  ],
+  exports: [CommentsFactoryService, CommentService],
 })
-
 export class CommentModule {}
