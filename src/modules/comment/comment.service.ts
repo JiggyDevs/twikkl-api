@@ -18,7 +18,7 @@ import { NotificationFactoryService } from '../notifications/notification-factor
 import { Notification } from '../notifications/entities/notification.entity';
 import { Post } from '../post/entities/post.entity';
 import { User } from '../user/entities/user.entity';
-// import { FirebaseService } from '../firebase/firebase.service';
+import { FirebaseService } from '../firebase/firebase.service';
 
 @Injectable()
 export class CommentService {
@@ -26,8 +26,8 @@ export class CommentService {
     private data: IDataServices,
     private commentFactory: CommentsFactoryService,
     private notificationFactory: NotificationFactoryService,
-  ) // private firebase: FirebaseService,
-  {}
+    private firebase: FirebaseService,
+  ) {}
 
   async createComment(payload: ICommentOnPost) {
     try {
@@ -76,12 +76,12 @@ export class CommentService {
       await this.data.notification.create(notificationFactory);
       await this.data.notification.create(commentNotificationFactory);
 
-      // const sendNotification = await this.firebase.sendToUser(
-      //   userDetails,
-      //   'Comment',
-      //   `${userDetails.username} commented on your video`,
-      // );
-      // console.log({ sendNotification });
+      const sendNotification = await this.firebase.sendToUser(
+        userDetails,
+        'Comment',
+        `${userDetails.username} commented on your video`,
+      );
+      console.log({ sendNotification });
 
       return {
         message: 'Comment created successfully',

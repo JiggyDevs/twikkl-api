@@ -21,7 +21,7 @@ import { Likes } from './entities/likes.entity';
 import { NotificationFactoryService } from '../notifications/notification-factory.service';
 import { Notification } from '../notifications/entities/notification.entity';
 import { User } from '../user/entities/user.entity';
-// import { FirebaseService } from '../firebase/firebase.service';
+import { FirebaseService } from '../firebase/firebase.service';
 
 @Injectable()
 export class PostService {
@@ -30,8 +30,8 @@ export class PostService {
     private postFactory: PostFactoryService,
     private likesFactory: LikesFactoryService,
     private notificationFactory: NotificationFactoryService,
-  ) // private firebase: FirebaseService,
-  {}
+    private firebase: FirebaseService,
+  ) {}
 
   cleanGetUserPostsQuery(data: IGetUserPosts) {
     let key = {};
@@ -274,12 +274,12 @@ export class PostService {
       await this.data.notification.create(notificationFactory);
       await this.data.notification.create(likedNotificationFactory);
 
-      // const sendNotification = await this.firebase.sendToUser(
-      //   userDetails,
-      //   'Like',
-      //   `${userDetails.username} liked your video`,
-      // );
-      // console.log({ sendNotification });
+      const sendNotification = await this.firebase.sendToUser(
+        userDetails,
+        'Like',
+        `${userDetails.username} liked your video`,
+      );
+      console.log({ sendNotification });
 
       return {
         message: 'Post liked successfully',

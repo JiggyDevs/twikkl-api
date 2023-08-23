@@ -1,9 +1,12 @@
 import * as admin from 'firebase-admin';
-// import { FIREBASE_CONFIG } from 'src/config';
-// const serviceAccount = require('./twikklServiceAccount.json');
+import * as dotenv from 'dotenv';
+
+dotenv.config();
 
 const firebaseConfig = admin.initializeApp({
-  // credential: admin.credential.cert(serviceAccount),
+  credential: admin.credential.cert(
+    JSON.parse(String(process.env.FIREBASE_CONFIG)),
+  ),
 });
 
 export default firebaseConfig;
