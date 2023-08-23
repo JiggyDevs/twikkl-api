@@ -55,3 +55,15 @@ export class ResetPasswordDto {
   @IsString()
   token: string;
 }
+
+export class VerifyEmailDto {
+  @IsNotEmpty()
+  @IsString()
+  code: string;
+}
+
+export class CreateUsernameDto {
+  @IsNotEmpty()
+  @IsString()
+  username: string;
+}

@@ -16,6 +16,7 @@ export class UserFactoryService {
     if (data.bio) user.bio = data.bio;
     if (data.twitter) user.twitter = data.twitter;
     if (data.deviceToken) user.deviceToken = data.deviceToken;
+    if (data.emailVerified) user.emailVerified = data.emailVerified;
     if (data.createdAt) user.createdAt = data.createdAt;
     if (data.updatedAt) user.updatedAt = data.updatedAt;
 

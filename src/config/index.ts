@@ -35,3 +35,4 @@ export const REDIS_PASSWORD = getEnv('REDIS_PASSWORD');
 export const REDIS_PORT = getEnv('REDIS_PORT');
 export const STORAGE_URL = getEnv('STORAGE_URL', true)!;
 export const STORAGE_KEY = getEnv('STORAGE_KEY', true)!;
+export const FIREBASE_CONFIG = getEnv('FIREBASE_CONFIG', true);

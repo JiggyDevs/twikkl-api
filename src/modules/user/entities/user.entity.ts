@@ -9,6 +9,7 @@ export class User {
   twitter: string;
   lastLoginDate: Date;
   deviceToken: string;
+  emailVerified: boolean;
   createdAt: Date;
   updatedAt: Date;
 }

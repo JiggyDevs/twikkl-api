@@ -35,6 +35,9 @@ export class User {
   @Prop()
   deviceToken: string;
 
+  @Prop({ default: false })
+  emailVerified: boolean;
+
   @Prop()
   createdAt: Date;
 
