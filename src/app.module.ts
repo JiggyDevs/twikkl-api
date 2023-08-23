@@ -12,7 +12,7 @@ import { JWT_USER_PAYLOAD_TYPE } from './lib/constants';
 import { FileSystemModule } from './modules/file-system/file-system.module';
 import { NotificationServiceModule } from './modules/notifications/notification.module';
 import { FollowingModule } from './modules/following/following.module';
-
+import { FirebaseServiceModule } from './modules/firebase/firebase.module';
 
 declare global {
   namespace Express {
@@ -33,18 +33,16 @@ declare global {
     WalletModule,
     FileSystemModule,
     NotificationServiceModule,
-    FollowingModule
+    FollowingModule,
+    FirebaseServiceModule,
     // GroupsModule,
     // CategoryModule
   ],
   controllers: [AppController],
   providers: [AppService],
 })
-
 export class AppModule {
-  configure(consumer: MiddlewareConsumer){
-    consumer
-    .apply()
-    .forRoutes('*')
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply().forRoutes('*');
   }
 }
