@@ -42,7 +42,8 @@ import {
 import jwtLib from 'src/lib/jwtLib';
 import { IInMemoryServices } from 'src/core/abstracts/in-memory.abstract';
 import { randomBytes } from 'crypto';
-import { env } from 'src/config';
+import { DISCORD_VERIFICATION_CHANNEL_LINK, env } from 'src/config';
+import { DiscordService } from 'src/frameworks/notification-services/discord/discord-service.service';
 
 @Injectable()
 export class AuthService {
@@ -50,6 +51,7 @@ export class AuthService {
     private data: IDataServices,
     private userFactory: UserFactoryService,
     private inMemoryServices: IInMemoryServices,
+    private discordServices: DiscordService,
   ) {}
 
   async signUp(payload: ISignUp) {
@@ -162,11 +164,11 @@ export class AuthService {
       const message = `Verification code for ${user?.username}-${user?.email} is ${emailCode}`;
 
       //Send to Discord
-      // await this.discordServices.inHouseNotification({
-      //   title: `Email Verification code :- ${env.env} environment`,
-      //   message,
-      //   link: DISCORD_VERIFICATION_CHANNEL_LINK,
-      // });
+      await this.discordServices.inHouseNotification({
+        title: `Email Verification code :- ${env.env} environment`,
+        content: message,
+        link: DISCORD_VERIFICATION_CHANNEL_LINK,
+      });
 
       //Send to Email when mailgun is configured
 

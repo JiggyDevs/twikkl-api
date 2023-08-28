@@ -7,6 +7,7 @@ import { DataServicesModule } from '../mongoDb/data-services.module';
 import { DiscordServicesModule } from 'src/frameworks/notification-services/discord/discord-service.module';
 import { JwtService } from '@nestjs/jwt';
 import { IInMemoryServices } from 'src/core/abstracts/in-memory.abstract';
+import { DiscordService } from 'src/frameworks/notification-services/discord/discord-service.service';
 // import { JwtModule } from '@nestjs/jwt';
 // import { jwtConstants } from './auth.constant';
 // import { UserInterceptor } from '../user/interceptor/user.interceptor';
@@ -22,7 +23,7 @@ import { IInMemoryServices } from 'src/core/abstracts/in-memory.abstract';
     //   signOptions: { expiresIn: '10m' },
     // }),
   ],
-  providers: [AuthService, UserFactoryService, JwtService],
+  providers: [AuthService, UserFactoryService, JwtService, DiscordService],
   controllers: [AuthController],
 })
 export class AuthModule {}

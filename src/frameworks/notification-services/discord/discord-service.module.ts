@@ -1,14 +1,14 @@
 import { Module } from '@nestjs/common';
-// import { INotificationServices } from 'src/core/abstracts';
-// import { DiscordService } from './discord-service.service';
+import { INotificationServices } from 'src/core/abstracts/notification-services.service';
+import { DiscordService } from './discord-service.service';
 
 @Module({
   providers: [
-    // {
-      // provide: INotificationServices,
-      // useClass: DiscordService,
-    // },
+    {
+      provide: INotificationServices,
+      useClass: DiscordService,
+    },
   ],
-  // exports: [INotificationServices],
+  exports: [INotificationServices],
 })
-export class DiscordServicesModule { }
+export class DiscordServicesModule {}
