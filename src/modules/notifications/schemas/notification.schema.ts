@@ -1,30 +1,33 @@
-import { Prop, SchemaFactory, Schema } from "@nestjs/mongoose";
-import { Types } from "mongoose";
+import { Prop, SchemaFactory, Schema } from '@nestjs/mongoose';
+import { Types } from 'mongoose';
 
-export type NotificationDocument = Notification & Document
+export type NotificationDocument = Notification & Document;
 
 @Schema()
 export class Notification {
   @Prop()
-  title: string
+  title: string;
 
   @Prop()
-  content: string
+  content: string;
 
   @Prop({ default: false })
-  clicked: boolean
+  clicked: boolean;
 
   @Prop()
-  type: string
+  type: string;
+
+  @Prop()
+  link?: string;
 
   @Prop({ type: Types.ObjectId, ref: 'User' })
-  user: string
+  user: string;
 
   @Prop()
-  createdAt: Date
-  
+  createdAt: Date;
+
   @Prop()
-  updatedAt: Date
+  updatedAt: Date;
 }
 
 export const NotificationSchema = SchemaFactory.createForClass(Notification);

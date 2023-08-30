@@ -36,3 +36,7 @@ export const REDIS_PORT = getEnv('REDIS_PORT');
 export const STORAGE_URL = getEnv('STORAGE_URL', true)!;
 export const STORAGE_KEY = getEnv('STORAGE_KEY', true)!;
 export const FIREBASE_CONFIG = getEnv('FIREBASE_CONFIG', true);
+export const DISCORD_VERIFICATION_CHANNEL_LINK = getEnv(
+  'DISCORD_VERIFICATION_CHANNEL_LINK',
+  true,
+);
