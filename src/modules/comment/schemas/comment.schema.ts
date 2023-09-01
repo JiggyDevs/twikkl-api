@@ -16,6 +16,9 @@ export class Comment {
   @Prop({ type: Types.ObjectId, ref: 'Post', required: true })
   post: string;
 
+  @Prop({ type: Types.ObjectId, ref: 'Comment'})
+  replyTo: string;
+
   @Prop({ default: false })
   isDeleted: boolean;
 

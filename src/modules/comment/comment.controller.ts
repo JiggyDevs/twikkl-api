@@ -34,15 +34,27 @@ export class CommentController {
     return res.status(response.status).json(response)
   }
 
+
   @Get('/comment/:commentId')
   @UseGuards()
-  async getComment(@Res() res: Response, @Param() param: FindCommentById) {
+  async getComment(@Res() res: Response, @Param() param: IGetComment) {
     const { commentId } = param
     const payload: IGetComment = { commentId }
 
     const response = await this.service.getComment(payload)
     return res.status(response.status).json(response)
   }
+
+  @Get('/comment/:commentId/replies')
+  @UseGuards(StrictAuthGuard)
+  async getCommentReplies(@Res() res: Response, @Param() param: IGetComment) {
+    const { commentId } = param
+    const payload: IGetComment = { commentId }
+
+    const response = await this.service.getRepliesToComment(payload)
+    return res.status(response.status).json(response)
+  }
+  
 
   @Patch('/comment/:commentId')
   @UseGuards(StrictAuthGuard)
