@@ -4,4 +4,5 @@ export class CreateCommentDto {
   @IsNotEmpty()
   @IsString()
   comment: string;
+  replyTo?: string;
 }

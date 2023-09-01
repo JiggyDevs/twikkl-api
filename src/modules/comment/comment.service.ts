@@ -31,7 +31,7 @@ export class CommentService {
 
   async createComment(payload: ICommentOnPost) {
     try {
-      const { comment, postId, userId } = payload;
+      const { comment, postId, userId, replyTo } = payload;
 
       const post: Post = await this.data.post.findOne({ _id: postId });
       if (!post) throw new DoesNotExistsException('Post not found');
@@ -40,6 +40,7 @@ export class CommentService {
         comment,
         post: postId,
         user: userId,
+        replyTo,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -106,6 +107,7 @@ export class CommentService {
       const { data, pagination } =
         await this.data.comments.findAllWithPagination({
           post: postId,
+          replyTo: null,
           isDeleted: false,
         });
 
@@ -119,6 +121,34 @@ export class CommentService {
       Logger.error(error);
       if (error.name === 'TypeError')
         throw new HttpException(error.message, 500);
+      throw error;
+    }
+  }
+
+  async getRepliesToComment({commentId}: {commentId: string}) {
+    try {
+      // Check if the parent comment exists
+      const parentComment = await this.data.comments.find({_id: commentId});
+      if (!parentComment) {
+        throw new DoesNotExistsException('Parent comment not found');
+      }
+
+      // Fetch all replies to the given comment
+      const replies = await this.data.comments.findAllWithPagination({
+        replyTo: commentId,
+        isDeleted: false,
+      }).exec();
+
+      return {
+        message: 'Replies retrieved successfully',
+        data: replies,
+        status: HttpStatus.OK,
+      };
+    } catch (error) {
+      Logger.error(error);
+      if (error.name === 'TypeError') {
+        throw new HttpException(error.message, 500);
+      }
       throw error;
     }
   }
