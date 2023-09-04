@@ -88,4 +88,22 @@ export class GroupService {
 
     return;
   }
+
+  async getUserGroups(userId: string): Promise<Group[]> {
+    return this.groupModel.find({ members: userId }).exec();
+  }
+
+  async getGroupMembers(groupId: string): Promise<User[]> {
+    const group = await this.groupModel.findById(groupId).populate<{members: User[]}>("members").exec();
+  
+    if (!group) {
+      throw new Error('Group not found.');
+    }
+
+    return group.members
+  }
+  
+  
 }
+
+

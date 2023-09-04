@@ -17,6 +17,7 @@ import { UpdateGroupDto } from './dto/update-group.dto';
 import { AuthGuard } from '../auth/auth.guard';
 import { JoinGroupDto } from './dto/join-group.dto';
 import { LeaveGroupDto } from './dto/leave-group.dto';
+import { Request as RequestType } from 'express';
 
 @Controller('groups')
 export class GroupController {
@@ -45,14 +46,22 @@ export class GroupController {
     return this.groupService.find(id);
   }
 
-  // @Post(':groupId/members/:userId')
-  // async addUserToGroup(
-  //   @Param('groupId') groupId: string,
-  //   @Param('userId') userId: string,
-  // ) {
-  //   const group = await this.groupService.joinGroup(groupId, userId);
-  //   return group;
-  // }
+  @Get(':id/members')
+  getGroupMembers(@Param('id', ParseIntPipe) id: string) {
+    return this.groupService.getGroupMembers(id);
+  }
+
+  @Get('user')
+  @UseGuards(AuthGuard)
+  async getUserGroups(
+    @Request() req: RequestType,
+    @Param('groupId') groupId: string,
+    
+  ) {
+    const authUser = req.user;
+    const groups = await this.groupService.getUserGroups(authUser._id);
+    return groups;
+  }
 
   @Post('/join')
   async joinGroup(@Body() joinGroupDto: JoinGroupDto) {
