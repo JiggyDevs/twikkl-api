@@ -56,7 +56,7 @@ export class AuthService {
 
   async signUp(payload: ISignUp) {
     try {
-      const { username, email, password, res } = payload;
+      const { email, password, res } = payload;
 
       const emailExists = await this.data.users.findOne({ email });
       if (emailExists) {
@@ -65,15 +65,15 @@ export class AuthService {
         );
       }
 
-      const usernameExists = await this.data.users.findOne({ username });
-      if (usernameExists) {
-        throw new AlreadyExistsException('Username already in use');
-      }
+      // const usernameExists = await this.data.users.findOne({ username });
+      // if (usernameExists) {
+      //   throw new AlreadyExistsException('Username already in use');
+      // }
 
       const hashedPassword = await hash(password);
 
       const userPayload: OptionalQuery<User> = {
-        username,
+        // username,
         email,
         password: hashedPassword,
         lastLoginDate: new Date(),
