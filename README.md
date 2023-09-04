@@ -48,3 +48,20 @@ $ yarn run test:cov
 - [] Implement file streaming
 - [] Implement file download
 - [] Implement caching
+
+
+<!-- From frontend todo -->
+- [*] Add replyTo to comments
+- [*] Add get user groups
+- [] Mark group as Favourite 
+- [] Unmark Favourite group
+- [] Get favourite groups
+- [] Get user groups
+- [] Leave Group
+- [*] Get group members
+- [] Get group posts
+- [] Categories should be in groups
+- [] Update Create group endpoint
+- [] Update group search
+- [] Create group post
+- [] Resend otp endpoint
