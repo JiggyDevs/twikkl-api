@@ -60,3 +60,17 @@ UserSchema.index(
     },
   },
 );
+
+UserSchema.pre('save', async function (next) {
+  // Only generate a username if it's not provided
+  if (!this.username) {
+    // Generate a unique username based on the email (you can use any logic you prefer)
+    const emailParts = this.email.split('@');
+    const generatedUsername = emailParts[0]?.toLowerCase() + Math.floor(Math.random() * 1000);
+
+    this.username = generatedUsername;
+  }
+
+  // Continue with the save operation
+  next();
+});
