@@ -5,7 +5,7 @@ export type UserDocument = User & Document;
 
 @Schema()
 export class User {
-  @Prop({ default: "", unique: true })
+  @Prop({ unique: true })
   username: string;
 
   @Prop({ required: true, unique: true })
@@ -66,7 +66,8 @@ UserSchema.pre('save', async function (next) {
   if (!this.username) {
     // Generate a unique username based on the email (you can use any logic you prefer)
     const emailParts = this.email.split('@');
-    const generatedUsername = emailParts[0]?.toLowerCase() + Math.floor(Math.random() * 1000);
+    const generatedUsername =
+      emailParts[0]?.toLowerCase() + Math.floor(Math.random() * 1000);
 
     this.username = generatedUsername;
   }
