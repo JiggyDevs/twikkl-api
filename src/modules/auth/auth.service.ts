@@ -499,6 +499,14 @@ export class AuthService {
             hashedPhoneCode,
             String(RESET_PASSWORD_EXPIRY),
           );
+
+          //Send to discord
+          await this.discordServices.inHouseNotification({
+            title: `Forgot password otp code :- ${env.env} environment`,
+            content: `Provide the code sent to your mobile number \n code: ${phoneCode}`,
+            link: DISCORD_VERIFICATION_CHANNEL_LINK,
+          });
+
           return {
             status: 202,
             message: 'Provide the code sent to your mobile number',
@@ -537,6 +545,12 @@ export class AuthService {
           hashedResetToken,
           String(RESET_PASSWORD_EXPIRY),
         );
+
+        await this.discordServices.inHouseNotification({
+          title: `Recover password token :- ${env.env} environment`,
+          content: `You will receive an email with a link to reset your password if you have an account with this email \n token: ${resetToken}`,
+          link: DISCORD_VERIFICATION_CHANNEL_LINK,
+        });
 
         return {
           status: 200,
