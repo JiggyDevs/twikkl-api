@@ -3,21 +3,16 @@ import { GroupService } from './group.service';
 import { GroupController } from './group.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Group, GroupSchema } from './schemas/group.schema';
-import { User, UserSchema } from '../user/schemas/user.schema';
-import {
-  Category,
-  CategorySchema,
-} from './../category/schemas/category.schema';
+
+import { DataServicesModule } from '../mongoDb/data-services.module';
+import { GroupFactoryService } from './group-factory.service';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([
-      { name: Group.name, schema: GroupSchema },
-      { name: User.name, schema: UserSchema },
-      { name: Category.name, schema: CategorySchema },
-    ]),
+    MongooseModule.forFeature([{ name: Group.name, schema: GroupSchema }]),
+    DataServicesModule,
   ],
   controllers: [GroupController],
-  providers: [GroupService],
+  providers: [GroupService, GroupFactoryService],
 })
 export class GroupsModule {}
