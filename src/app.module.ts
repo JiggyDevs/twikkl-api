@@ -13,6 +13,7 @@ import { FileSystemModule } from './modules/file-system/file-system.module';
 import { NotificationServiceModule } from './modules/notifications/notification.module';
 import { FollowingModule } from './modules/following/following.module';
 import { FirebaseServiceModule } from './modules/firebase/firebase.module';
+import { GroupsModule } from './modules/group/group.module';
 
 declare global {
   namespace Express {
@@ -35,7 +36,7 @@ declare global {
     NotificationServiceModule,
     FollowingModule,
     FirebaseServiceModule,
-    // GroupsModule,
+    GroupsModule,
     // CategoryModule
   ],
   controllers: [AppController],

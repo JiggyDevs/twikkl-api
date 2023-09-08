@@ -8,8 +8,9 @@ import {
   Delete,
   Query,
   UseGuards,
-  Request,
-  ParseIntPipe,
+  
+  Req,
+  Res,
 } from '@nestjs/common';
 import { GroupService } from './group.service';
 import { CreateGroupDto } from './dto/create-group.dto';
@@ -17,81 +18,107 @@ import { UpdateGroupDto } from './dto/update-group.dto';
 import { AuthGuard } from '../auth/auth.guard';
 import { JoinGroupDto } from './dto/join-group.dto';
 import { LeaveGroupDto } from './dto/leave-group.dto';
-import { Request as RequestType } from 'express';
+import { Request, Response } from 'express';
+import { StrictAuthGuard } from 'src/middleware-guards/auth-guard.middleware';
+import { ICreateGroup, IGetGroup, IGetGroups, IGetUserGroup, IGroupAction } from './group.type';
 
 @Controller('groups')
 export class GroupController {
   constructor(private readonly groupService: GroupService) {}
 
-  @Post()
-  @UseGuards(AuthGuard)
-  create(
-    @Request() req,
-    @Body() createGroupDto: Omit<CreateGroupDto, 'createdBy'>,
-  ) {
-    return this.groupService.create({
-      ...createGroupDto,
-      createdBy: req.user.sub,
-    });
+  @Post("/")
+  @UseGuards(StrictAuthGuard)
+  async create(@Req() req: Request, @Res() res: Response, @Body() body: CreateGroupDto) {
+    const userId = req.user._id
+    const payload: ICreateGroup = { ...body,creator: userId }
+    const response = await this.groupService.create(payload);
+    return res.status(response.status).json(response)
+   
   }
 
-  @Get()
-  findAll(@Query('ids') ids?: string) {
-    const idArray = ids?.split(',') ?? [];
-    return this.groupService.find(ids);
+  @Get("/")
+  @UseGuards(StrictAuthGuard)
+  async findAll(@Req() req: Request,
+  @Res() res: Response,
+  @Query() query: any,
+) {
+  const userId = req.user._id;
+  query = { isDeleted: false };
+  const payload: IGetGroups = { ...query };
+
+  const response = await this.groupService.find(payload);
+  return res.status(response.status).json(response);
+}
+
+@Get('/user')
+@UseGuards(StrictAuthGuard)
+async getUserGroups(
+  @Req() req: Request,
+  @Res() res: Response,
+) {
+  const userId = req.user._id
+  const payload: IGetUserGroup = { userId }
+  const response = await this.groupService.getUserGroups(payload);
+  return res.status(response.status).json(response)
+}
+
+  @Get('/:groupId')
+  @UseGuards(StrictAuthGuard)
+  async findOne(@Res() res: Response, @Param() param: IGetGroup) {
+    const { groupId } = param
+    const payload: IGetGroup = { groupId }
+
+    const response = await this.groupService.findOne(payload)
+    return res.status(response.status).json(response)
   }
 
-  @Get(':id')
-  findOne(@Param('id', ParseIntPipe) id: string) {
-    return this.groupService.find(id);
-  }
-
-  @Get(':id/members')
-  getGroupMembers(@Param('id', ParseIntPipe) id: string) {
-    return this.groupService.getGroupMembers(id);
-  }
-
-  @Get('user')
-  @UseGuards(AuthGuard)
-  async getUserGroups(
-    @Request() req: RequestType,
-    @Param('groupId') groupId: string,
-    
-  ) {
-    const authUser = req.user;
-    const groups = await this.groupService.getUserGroups(authUser._id);
-    return groups;
+  @Get('/:groupId/members')
+  @UseGuards(StrictAuthGuard)
+  async getGroupMembers(@Res() res: Response, @Param() param: IGetGroup) {
+    const { groupId } = param
+    const payload: IGetGroup = { groupId }
+    const response = await this.groupService.getGroupMembers(payload)
+    return res.status(response.status).json(response)
   }
 
   @Post('/join')
-  async joinGroup(@Body() joinGroupDto: JoinGroupDto) {
-    return this.groupService.joinGroup(joinGroupDto);
+  @UseGuards(StrictAuthGuard)
+  async joinGroup(@Req() req: Request,
+  @Res() res: Response, @Body() joinGroupDto: JoinGroupDto) {
+    const userId = req.user._id
+    const payload: IGroupAction = { userId, ...joinGroupDto }
+    const response = await this.groupService.joinGroup(payload);
+    return res.status(response.status).json(response)
+    
   }
 
   @Post('/leave')
-  async leaveGroup(@Body() leaveGroupDto: LeaveGroupDto) {
-    return this.groupService.leaveGroup(leaveGroupDto);
+  @UseGuards(StrictAuthGuard)
+  async leaveGroup(@Req() req: Request,
+  @Res() res: Response, @Body() leaveGroupDto: LeaveGroupDto) {
+    const userId = req.user._id
+    const payload: IGroupAction = { userId, ...leaveGroupDto }
+    const response = await this.groupService.leaveGroup(payload);
+    return res.status(response.status).json(response)
+    
   }
 
-  @Patch(':id')
-  update(
-    @Param('id', ParseIntPipe) id: string,
-    @Body() updateGroupDto: UpdateGroupDto,
-  ) {
-    return this.groupService.update(id, updateGroupDto);
-  }
-
-  // @Delete(':groupId/members/:userId')
-  // async leaveGroup(
-  //   @Param('groupId') groupId: string,
-  //   @Param('userId') userId: string,
+  // @Patch('/:id')
+  // update(
+  //   @Param('id', ParseIntPipe) id: string,
+  //   @Body() updateGroupDto: UpdateGroupDto,
   // ) {
-  //   await this.groupService.leaveGroup(groupId, userId);
-  //   return { message: 'User has left the group successfully.' };
+  //   return this.groupService.update(id, updateGroupDto);
   // }
 
-  @Delete(':id')
-  remove(@Param('id', ParseIntPipe) id: string) {
-    return this.groupService.remove(id);
+  @Delete('/:groupId')
+  @UseGuards(StrictAuthGuard)
+  async deletePost(@Req() req: Request, @Res() res: Response, @Param() param: IGetGroup) {
+    const userId = req.user._id
+    const { groupId } = param
+    const payload: IGroupAction = { userId, groupId }
+
+    const response = await this.groupService.deleteGroup(payload)
+    return res.status(response.status).json(response)
   }
 }
