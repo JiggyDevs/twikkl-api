@@ -20,7 +20,7 @@ import { JoinGroupDto } from './dto/join-group.dto';
 import { LeaveGroupDto } from './dto/leave-group.dto';
 import { Request, Response } from 'express';
 import { StrictAuthGuard } from 'src/middleware-guards/auth-guard.middleware';
-import { ICreateGroup, IGetGroup, IGetGroups, IGetUserGroup, IGroupAction } from './group.type';
+import { ICreateGroup, IGetGroup, IGetGroupPosts, IGetGroups, IGetUserGroup, IGroupAction } from './group.type';
 
 @Controller('groups')
 export class GroupController {
@@ -72,6 +72,16 @@ async getUserGroups(
     return res.status(response.status).json(response)
   }
 
+  @Get('/:groupId/posts')
+  @UseGuards(StrictAuthGuard)
+  async getGroupPosts(@Res() res: Response, @Param() param: IGetGroup) {
+    const { groupId } = param
+    const payload: IGetGroupPosts = { groupId, perpage: "10", page: "1", sort: "-1", q: "" }
+
+    const response = await this.groupService.getGroupPosts(payload)
+    return res.status(response.status).json(response)
+  }
+
   @Get('/:groupId/members')
   @UseGuards(StrictAuthGuard)
   async getGroupMembers(@Res() res: Response, @Param() param: IGetGroup) {
@@ -113,7 +123,7 @@ async getUserGroups(
 
   @Delete('/:groupId')
   @UseGuards(StrictAuthGuard)
-  async deletePost(@Req() req: Request, @Res() res: Response, @Param() param: IGetGroup) {
+  async deleteGroup(@Req() req: Request, @Res() res: Response, @Param() param: IGetGroup) {
     const userId = req.user._id
     const { groupId } = param
     const payload: IGroupAction = { userId, groupId }

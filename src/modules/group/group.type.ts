@@ -10,6 +10,10 @@ export type IGetGroup = {
     groupId: string
 }
 
+export type IGetGroupPosts = PaginationType & IGetGroup & {
+    
+}
+
 export type IGetUserGroup = {
     userId: string
 }
