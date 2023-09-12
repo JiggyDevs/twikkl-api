@@ -4,7 +4,6 @@ export class Group {
   creator: string;
   coverImg: string;
   avatar: string;
-  category: string;
   members: string[];
   isDeleted: boolean;
   isAdminDeleted: boolean;

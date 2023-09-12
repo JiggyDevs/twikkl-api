@@ -7,7 +7,6 @@ export class GroupFactoryService {
   create(data: OptionalQuery<Group>) {
     const group = new Group();
     if (data.avatar) group.avatar = data.avatar;
-    if (data.category) group.category = data.category;
     if (data.coverImg) group.coverImg = data.coverImg;
     if (data.creator) group.creator = data.creator;
     if (data.description) group.description = data.description;

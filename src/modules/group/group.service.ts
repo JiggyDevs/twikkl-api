@@ -10,7 +10,7 @@ import { OptionalQuery } from 'src/core/types/database';
 import { Group } from './entities/group.entity';
 import { User } from '../user/entities/user.entity';
 import { DoesNotExistsException, ForbiddenRequestException } from 'src/lib/exceptions';
-import { IGetGroup, IGetGroups, IGetUserGroup, IGroupAction } from './group.type';
+import { IGetGroup, IGetGroupPosts, IGetGroups, IGetUserGroup, IGroupAction } from './group.type';
 
 @Injectable()
 export class GroupService {
@@ -28,9 +28,8 @@ export class GroupService {
   // }
   async create(payload: CreateGroupDto) {
     try {
-      const { category, creator,description,name,avatar,coverImg } = payload;
+      const { creator,description,name,avatar,coverImg } = payload;
       const groupPayload: OptionalQuery<Group> = {
-        category, 
         creator: creator,
         description,
         name,
@@ -63,6 +62,28 @@ export class GroupService {
     
     return {
       message: 'Groups retrieved successfully',
+      data,
+      pagination,
+      status: HttpStatus.OK,
+    };
+  } catch (error) {
+    Logger.error(error);
+    if (error.name === 'TypeError')
+      throw new HttpException(error.message, 500);
+    throw error;
+  }
+  }
+
+  async getGroupPosts(payload: IGetGroupPosts) {
+    try {
+      const query = {
+        ...payload,
+        group: payload.groupId
+      }
+    let { data, pagination } = await this.data.post.findAllWithPagination(query);
+    
+    return {
+      message: 'Posts retrieved successfully',
       data,
       pagination,
       status: HttpStatus.OK,

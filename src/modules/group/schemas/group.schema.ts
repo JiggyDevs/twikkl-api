@@ -1,7 +1,6 @@
 import { User } from '../../user/schemas/user.schema';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { Document, Types } from 'mongoose';
-import { Category } from 'src/modules/category/schemas/category.schema';
 
 export type GroupDocument = Group & Document;
 
@@ -21,9 +20,6 @@ export class Group {
 
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })
   creator: User;
-
-  @Prop({ type: Types.ObjectId, ref: 'Category' })
-  category: Category;
 
   @Prop({ type: [{ type: Types.ObjectId, ref: 'User' }], default: [] })
   members: string[];
