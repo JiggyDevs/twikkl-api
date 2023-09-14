@@ -1,7 +1,5 @@
 import { Types } from 'mongoose';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { User } from '../../user/schemas/user.schema';
-import { Post } from 'src/modules/post/schemas/post.schema';
 
 export type CommentDocument = Comment & Document;
 
@@ -16,7 +14,7 @@ export class Comment {
   @Prop({ type: Types.ObjectId, ref: 'Post', required: true })
   post: string;
 
-  @Prop({ type: Types.ObjectId, ref: 'Comment'})
+  @Prop({ type: Types.ObjectId, ref: 'Comment' })
   replyTo: string;
 
   @Prop({ default: false })
@@ -26,10 +24,10 @@ export class Comment {
   isAdminDeleted: boolean;
 
   @Prop()
-  createdAt: Date
+  createdAt: Date;
 
   @Prop()
-  updatedAt: Date
+  updatedAt: Date;
 }
 
 export const CommentSchema = SchemaFactory.createForClass(Comment);

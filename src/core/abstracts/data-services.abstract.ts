@@ -6,6 +6,7 @@ import { Comment } from 'src/modules/comment/entities/comment.entity';
 import { Notification } from 'src/modules/notifications/entities/notification.entity';
 import { Followers } from 'src/modules/following/entities/followers.entites';
 import { Group } from 'src/modules/group/entities/group.entity';
+import { Category } from 'src/modules/category/entities/category.entity';
 
 export abstract class IDataServices {
   abstract users: IGenericRepository<User>;
@@ -15,4 +16,5 @@ export abstract class IDataServices {
   abstract comments: IGenericRepository<Comment>;
   abstract notification: IGenericRepository<Notification>;
   abstract followers: IGenericRepository<Followers>;
+  abstract categories: IGenericRepository<Category>;
 }

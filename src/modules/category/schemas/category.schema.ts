@@ -1,7 +1,7 @@
-import mongoose, { HydratedDocument, Types } from 'mongoose';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Types } from 'mongoose';
 
-export type CategoryDocument = HydratedDocument<Category>;
+export type CategoryDocument = Category & Document;
 
 @Schema()
 export class Category {
@@ -10,6 +10,12 @@ export class Category {
 
   @Prop()
   description: string;
+
+  @Prop()
+  createdAt: Date;
+
+  @Prop()
+  updatedAt: Date;
 }
 
 export const CategorySchema = SchemaFactory.createForClass(Category);
