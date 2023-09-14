@@ -1,55 +1,78 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Patch,
-  Param,
+  Controller,
   Delete,
-  ParseIntPipe,
+  Get,
+  Param,
+  Patch,
+  Post,
   Query,
+  Res,
 } from '@nestjs/common';
 import { CategoryService } from './category.service';
+import { Response } from 'express';
+import {
+  FindByCategoryId,
+  ICreateCategory,
+  IGetAllCategories,
+  IGetCategory,
+  IRemoveCategory,
+  IUpdateCategory,
+} from './category.type';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
-import { Category } from './schemas/category.schema';
 
 @Controller('categories')
 export class CategoryController {
-  constructor(private readonly categoryService: CategoryService) {}
+  constructor(private readonly service: CategoryService) {}
 
-  @Get()
-  async findAll(): Promise<Category[]> {
-    return this.categoryService.findAll();
+  @Post('/')
+  async createCategory(@Res() res: Response, @Body() body: CreateCategoryDto) {
+    const payload: ICreateCategory = { ...body };
+
+    const response = await this.service.createCategory(payload);
+    return res.status(response.status).json(response);
   }
 
-  @Get('search')
-  async findByName(@Query('name') name: string): Promise<Category[]> {
-    return this.categoryService.findByName(name);
+  @Get('/')
+  async getAllCategories(@Res() res: Response, @Query() query: any) {
+    const payload: IGetAllCategories = { ...query };
+
+    const response = await this.service.getAllCategories(payload);
+    return res.status(response.status).json(response);
   }
 
-  @Get(':id')
-  async findById(@Param('id') id: string): Promise<Category> {
-    return this.categoryService.findById(id);
+  @Get('/:categoryId')
+  async getCategory(@Res() res: Response, @Param() params: FindByCategoryId) {
+    const { categoryId } = params;
+    const payload: IGetCategory = { _id: categoryId };
+
+    const response = await this.service.getCategory(payload);
+    return res.status(response.status).json(response);
   }
 
-  @Post()
-  async create(
-    @Body() createCategoryDto: CreateCategoryDto,
-  ): Promise<Category> {
-    return this.categoryService.create(createCategoryDto);
+  @Patch('/:categoryId')
+  async updateCategory(
+    @Res() res: Response,
+    @Body() body: UpdateCategoryDto,
+    @Param() params: FindByCategoryId,
+  ) {
+    const { categoryId } = params;
+    const payload: IUpdateCategory = { categoryId, ...body };
+
+    const response = await this.service.updateCategory(payload);
+    return res.status(response.status).json(response);
   }
 
-  @Patch(':id')
-  async update(
-    @Param('id') id: string,
-    @Body() updateCategoryDto: UpdateCategoryDto,
-  ): Promise<Category> {
-    return this.categoryService.update(id, updateCategoryDto);
-  }
+  @Delete('/;categoryId')
+  async removeCategory(
+    @Res() res: Response,
+    @Param() params: FindByCategoryId,
+  ) {
+    const { categoryId } = params;
+    const payload: IRemoveCategory = { categoryId };
 
-  @Delete(':id')
-  async delete(@Param('id') id: string): Promise<Category> {
-    return this.categoryService.delete(id);
+    const response = await this.service.removeCategory(payload);
+    return res.status(response.status).json(response);
   }
 }

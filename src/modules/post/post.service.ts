@@ -54,10 +54,13 @@ export class PostService {
 
   async create(payload: ICreatePost) {
     try {
-      const { contentUrl, description, userId, groupId } = payload;
+      const { contentUrl, description, categoryId, tags, userId, groupId } =
+        payload;
       const postPayload: OptionalQuery<Post> = {
         contentUrl,
         description,
+        category: categoryId,
+        tags,
         creator: userId,
         group: groupId ? groupId : null,
         createdAt: new Date(),

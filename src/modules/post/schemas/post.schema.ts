@@ -1,18 +1,24 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Types } from 'mongoose';
 
-export type PostDocument = Post & Document
+export type PostDocument = Post & Document;
 
 @Schema()
 export class Post {
   @Prop({ required: true })
-  contentUrl: string; 
+  contentUrl: string;
 
   @Prop({ required: true })
   description: string;
 
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })
-  creator: string; 
+  creator: string;
+
+  @Prop({ type: Types.ObjectId, ref: 'Category' }) //Will eventually be made required
+  category: string;
+
+  @Prop()
+  tags: string[];
 
   @Prop({ type: Types.ObjectId, ref: 'Group' })
   group: string;
@@ -27,10 +33,10 @@ export class Post {
   isAdminDeleted: boolean;
 
   @Prop()
-  createdAt: Date
-  
+  createdAt: Date;
+
   @Prop()
-  updatedAt: Date
+  updatedAt: Date;
 }
 
 export const PostSchema = SchemaFactory.createForClass(Post);
@@ -39,14 +45,14 @@ PostSchema.index(
     contentUrl: 'text',
     description: 'text',
     creator: 'text',
-    _id: 'text'
+    _id: 'text',
   },
   {
     weights: {
       contentUrl: 5,
       description: 3,
       creator: 3,
-      _id: 1
-    }
-  }
-)
+      _id: 1,
+    },
+  },
+);

@@ -17,6 +17,8 @@ import { Followers } from 'src/modules/following/entities/followers.entites';
 import { FollowersDocument } from 'src/modules/following/schemas/followers.schema';
 import { GroupDocument } from 'src/modules/group/schemas/group.schema';
 import { Group } from 'src/modules/group/entities/group.entity';
+import { Category } from 'src/modules/category/entities/category.entity';
+import { CategoryDocument } from 'src/modules/category/schemas/category.schema';
 
 @Injectable()
 export class MongoDataServices
@@ -29,6 +31,7 @@ export class MongoDataServices
   comments: MongoGenericRepository<Comment>;
   notification: MongoGenericRepository<Notification>;
   followers: MongoGenericRepository<Followers>;
+  categories: MongoGenericRepository<Category>;
 
   constructor(
     @InjectModel(User.name)
@@ -51,6 +54,9 @@ export class MongoDataServices
 
     @InjectModel(Followers.name)
     private FollowersRepository: Model<FollowersDocument>,
+
+    @InjectModel(Category.name)
+    private CategoryRepository: Model<CategoryDocument>,
   ) {}
 
   onApplicationBootstrap() {
@@ -66,6 +72,9 @@ export class MongoDataServices
     );
     this.followers = new MongoGenericRepository<Followers>(
       this.FollowersRepository,
+    );
+    this.categories = new MongoGenericRepository<Category>(
+      this.CategoryRepository,
     );
   }
 }

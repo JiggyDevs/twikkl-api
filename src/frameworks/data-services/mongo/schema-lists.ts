@@ -1,4 +1,8 @@
 import {
+  Category,
+  CategorySchema,
+} from 'src/modules/category/schemas/category.schema';
+import {
   Comment,
   CommentSchema,
 } from 'src/modules/comment/schemas/comment.schema';
@@ -43,5 +47,9 @@ export const SCHEMA_LIST = [
   {
     name: Followers.name,
     schema: FollowersSchema,
+  },
+  {
+    name: Category.name,
+    schema: CategorySchema,
   },
 ];
