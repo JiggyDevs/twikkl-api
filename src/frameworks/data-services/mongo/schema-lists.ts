@@ -10,6 +10,10 @@ import {
   Followers,
   FollowersSchema,
 } from 'src/modules/following/schemas/followers.schema';
+import {
+  FavoriteGroupSchema,
+  FavoriteGroups,
+} from 'src/modules/group/schemas/favorite-group.schema';
 import { Group, GroupSchema } from 'src/modules/group/schemas/group.schema';
 import {
   Notification,
@@ -51,5 +55,9 @@ export const SCHEMA_LIST = [
   {
     name: Category.name,
     schema: CategorySchema,
+  },
+  {
+    name: FavoriteGroups.name,
+    schema: FavoriteGroupSchema,
   },
 ];

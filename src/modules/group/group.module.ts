@@ -6,6 +6,7 @@ import { Group, GroupSchema } from './schemas/group.schema';
 
 import { DataServicesModule } from '../mongoDb/data-services.module';
 import { GroupFactoryService } from './group-factory.service';
+import { FavoriteGroupsFactoryService } from './favorite-group-factory.service';
 
 @Module({
   imports: [
@@ -13,6 +14,6 @@ import { GroupFactoryService } from './group-factory.service';
     DataServicesModule,
   ],
   controllers: [GroupController],
-  providers: [GroupService, GroupFactoryService],
+  providers: [GroupService, GroupFactoryService, FavoriteGroupsFactoryService],
 })
 export class GroupsModule {}

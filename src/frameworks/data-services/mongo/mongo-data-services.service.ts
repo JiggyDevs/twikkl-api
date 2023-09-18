@@ -19,6 +19,8 @@ import { GroupDocument } from 'src/modules/group/schemas/group.schema';
 import { Group } from 'src/modules/group/entities/group.entity';
 import { Category } from 'src/modules/category/entities/category.entity';
 import { CategoryDocument } from 'src/modules/category/schemas/category.schema';
+import { FavoriteGroups } from 'src/modules/group/entities/favorite-group.entity';
+import { FavoriteGroupsDocument } from 'src/modules/group/schemas/favorite-group.schema';
 
 @Injectable()
 export class MongoDataServices
@@ -32,6 +34,7 @@ export class MongoDataServices
   notification: MongoGenericRepository<Notification>;
   followers: MongoGenericRepository<Followers>;
   categories: MongoGenericRepository<Category>;
+  favoriteGroups: MongoGenericRepository<FavoriteGroups>;
 
   constructor(
     @InjectModel(User.name)
@@ -57,6 +60,9 @@ export class MongoDataServices
 
     @InjectModel(Category.name)
     private CategoryRepository: Model<CategoryDocument>,
+
+    @InjectModel(FavoriteGroups.name)
+    private FavoriteGroupsRepository: Model<FavoriteGroupsDocument>,
   ) {}
 
   onApplicationBootstrap() {
@@ -75,6 +81,9 @@ export class MongoDataServices
     );
     this.categories = new MongoGenericRepository<Category>(
       this.CategoryRepository,
+    );
+    this.favoriteGroups = new MongoGenericRepository<FavoriteGroups>(
+      this.FavoriteGroupsRepository,
     );
   }
 }

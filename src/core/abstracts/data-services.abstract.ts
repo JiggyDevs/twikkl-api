@@ -7,6 +7,7 @@ import { Notification } from 'src/modules/notifications/entities/notification.en
 import { Followers } from 'src/modules/following/entities/followers.entites';
 import { Group } from 'src/modules/group/entities/group.entity';
 import { Category } from 'src/modules/category/entities/category.entity';
+import { FavoriteGroups } from 'src/modules/group/entities/favorite-group.entity';
 
 export abstract class IDataServices {
   abstract users: IGenericRepository<User>;
@@ -17,4 +18,5 @@ export abstract class IDataServices {
   abstract notification: IGenericRepository<Notification>;
   abstract followers: IGenericRepository<Followers>;
   abstract categories: IGenericRepository<Category>;
+  abstract favoriteGroups: IGenericRepository<FavoriteGroups>;
 }
