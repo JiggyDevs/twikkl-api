@@ -3,7 +3,6 @@ export class Post {
   description: string;
   creator: string;
   category: string;
-  tags: string[]; //Hashtags
   group: string;
   isDeleted: boolean;
   isAdminDeleted: boolean;

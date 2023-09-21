@@ -9,7 +9,6 @@ export class PostFactoryService {
     if (data.contentUrl) post.contentUrl = data.contentUrl;
     if (data.creator) post.creator = data.creator;
     if (data.category) post.category = data.category;
-    if (data.tags) post.tags = data.tags;
     if (data.description) post.description = data.description;
     if (data.group) post.group = data.group;
     if (data.isAdminDeleted === false || data.isAdminDeleted)

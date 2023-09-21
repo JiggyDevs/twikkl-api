@@ -1,6 +1,6 @@
 import { User } from '../../user/schemas/user.schema';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import mongoose, { Document, Types } from 'mongoose';
+import { Document, Types } from 'mongoose';
 
 export type GroupDocument = Group & Document;
 

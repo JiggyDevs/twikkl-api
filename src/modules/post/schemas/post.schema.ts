@@ -17,9 +17,6 @@ export class Post {
   @Prop({ type: Types.ObjectId, ref: 'Category' }) //Will eventually be made required
   category: string;
 
-  @Prop()
-  tags: string[];
-
   @Prop({ type: Types.ObjectId, ref: 'Group' })
   group: string;
 

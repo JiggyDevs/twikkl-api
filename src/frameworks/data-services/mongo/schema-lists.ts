@@ -10,6 +10,10 @@ import {
   Followers,
   FollowersSchema,
 } from 'src/modules/following/schemas/followers.schema';
+import {
+  FavoriteGroupSchema,
+  FavoriteGroups,
+} from 'src/modules/group/schemas/favorite-group.schema';
 import { Group, GroupSchema } from 'src/modules/group/schemas/group.schema';
 import {
   Notification,
@@ -17,6 +21,7 @@ import {
 } from 'src/modules/notifications/schemas/notification.schema';
 import { Likes, LikesSchema } from 'src/modules/post/schemas/likes.schema';
 import { Post, PostSchema } from 'src/modules/post/schemas/post.schema';
+import { Tags, TagsSchema } from 'src/modules/post/schemas/tags.schema';
 import { User, UserSchema } from 'src/modules/user/schemas/user.schema';
 
 export const SCHEMA_LIST = [
@@ -51,5 +56,13 @@ export const SCHEMA_LIST = [
   {
     name: Category.name,
     schema: CategorySchema,
+  },
+  {
+    name: FavoriteGroups.name,
+    schema: FavoriteGroupSchema,
+  },
+  {
+    name: Tags.name,
+    schema: TagsSchema,
   },
 ];

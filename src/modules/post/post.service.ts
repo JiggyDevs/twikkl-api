@@ -22,6 +22,9 @@ import { NotificationFactoryService } from '../notifications/notification-factor
 import { Notification } from '../notifications/entities/notification.entity';
 import { User } from '../user/entities/user.entity';
 import { FirebaseService } from '../firebase/firebase.service';
+import { Tags } from './entities/tags.entity';
+import { TagsFactoryService } from './tags-factory.service';
+import { isEmpty } from 'src/lib/utils';
 
 @Injectable()
 export class PostService {
@@ -31,6 +34,7 @@ export class PostService {
     private likesFactory: LikesFactoryService,
     private notificationFactory: NotificationFactoryService,
     private firebase: FirebaseService,
+    private tagFactory: TagsFactoryService,
   ) {}
 
   cleanGetUserPostsQuery(data: IGetUserPosts) {
@@ -56,11 +60,12 @@ export class PostService {
     try {
       const { contentUrl, description, categoryId, tags, userId, groupId } =
         payload;
+
       const postPayload: OptionalQuery<Post> = {
         contentUrl,
         description,
         category: categoryId,
-        tags,
+        // tags,
         creator: userId,
         group: groupId ? groupId : null,
         createdAt: new Date(),
@@ -69,6 +74,24 @@ export class PostService {
 
       const factory = this.postFactory.create(postPayload);
       const data = await this.data.post.create(factory);
+
+      if (!isEmpty(tags) || !tags) {
+        for (let i = 0; i < tags.length; i++) {
+          const tag = await this.data.tags.findOne({ name: tags[i] });
+          if (!tag) {
+            const tagPayload: OptionalQuery<Tags> = {
+              name: tags[i],
+              post: data._id,
+              createdAt: new Date(),
+              updatedAt: new Date(),
+            };
+
+            const tagFactory = this.tagFactory.create(tagPayload);
+
+            await this.data.tags.create(tagFactory);
+          }
+        }
+      }
 
       const notificationPayload: OptionalQuery<Notification> = {
         title: 'Post uploaded',
