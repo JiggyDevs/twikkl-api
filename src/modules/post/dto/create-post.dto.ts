@@ -21,3 +21,13 @@ export class CreatePostDto {
   @IsString()
   groupId: string;
 }
+
+export class AddTagDto {
+  @IsNotEmpty()
+  @IsString()
+  name: string;
+
+  @IsNotEmpty()
+  @IsString()
+  postId: string;
+}
