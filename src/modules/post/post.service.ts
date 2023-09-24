@@ -60,7 +60,7 @@ export class PostService {
     try {
       const { contentUrl, description, categoryId, tags, userId, groupId } =
         payload;
-
+      console.log({ contentUrl, description, categoryId, tags, userId, groupId })
       const postPayload: OptionalQuery<Post> = {
         contentUrl,
         description,
@@ -75,7 +75,7 @@ export class PostService {
       const factory = this.postFactory.create(postPayload);
       const data = await this.data.post.create(factory);
 
-      if (!isEmpty(tags) || !tags) {
+      if (tags && !isEmpty(tags)) {
         for (let i = 0; i < tags.length; i++) {
           const tag = await this.data.tags.findOne({ name: tags[i] });
           if (!tag) {
