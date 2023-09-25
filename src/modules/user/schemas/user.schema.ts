@@ -38,6 +38,21 @@ export class User {
   @Prop({ default: false })
   emailVerified: boolean;
 
+  @Prop({ default: true })
+  likesNotification: boolean;
+
+  @Prop({ default: true })
+  commentsNotification: boolean;
+
+  @Prop({ default: true })
+  followersNotification: boolean;
+
+  @Prop({ default: true })
+  mentionsNotification: boolean;
+
+  @Prop({ default: true })
+  repostNotification: boolean;
+
   @Prop()
   createdAt: Date;
 

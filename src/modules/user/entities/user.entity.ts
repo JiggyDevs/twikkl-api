@@ -10,6 +10,11 @@ export class User {
   lastLoginDate: Date;
   deviceToken: string;
   emailVerified: boolean;
+  likesNotification: boolean;
+  commentsNotification: boolean;
+  followersNotification: boolean;
+  mentionsNotification: boolean;
+  repostNotification: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
