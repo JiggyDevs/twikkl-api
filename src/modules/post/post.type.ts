@@ -52,3 +52,9 @@ export type IGetTags = PaginationType &
 export type IEditPost = EditPostDto & {
   postId: string;
 };
+
+export enum PostVisibilityEnum {
+  PUBLIC = 'public',
+  PRIVATE = 'private',
+  FOLLOWERS_ONLY = 'followers-only',
+}

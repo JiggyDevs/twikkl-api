@@ -35,6 +35,9 @@ export class Post {
   @Prop({ default: true })
   allowStitch: boolean;
 
+  @Prop({ default: 'public' })
+  visibility: string;
+
   @Prop()
   createdAt: Date;
 

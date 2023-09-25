@@ -63,8 +63,15 @@ export class PostService {
 
   async create(payload: ICreatePost) {
     try {
-      const { contentUrl, description, categoryId, tags, userId, groupId } =
-        payload;
+      const {
+        contentUrl,
+        description,
+        categoryId,
+        tags,
+        userId,
+        groupId,
+        visibility,
+      } = payload;
 
       const postPayload: OptionalQuery<Post> = {
         contentUrl,
@@ -73,6 +80,7 @@ export class PostService {
         // tags,
         creator: userId,
         group: groupId ? groupId : null,
+        visibility: visibility ? visibility : null,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -377,7 +385,7 @@ export class PostService {
 
   async editPost(payload: IEditPost) {
     try {
-      const { postId, allowDuet, allowStitch } = payload;
+      const { postId, allowDuet, allowStitch, visibility } = payload;
 
       const post = await this.data.post.findOne({ _id: postId });
       if (!post) throw new DoesNotExistsException('Post not found.');
@@ -385,6 +393,7 @@ export class PostService {
       const postPayload: OptionalQuery<Post> = {
         allowDuet,
         allowStitch,
+        visibility,
       };
 
       await this.data.post.update(

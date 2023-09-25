@@ -8,6 +8,7 @@ export class Post {
   isAdminDeleted: boolean;
   allowDuet: boolean;
   allowStitch: boolean;
+  visibility: string;
   createdAt: Date;
   updatedAt: Date;
 }
