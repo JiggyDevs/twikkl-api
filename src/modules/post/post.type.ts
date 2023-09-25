@@ -1,5 +1,5 @@
 import { DateType, PaginationType } from 'src/core/types/database';
-import { AddTagDto, CreatePostDto } from './dto/create-post.dto';
+import { AddTagDto, CreatePostDto, EditPostDto } from './dto/create-post.dto';
 
 export type ICreatePost = CreatePostDto & {
   userId: string;
@@ -14,6 +14,8 @@ export type IGetUserPosts = PaginationType & {
   group: string;
   isDeleted: boolean;
   isAdminDeleted: boolean;
+  allowDuet: boolean;
+  allowStitch: boolean;
 };
 
 export type IDeletePost = {
@@ -46,3 +48,7 @@ export type IGetTags = PaginationType &
     post: string;
     name: string;
   };
+
+export type IEditPost = EditPostDto & {
+  postId: string;
+};

@@ -1,4 +1,10 @@
-import { IsArray, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import {
+  IsArray,
+  IsBoolean,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 
 export class CreatePostDto {
   @IsNotEmpty()
@@ -30,4 +36,14 @@ export class AddTagDto {
   @IsNotEmpty()
   @IsString()
   postId: string;
+}
+
+export class EditPostDto {
+  @IsOptional()
+  @IsBoolean()
+  allowDuet: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  allowStitch: boolean;
 }

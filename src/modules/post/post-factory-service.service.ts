@@ -15,6 +15,10 @@ export class PostFactoryService {
       post.isAdminDeleted = data.isAdminDeleted;
     if (data.isDeleted === false || data.isDeleted)
       post.isDeleted = data.isDeleted;
+    if (data.allowDuet === false || data.allowDuet)
+      post.allowDuet = data.allowDuet;
+    if (data.allowStitch === false || data.allowStitch)
+      post.allowStitch = data.allowStitch;
     // if (data.likes) post.likes = data.likes
     if (data.createdAt) post.createdAt = data.createdAt;
     if (data.updatedAt) post.updatedAt = data.updatedAt;

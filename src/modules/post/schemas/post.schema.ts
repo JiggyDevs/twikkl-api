@@ -29,6 +29,12 @@ export class Post {
   @Prop({ default: false })
   isAdminDeleted: boolean;
 
+  @Prop({ default: true })
+  allowDuet: boolean;
+
+  @Prop({ default: true })
+  allowStitch: boolean;
+
   @Prop()
   createdAt: Date;
 
