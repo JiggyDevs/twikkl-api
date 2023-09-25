@@ -17,6 +17,16 @@ export class UserFactoryService {
     if (data.twitter) user.twitter = data.twitter;
     if (data.deviceToken) user.deviceToken = data.deviceToken;
     if (data.emailVerified) user.emailVerified = data.emailVerified;
+    if (data.likesNotification === false || data.likesNotification)
+      user.likesNotification = data.likesNotification;
+    if (data.commentsNotification === false || data.commentsNotification)
+      user.commentsNotification = data.commentsNotification;
+    if (data.followersNotification === false || data.followersNotification)
+      user.followersNotification = data.followersNotification;
+    if (data.mentionsNotification === false || data.mentionsNotification)
+      user.mentionsNotification = data.mentionsNotification;
+    if (data.repostNotification === false || data.repostNotification)
+      user.repostNotification = data.repostNotification;
     if (data.createdAt) user.createdAt = data.createdAt;
     if (data.updatedAt) user.updatedAt = data.updatedAt;
 

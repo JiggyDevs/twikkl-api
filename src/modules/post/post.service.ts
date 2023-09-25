@@ -3,6 +3,7 @@ import { IDataServices } from 'src/core/abstracts';
 import {
   ICreatePost,
   IDeletePost,
+  IEditPost,
   IGetLikes,
   IGetPost,
   IGetUserPosts,
@@ -46,7 +47,11 @@ export class PostService {
     if (data.description) key['description'] = data.description;
     if (data.group) key['group'] = data.group;
     if (data.isAdminDeleted === false || data.isAdminDeleted)
-      key['isAdminDeleted'] = data.isAdminDeleted;
+      if (data.allowDuet === false || data.allowDuet)
+        key['allowDuet'] = data.allowDuet;
+    if (data.allowStitch === false || data.allowStitch)
+      key['allowStitch'] = data.allowStitch;
+    key['isAdminDeleted'] = data.isAdminDeleted;
     if (data.isDeleted === false || data.isDeleted)
       key['isDeleted'] = data.isDeleted;
     if (data.page) key['page'] = data.page;
@@ -58,9 +63,16 @@ export class PostService {
 
   async create(payload: ICreatePost) {
     try {
-      const { contentUrl, description, categoryId, tags, userId, groupId } =
-        payload;
-      console.log({ contentUrl, description, categoryId, tags, userId, groupId })
+      const {
+        contentUrl,
+        description,
+        categoryId,
+        tags,
+        userId,
+        groupId,
+        visibility,
+      } = payload;
+
       const postPayload: OptionalQuery<Post> = {
         contentUrl,
         description,
@@ -68,6 +80,7 @@ export class PostService {
         // tags,
         creator: userId,
         group: groupId ? groupId : null,
+        visibility: visibility ? visibility : null,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -360,6 +373,36 @@ export class PostService {
       return {
         message: 'Likes retrieved successfully',
         data: likes,
+        status: HttpStatus.OK,
+      };
+    } catch (error) {
+      Logger.error(error);
+      if (error.name === 'TypeError')
+        throw new HttpException(error.message, 500);
+      throw error;
+    }
+  }
+
+  async editPost(payload: IEditPost) {
+    try {
+      const { postId, allowDuet, allowStitch, visibility } = payload;
+
+      const post = await this.data.post.findOne({ _id: postId });
+      if (!post) throw new DoesNotExistsException('Post not found.');
+
+      const postPayload: OptionalQuery<Post> = {
+        allowDuet,
+        allowStitch,
+        visibility,
+      };
+
+      await this.data.post.update(
+        { _id: post._id },
+        { $set: { ...postPayload } },
+      );
+
+      return {
+        message: 'Post updated successfully',
         status: HttpStatus.OK,
       };
     } catch (error) {

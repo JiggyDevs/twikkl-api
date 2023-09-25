@@ -6,6 +6,9 @@ export class Post {
   group: string;
   isDeleted: boolean;
   isAdminDeleted: boolean;
+  allowDuet: boolean;
+  allowStitch: boolean;
+  visibility: string;
   createdAt: Date;
   updatedAt: Date;
 }

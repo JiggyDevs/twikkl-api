@@ -1,4 +1,12 @@
-import { IsArray, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import {
+  IsArray,
+  IsBoolean,
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+} from 'class-validator';
+import { PostVisibilityEnum } from '../post.type';
 
 export class CreatePostDto {
   @IsNotEmpty()
@@ -20,6 +28,10 @@ export class CreatePostDto {
   @IsOptional()
   @IsString()
   groupId: string;
+
+  @IsOptional()
+  @IsEnum(PostVisibilityEnum)
+  visibility: PostVisibilityEnum;
 }
 
 export class AddTagDto {
@@ -30,4 +42,18 @@ export class AddTagDto {
   @IsNotEmpty()
   @IsString()
   postId: string;
+}
+
+export class EditPostDto {
+  @IsOptional()
+  @IsBoolean()
+  allowDuet: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  allowStitch: boolean;
+
+  @IsOptional()
+  @IsEnum(PostVisibilityEnum)
+  visibility: PostVisibilityEnum;
 }
