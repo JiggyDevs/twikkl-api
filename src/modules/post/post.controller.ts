@@ -79,7 +79,7 @@ export class PostController {
     @Param('userId') userId: string,
   ) {
     // const userId = req.user._id;
-    query = { creator: userId, isDeleted: false };
+    query = { creator: userId, isDeleted: false, isAdminDeleted: false };
     const payload: IGetUserPosts = { ...query };
 
     const response = await this.service.getUserPosts(payload);

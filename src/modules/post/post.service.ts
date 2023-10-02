@@ -47,11 +47,11 @@ export class PostService {
     if (data.description) key['description'] = data.description;
     if (data.group) key['group'] = data.group;
     if (data.isAdminDeleted === false || data.isAdminDeleted)
-      if (data.allowDuet === false || data.allowDuet)
-        key['allowDuet'] = data.allowDuet;
+      key['isAdminDeleted'] = data.isAdminDeleted;
+    if (data.allowDuet === false || data.allowDuet)
+      key['allowDuet'] = data.allowDuet;
     if (data.allowStitch === false || data.allowStitch)
       key['allowStitch'] = data.allowStitch;
-    key['isAdminDeleted'] = data.isAdminDeleted;
     if (data.isDeleted === false || data.isDeleted)
       key['isDeleted'] = data.isDeleted;
     if (data.page) key['page'] = data.page;
@@ -139,14 +139,21 @@ export class PostService {
 
       const { data, pagination } = await this.data.post.findAllWithPagination(
         filterQuery,
+        { populate: 'creator' },
       );
 
       let returnedData = [];
 
       for (let i = 0; i < data.length; i++) {
         const postId = data[i]._id.toString();
-        const likes = await this.data.likes.find({ post: postId });
-        const comments = await this.data.comments.find({ post: postId });
+        const likes = await this.data.likes.find(
+          { post: postId },
+          { isLean: true, populate: 'user' },
+        );
+        const comments = await this.data.comments.find(
+          { post: postId },
+          { isLean: true, populate: 'user' },
+        );
 
         const newData = {
           ...data[i]._doc,
@@ -177,14 +184,21 @@ export class PostService {
 
       const { data, pagination } = await this.data.post.findAllWithPagination(
         filterQuery,
+        { populate: 'creator' },
       );
 
       let returnedData = [];
 
       for (let i = 0; i < data.length; i++) {
         const postId = data[i]._id.toString();
-        const likes = await this.data.likes.find({ post: postId });
-        const comments = await this.data.comments.find({ post: postId });
+        const likes = await this.data.likes.find(
+          { post: postId },
+          { isLean: true, populate: 'user' },
+        );
+        const comments = await this.data.comments.find(
+          { post: postId },
+          { isLean: true, populate: 'user' },
+        );
 
         const newData = {
           ...data[i]._doc,
@@ -242,10 +256,14 @@ export class PostService {
     try {
       const { postId } = payload;
 
-      const post = await this.data.post.findOne({
-        _id: postId,
-        isDeleted: false,
-      });
+      const post = await this.data.post.findOne(
+        {
+          _id: postId,
+          isDeleted: false,
+        },
+        null,
+        { populate: 'creator' },
+      );
       if (!post) throw new DoesNotExistsException('Post not found');
 
       return {
@@ -368,7 +386,10 @@ export class PostService {
       const post = await this.data.post.findOne({ _id: postId });
       if (!post) throw new DoesNotExistsException('Post not found');
 
-      const likes = await this.data.likes.find({ post: postId });
+      const likes = await this.data.likes.find(
+        { post: postId },
+        { isLean: true, populate: 'user' },
+      );
 
       return {
         message: 'Likes retrieved successfully',
