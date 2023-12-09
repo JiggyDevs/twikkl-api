@@ -309,6 +309,7 @@ export class PostService {
         content: 'TwikkL post liked',
         type: 'likes',
         user: userId,
+        post: postId,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -318,6 +319,7 @@ export class PostService {
         content: `${userDetails.username} liked your video`,
         type: 'likes',
         user: post.creator,
+        post: postId,
         createdAt: new Date(),
         updatedAt: new Date(),
       };

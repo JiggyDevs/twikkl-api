@@ -55,6 +55,7 @@ export class CommentService {
         content: 'Commented on TwikkL post',
         type: 'comments',
         user: userId,
+        post: postId,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -64,6 +65,7 @@ export class CommentService {
         content: `${userDetails.username} commented on your video`,
         type: 'comments',
         user: post.creator,
+        post: postId,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -125,19 +127,21 @@ export class CommentService {
     }
   }
 
-  async getRepliesToComment({commentId}: {commentId: string}) {
+  async getRepliesToComment({ commentId }: { commentId: string }) {
     try {
       // Check if the parent comment exists
-      const parentComment = await this.data.comments.find({_id: commentId});
+      const parentComment = await this.data.comments.find({ _id: commentId });
       if (!parentComment) {
         throw new DoesNotExistsException('Parent comment not found');
       }
 
       // Fetch all replies to the given comment
-      const replies = await this.data.comments.findAllWithPagination({
-        replyTo: commentId,
-        isDeleted: false,
-      }).exec();
+      const replies = await this.data.comments
+        .findAllWithPagination({
+          replyTo: commentId,
+          isDeleted: false,
+        })
+        .exec();
 
       return {
         message: 'Replies retrieved successfully',
