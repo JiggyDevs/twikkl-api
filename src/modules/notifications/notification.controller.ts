@@ -33,7 +33,7 @@ export class NotificationController {
   ) {
     const { userId } = param;
     query = { ...query, user: userId };
-    console.log({ query });
+    // console.log({ query });
     const payload: IGetNotifications = { ...query };
 
     const response = await this.service.getNotifications(payload);
