@@ -24,6 +24,9 @@ export class Group {
   @Prop({ type: [{ type: Types.ObjectId, ref: 'User' }], default: [] })
   members: string[];
 
+  @Prop({ type: [{ type: String }], default: [] })
+  categories: string[];
+
   @Prop({ default: false })
   isDeleted: boolean;
 
