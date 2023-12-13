@@ -9,6 +9,7 @@ export class Post {
   allowDuet: boolean;
   allowStitch: boolean;
   visibility: string;
+  tags: string[];
   createdAt: Date;
   updatedAt: Date;
 }

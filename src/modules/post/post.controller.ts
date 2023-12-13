@@ -24,6 +24,7 @@ import {
   IGetUserPosts,
   ILikePost,
 } from './post.type';
+import { FindByUserId } from '../user/user.type';
 // import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('posts')
@@ -60,10 +61,15 @@ export class PostController {
     return res.status(response.status).json(response);
   }
 
-  @Get('/feed')
+  @Get('/feed/:userId')
   @UseGuards(StrictAuthGuard)
-  async getUserFeed(@Res() res: Response, @Query() query: any) {
-    query = { isDeleted: false };
+  async getUserFeed(
+    @Res() res: Response,
+    @Query() query: any,
+    @Param('userId') userId: string,
+  ) {
+    // console.log({ query });/
+    query = { isDeleted: false, user: userId };
     const payload: IGetUserPosts = { ...query };
     const response = await this.service.getUserFeed(payload);
 
@@ -79,7 +85,12 @@ export class PostController {
     @Param('userId') userId: string,
   ) {
     // const userId = req.user._id;
-    query = { creator: userId, isDeleted: false, isAdminDeleted: false };
+    query = {
+      ...query,
+      creator: userId,
+      isDeleted: false,
+      isAdminDeleted: false,
+    };
     const payload: IGetUserPosts = { ...query };
 
     const response = await this.service.getUserPosts(payload);

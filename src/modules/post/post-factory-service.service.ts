@@ -20,6 +20,7 @@ export class PostFactoryService {
     if (data.allowStitch === false || data.allowStitch)
       post.allowStitch = data.allowStitch;
     if (data.visibility) post.visibility = data.visibility;
+    if (data.tags) post.tags = data.tags;
     // if (data.likes) post.likes = data.likes
     if (data.createdAt) post.createdAt = data.createdAt;
     if (data.updatedAt) post.updatedAt = data.updatedAt;

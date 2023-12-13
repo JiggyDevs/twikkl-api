@@ -39,6 +39,9 @@ export class Post {
   visibility: string;
 
   @Prop()
+  tags: string[];
+
+  @Prop()
   createdAt: Date;
 
   @Prop()
