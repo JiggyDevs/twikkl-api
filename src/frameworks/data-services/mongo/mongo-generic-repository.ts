@@ -118,10 +118,10 @@ export class MongoGenericRepository<T> implements IGenericRepository<T> {
         if (key == 'createdAt') {
           andArr.push({ [key]: { $gte: myDateFrom, $lt: myDateTo } });
         } else {
-          andArr.push({
-            [key]: String(queryObj[key]),
-          });
-          // andArr.push({ [key]: queryObj[key] })
+          // andArr.push({
+          //   [key]: String(queryObj[key]),
+          // });
+          andArr.push({ [key]: queryObj[key] });
         }
       }
       // https://stackoverflow.com/questions/35832113/and-expression-must-be-a-nonempty-array
