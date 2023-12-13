@@ -9,8 +9,17 @@ import { GroupFactoryService } from './group-factory.service';
 import { OptionalQuery } from 'src/core/types/database';
 import { Group } from './entities/group.entity';
 import { User } from '../user/entities/user.entity';
-import { DoesNotExistsException, ForbiddenRequestException } from 'src/lib/exceptions';
-import { IGetGroup, IGetGroupPosts, IGetGroups, IGetUserGroup, IGroupAction } from './group.type';
+import {
+  DoesNotExistsException,
+  ForbiddenRequestException,
+} from 'src/lib/exceptions';
+import {
+  IGetGroup,
+  IGetGroupPosts,
+  IGetGroups,
+  IGetUserGroup,
+  IGroupAction,
+} from './group.type';
 
 @Injectable()
 export class GroupService {
@@ -28,16 +37,14 @@ export class GroupService {
   // }
   async create(payload: CreateGroupDto) {
     try {
-      const { creator,description,name,avatar,coverImg } = payload;
+      const { creator, description, name, avatar, coverImg } = payload;
       const groupPayload: OptionalQuery<Group> = {
         creator: creator,
         description,
         name,
         avatar,
         coverImg,
-        members: [creator]
-        // creator: userId,
-        
+        members: [creator],
       };
 
       const factory = this.groupFactory.create(groupPayload);
@@ -58,42 +65,46 @@ export class GroupService {
 
   async find(payload: IGetGroups) {
     try {
-    let { data, pagination } = await this.data.group.findAllWithPagination(payload);
-    
-    return {
-      message: 'Groups retrieved successfully',
-      data,
-      pagination,
-      status: HttpStatus.OK,
-    };
-  } catch (error) {
-    Logger.error(error);
-    if (error.name === 'TypeError')
-      throw new HttpException(error.message, 500);
-    throw error;
-  }
+      let { data, pagination } = await this.data.group.findAllWithPagination(
+        payload,
+      );
+
+      return {
+        message: 'Groups retrieved successfully',
+        data,
+        pagination,
+        status: HttpStatus.OK,
+      };
+    } catch (error) {
+      Logger.error(error);
+      if (error.name === 'TypeError')
+        throw new HttpException(error.message, 500);
+      throw error;
+    }
   }
 
   async getGroupPosts(payload: IGetGroupPosts) {
     try {
       const query = {
         ...payload,
-        group: payload.groupId
-      }
-    let { data, pagination } = await this.data.post.findAllWithPagination(query);
-    
-    return {
-      message: 'Posts retrieved successfully',
-      data,
-      pagination,
-      status: HttpStatus.OK,
-    };
-  } catch (error) {
-    Logger.error(error);
-    if (error.name === 'TypeError')
-      throw new HttpException(error.message, 500);
-    throw error;
-  }
+        group: payload.groupId,
+      };
+      let { data, pagination } = await this.data.post.findAllWithPagination(
+        query,
+      );
+
+      return {
+        message: 'Posts retrieved successfully',
+        data,
+        pagination,
+        status: HttpStatus.OK,
+      };
+    } catch (error) {
+      Logger.error(error);
+      if (error.name === 'TypeError')
+        throw new HttpException(error.message, 500);
+      throw error;
+    }
   }
 
   async findOne(payload: IGetGroup) {
@@ -120,10 +131,11 @@ export class GroupService {
     }
   }
 
-
-  async updateGroup(_id: string, updateGroupDto: UpdateGroupDto): Promise<Group> {
-    return this.data.group.update({_id}, updateGroupDto)
-      .exec();
+  async updateGroup(
+    _id: string,
+    updateGroupDto: UpdateGroupDto,
+  ): Promise<Group> {
+    return this.data.group.update({ _id }, updateGroupDto).exec();
   }
 
   // async remove(_id: string): Promise<Group> {
@@ -162,74 +174,70 @@ export class GroupService {
 
   async joinGroup(payload: IGroupAction) {
     try {
-       
-    // const group = await this.groupModel.findById(groupId);
-    // const user = await this.userModel.findById(userId);
-    const { groupId, userId } = payload;
-    const data = this.data.group.update(
-        {_id: groupId},
+      // const group = await this.groupModel.findById(groupId);
+      // const user = await this.userModel.findById(userId);
+      const { groupId, userId } = payload;
+      const data = this.data.group.update(
+        { _id: groupId },
         { $addToSet: { members: userId } },
         // { new: true },
-      )
-      
+      );
 
       if (!data) {
         // Handle error if group not found
         throw new DoesNotExistsException('Group not found.');
       }
-      
-        return {
-          message: 'Group joined',
-          data,
-          status: HttpStatus.OK,
-        };
-      } catch (error) {
-        Logger.error(error);
-        if (error.name === 'TypeError')
-          throw new HttpException(error.message, 500);
-        throw error;
-      }
+
+      return {
+        message: 'Group joined',
+        data,
+        status: HttpStatus.OK,
+      };
+    } catch (error) {
+      Logger.error(error);
+      if (error.name === 'TypeError')
+        throw new HttpException(error.message, 500);
+      throw error;
+    }
   }
 
   async leaveGroup(payload: IGroupAction) {
     try {
-       
       // const group = await this.groupModel.findById(groupId);
       // const user = await this.userModel.findById(userId);
       const { groupId, userId } = payload;
       const data = this.data.group.update(
-          {_id: groupId},
-          { $pull: { members: userId }, },
-          // { new: true },
-        )
-        
-  
-        if (!data) {
-          // Handle error if group not found
-          throw new DoesNotExistsException('Group not found.');
-        }
-        
-          return {
-            message: 'Group left',
-            data,
-            status: HttpStatus.OK,
-          };
-        } catch (error) {
-          Logger.error(error);
-          if (error.name === 'TypeError')
-            throw new HttpException(error.message, 500);
-          throw error;
-        }
+        { _id: groupId },
+        { $pull: { members: userId } },
+        // { new: true },
+      );
+
+      if (!data) {
+        // Handle error if group not found
+        throw new DoesNotExistsException('Group not found.');
+      }
+
+      return {
+        message: 'Group left',
+        data,
+        status: HttpStatus.OK,
+      };
+    } catch (error) {
+      Logger.error(error);
+      if (error.name === 'TypeError')
+        throw new HttpException(error.message, 500);
+      throw error;
+    }
   }
 
   async getUserGroups(payload: IGetUserGroup) {
     try {
       const { userId } = payload;
 
-      
-      let { data: groups, pagination } = await this.data.group.findAllWithPagination({
-        members: userId
-      });
+      let { data: groups, pagination } =
+        await this.data.group.findAllWithPagination({
+          members: userId,
+        });
       if (!groups) throw new DoesNotExistsException('No Groups found');
 
       return {
@@ -244,16 +252,14 @@ export class GroupService {
         throw new HttpException(error.message, 500);
       throw error;
     }
-    
   }
 
   async getGroupMembers(payload: IGetGroup) {
- 
     try {
       const { groupId } = payload;
 
       const group = await this.data.group.find({
-        _id: groupId
+        _id: groupId,
       });
 
       if (!group) throw new DoesNotExistsException('Group not found');
@@ -270,8 +276,4 @@ export class GroupService {
       throw error;
     }
   }
-  
-  
 }
-
-
