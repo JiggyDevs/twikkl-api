@@ -54,9 +54,11 @@ export class PostService {
       key['allowStitch'] = data.allowStitch;
     if (data.isDeleted === false || data.isDeleted)
       key['isDeleted'] = data.isDeleted;
+    if (data.user) key['user'] = data.user;
     if (data.page) key['page'] = data.page;
     if (data.perpage) key['perpage'] = data.perpage;
     if (data.sort) key['sort'] = data.sort;
+    if (data.q) key['q'] = data.q;
 
     return key;
   }
@@ -77,7 +79,7 @@ export class PostService {
         contentUrl,
         description,
         category: categoryId,
-        // tags,
+        tags,
         creator: userId,
         group: groupId ? groupId : null,
         visibility: visibility ? visibility : null,
@@ -135,17 +137,32 @@ export class PostService {
 
   async getUserFeed(payload: IGetUserPosts) {
     try {
-      const filterQuery = this.cleanGetUserPostsQuery(payload);
+      let filterQuery = this.cleanGetUserPostsQuery(payload);
+      delete filterQuery['isDeleted'];
 
-      const { data, pagination } = await this.data.post.findAllWithPagination(
+      // const { data, pagination } = await this.data.post.findAllWithPagination(
+      //   filterQuery,
+      //   { populate: 'creator' },
+      // );
+      console.log({ filterQuery });
+      const { data, pagination } = await this.data.likes.findAllWithPagination(
         filterQuery,
-        { populate: 'creator' },
       );
+      console.log({ data });
+
+      const likedPostIds = data.map((like) => like.post);
+      console.log({ likedPostIds });
+
+      const similarPosts = await this.data.post.find({
+        _id: { $nin: likedPostIds },
+        tags: { $in: data.map((like) => like.tags) },
+      });
+      console.log({ similarPosts });
 
       let returnedData = [];
 
-      for (let i = 0; i < data.length; i++) {
-        const postId = data[i]._id.toString();
+      for (let i = 0; i < similarPosts.length; i++) {
+        const postId = similarPosts[i]._id.toString();
         const likes = await this.data.likes.find(
           { post: postId },
           { isLean: true, populate: 'user' },
@@ -156,7 +173,7 @@ export class PostService {
         );
 
         const newData = {
-          ...data[i]._doc,
+          ...similarPosts[i]._doc,
           likes,
           comments,
         };
@@ -180,7 +197,40 @@ export class PostService {
 
   async getUserPosts(payload: IGetUserPosts) {
     try {
-      const filterQuery = this.cleanGetUserPostsQuery(payload);
+      const filterQuery: any = this.cleanGetUserPostsQuery(payload);
+
+      if (filterQuery.q) {
+        const { data, pagination } = await this.data.post.search(filterQuery);
+
+        let returnedData = [];
+
+        for (let i = 0; i < data.length; i++) {
+          const postId = data[i]._id.toString();
+          const likes = await this.data.likes.find(
+            { post: postId },
+            { isLean: true, populate: 'user' },
+          );
+          const comments = await this.data.comments.find(
+            { post: postId },
+            { isLean: true, populate: 'user' },
+          );
+
+          const newData = {
+            ...data[i]._doc,
+            likes,
+            comments,
+          };
+
+          returnedData.push(newData);
+        }
+
+        return {
+          message: 'User Posts retrieved successfully',
+          data: returnedData,
+          pagination,
+          status: HttpStatus.OK,
+        };
+      }
 
       const { data, pagination } = await this.data.post.findAllWithPagination(
         filterQuery,

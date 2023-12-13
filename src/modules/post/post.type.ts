@@ -16,6 +16,8 @@ export type IGetUserPosts = PaginationType & {
   isAdminDeleted: boolean;
   allowDuet: boolean;
   allowStitch: boolean;
+  user: string;
+  q: string;
 };
 
 export type IDeletePost = {

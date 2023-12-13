@@ -31,5 +31,5 @@ export abstract class IGenericRepository<T> {
 
   abstract delete(key: FilterQuery<T>, session?: ClientSession);
 
-  abstract search(options: Record<string, any>, populate: string | string[]);
+  abstract search(query: Record<string, any>, populate?: string | string[]);
 }

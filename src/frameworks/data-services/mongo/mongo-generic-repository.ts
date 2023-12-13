@@ -166,15 +166,12 @@ export class MongoGenericRepository<T> implements IGenericRepository<T> {
     }
   }
 
-  async search(options: {
-    query: Record<string, any>;
-    populate?: string | string[];
-  }) {
+  async search(query: Record<string, any>, populate?: string | string[]) {
     try {
-      const { q } = options?.query;
+      const { q } = query;
       console.log('search value', q);
-      const perpage = Number(options?.query.perpage) || 10;
-      const page = Number(options?.query.page) || 1;
+      const perpage = Number(query.perpage) || 10;
+      const page = Number(query.page) || 1;
 
       const searchRecord = {
         $text: {
@@ -186,7 +183,7 @@ export class MongoGenericRepository<T> implements IGenericRepository<T> {
       const total = await this._repository.countDocuments(searchRecord);
       const data = await this._repository
         .find(searchRecord, { score: { $meta: 'textScore' } })
-        .populate(options?.populate)
+        .populate(populate)
         .limit(perpage)
         .skip(page * perpage - perpage)
         .sort({ score: { $meta: 'textScore' } });
