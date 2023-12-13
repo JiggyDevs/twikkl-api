@@ -59,14 +59,18 @@ export class GroupService {
   async find(payload: IGetGroups) {
     try {
       const { excludeJoined, userId, ...otherQueryParams } = payload;
-      let findQuery: any = { ...otherQueryParams };
+      let findQuery = undefined;
       console.log({ userId });
+
       if (excludeJoined) {
         findQuery = {
-          ...findQuery,
-          members: { $nin: [new Types.ObjectId(userId)] }, // Use $nin to exclude groups where the user is a member
+          ...otherQueryParams,
+          members: { $nin: userId }, // Use $nin to exclude groups where the user is a member
         };
+      } else {
+        findQuery = { ...otherQueryParams };
       }
+
       let { data, pagination } = await this.data.group.findAllWithPagination(
         findQuery,
       );
