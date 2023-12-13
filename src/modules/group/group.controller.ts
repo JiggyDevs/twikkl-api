@@ -51,10 +51,16 @@ export class GroupController {
     @Req() req: Request,
     @Res() res: Response,
     @Query() query: any,
+    @Query('excludeJoined') excludeJoined: boolean,
   ) {
     const userId = req.user._id;
-    query = { isDeleted: false };
-    const payload: IGetGroups = { ...query };
+
+    const payload: IGetGroups = {
+      ...query,
+      isDeleted: false,
+      excludeJoined: excludeJoined || false,
+      userId,
+    };
 
     const response = await this.groupService.find(payload);
     return res.status(response.status).json(response);

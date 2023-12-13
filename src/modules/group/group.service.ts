@@ -20,6 +20,7 @@ import {
   IGetUserGroup,
   IGroupAction,
 } from './group.type';
+import { Types } from 'mongoose';
 
 @Injectable()
 export class GroupService {
@@ -27,14 +28,6 @@ export class GroupService {
     private groupFactory: GroupFactoryService,
     private data: IDataServices,
   ) {}
-
-  // async create(createGroupDto: CreateGroupDto): Promise<Group> {
-  //   const createdGroup = new this.groupModel({
-  //     ...createGroupDto,
-  //     members: [createGroupDto.createdBy],
-  //   });
-  //   return createdGroup.save();
-  // }
   async create(payload: CreateGroupDto) {
     try {
       const { creator, description, name, avatar, coverImg } = payload;
@@ -65,8 +58,17 @@ export class GroupService {
 
   async find(payload: IGetGroups) {
     try {
+      const { excludeJoined, userId, ...otherQueryParams } = payload;
+      let findQuery: any = { ...otherQueryParams };
+      console.log({ userId });
+      if (excludeJoined) {
+        findQuery = {
+          ...findQuery,
+          members: { $nin: [new Types.ObjectId(userId)] }, // Use $nin to exclude groups where the user is a member
+        };
+      }
       let { data, pagination } = await this.data.group.findAllWithPagination(
-        payload,
+        findQuery,
       );
 
       return {
