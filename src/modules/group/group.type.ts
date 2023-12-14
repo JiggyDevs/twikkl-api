@@ -1,7 +1,11 @@
 import { DateType, PaginationType } from 'src/core/types/database';
 import { AddGroupToFavoritesDto, CreateGroupDto } from './dto/create-group.dto';
 
-export type IGetGroups = PaginationType & {};
+export type IGetGroups = PaginationType & {
+  excludeJoined: boolean;
+  isDeleted: boolean;
+  userId: string;
+};
 
 export type IGetGroup = {
   groupId: string;
@@ -39,3 +43,8 @@ export type IGetFavoriteGroup = {
 export type IRemoveGroupFromFavorites = {
   groupId: string;
 };
+
+export enum GroupPrivacy {
+  Private = 'private',
+  Public = 'public',
+}

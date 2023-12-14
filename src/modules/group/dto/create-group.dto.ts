@@ -13,6 +13,8 @@ export class CreateGroupDto {
   creator: string;
   coverImg?: string;
   avatar?: string;
+  categories?: string[];
+  // invitations?: string[];
 }
 
 export class AddGroupToFavoritesDto {
