@@ -5,6 +5,7 @@ export class Group {
   coverImg: string;
   avatar: string;
   members: string[];
+  categories: string[];
   isDeleted: boolean;
   isAdminDeleted: boolean;
 }
