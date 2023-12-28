@@ -61,15 +61,15 @@ export class PostController {
     return res.status(response.status).json(response);
   }
 
-  @Get('/feed/:userId')
+  @Get('/feed')
   @UseGuards(StrictAuthGuard)
   async getUserFeed(
+    @Req() req: Request,
     @Res() res: Response,
     @Query() query: any,
-    @Param('userId') userId: string,
   ) {
-    // console.log({ query });/
-    query = { isDeleted: false, user: userId };
+    const userId = req.user._id;
+    query = { isDeleted: false };
     const payload: IGetUserPosts = { ...query };
     const response = await this.service.getUserFeed(payload);
 
