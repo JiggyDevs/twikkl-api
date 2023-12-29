@@ -32,7 +32,7 @@ export class FavoriteGroupsController {
     @Body() body: AddGroupToFavoritesDto,
   ) {
     const userId = req.user._id;
-    const payload: IAddGroupToFavorites = { userId, ...body };
+    const payload: IAddGroupToFavorites = { ...body, userId };
 
     const response = await this.service.addGroupToFavorites(payload);
     return res.status(response.status).json(response);
