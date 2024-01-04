@@ -27,6 +27,7 @@ export class UserFactoryService {
       user.mentionsNotification = data.mentionsNotification;
     if (data.repostNotification === false || data.repostNotification)
       user.repostNotification = data.repostNotification;
+    if (data.active === false || user.active) user.active = data.active;
     if (data.createdAt) user.createdAt = data.createdAt;
     if (data.updatedAt) user.updatedAt = data.updatedAt;
 

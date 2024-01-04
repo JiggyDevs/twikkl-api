@@ -15,6 +15,7 @@ export class User {
   followersNotification: boolean;
   mentionsNotification: boolean;
   repostNotification: boolean;
+  active: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
