@@ -15,6 +15,7 @@ export class CreateGroupDto {
   avatar?: string;
   categories?: string[];
   // invitations?: string[];
+  isPrivate: boolean;
 }
 
 export class AddGroupToFavoritesDto {
