@@ -9,6 +9,7 @@ import { Group } from 'src/modules/group/entities/group.entity';
 import { Category } from 'src/modules/category/entities/category.entity';
 import { FavoriteGroups } from 'src/modules/group/entities/favorite-group.entity';
 import { Tags } from 'src/modules/post/entities/tags.entity';
+import { Admin } from 'src/modules/admin/entities/admin.entity';
 
 export abstract class IDataServices {
   abstract users: IGenericRepository<User>;
@@ -21,4 +22,5 @@ export abstract class IDataServices {
   abstract categories: IGenericRepository<Category>;
   abstract favoriteGroups: IGenericRepository<FavoriteGroups>;
   abstract tags: IGenericRepository<Tags>;
+  abstract admin: IGenericRepository<Admin>;
 }

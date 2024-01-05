@@ -1,3 +1,4 @@
+import { Admin, AdminSchema } from 'src/modules/admin/schemas/admin.schema';
 import {
   Category,
   CategorySchema,
@@ -64,5 +65,9 @@ export const SCHEMA_LIST = [
   {
     name: Tags.name,
     schema: TagsSchema,
+  },
+  {
+    name: Admin.name,
+    schema: AdminSchema,
   },
 ];

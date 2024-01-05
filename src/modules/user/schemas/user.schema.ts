@@ -53,6 +53,9 @@ export class User {
   @Prop({ default: true })
   repostNotification: boolean;
 
+  @Prop({ default: true })
+  active: boolean;
+
   @Prop()
   createdAt: Date;
 

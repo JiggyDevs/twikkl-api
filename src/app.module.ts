@@ -15,11 +15,14 @@ import { FollowingModule } from './modules/following/following.module';
 import { FirebaseServiceModule } from './modules/firebase/firebase.module';
 import { GroupsModule } from './modules/group/group.module';
 import { CategoryServiceModule } from './modules/category/category.module';
+import { Admin } from './modules/admin/entities/admin.entity';
+import { AdminServiceModule } from './modules/admin/admin-auth.module';
 
 declare global {
   namespace Express {
     export interface Request {
       user?: JWT_USER_PAYLOAD_TYPE;
+      admin?: Admin;
     }
   }
   var io: any;
@@ -39,6 +42,7 @@ declare global {
     FirebaseServiceModule,
     GroupsModule,
     CategoryServiceModule,
+    AdminServiceModule,
   ],
   controllers: [AppController],
   providers: [AppService],

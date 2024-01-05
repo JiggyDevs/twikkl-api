@@ -38,16 +38,23 @@ export class UserService {
   }
 
   async getAllUsers(payload: IGetAllUsers) {
-    const filterQuery = this.cleanUserQuery(payload);
-    const { data, pagination } = await this.data.users.findAllWithPagination(
-      filterQuery,
-    );
-    return {
-      message: 'Users retrieved successfully',
-      status: HttpStatus.OK,
-      data,
-      pagination,
-    };
+    try {
+      const filterQuery = this.cleanUserQuery(payload);
+      const { data, pagination } = await this.data.users.findAllWithPagination(
+        filterQuery,
+      );
+      return {
+        message: 'Users retrieved successfully',
+        status: HttpStatus.OK,
+        data,
+        pagination,
+      };
+    } catch (error) {
+      Logger.error(error);
+      if (error.name === 'TypeError')
+        throw new HttpException(error.message, 500);
+      throw error;
+    }
   }
 
   async getUser(payload: IGetUser) {

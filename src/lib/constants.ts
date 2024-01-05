@@ -41,9 +41,13 @@ export const API_VERSION_LIST = [
 
 export type JWT_USER_PAYLOAD_TYPE = {
   _id?: string;
-  username: string;
+  username?: string;
   email: string;
-  emailVerified: boolean;
+  emailVerified?: boolean;
+  firstName?: string;
+  lastName?: string;
+  status?: string;
+  role?: string;
 };
 
 export const JWT_EXPIRY_TIME: number = 5;
@@ -79,6 +83,8 @@ export enum RedisPrefix {
   resetpassword = 'twikkL/resetPassword',
   changeEmailResetCount = 'twikkL/changeEmailResetCount',
   emailResetCode = 'twikkL/emailResetCode',
+  adminInviteCode = 'twikkL/adminInviteCode',
 }
 
 export const RESET_PASSWORD_EXPIRY = 600;
+export const DAY_IN_SECONDS = 86400;

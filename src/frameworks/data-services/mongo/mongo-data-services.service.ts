@@ -23,6 +23,7 @@ import { FavoriteGroups } from 'src/modules/group/entities/favorite-group.entity
 import { FavoriteGroupsDocument } from 'src/modules/group/schemas/favorite-group.schema';
 import { Tags } from 'src/modules/post/entities/tags.entity';
 import { TagsDocument } from 'src/modules/post/schemas/tags.schema';
+import { Admin, AdminDocument } from 'src/modules/admin/schemas/admin.schema';
 
 @Injectable()
 export class MongoDataServices
@@ -38,6 +39,7 @@ export class MongoDataServices
   categories: MongoGenericRepository<Category>;
   favoriteGroups: MongoGenericRepository<FavoriteGroups>;
   tags: MongoGenericRepository<Tags>;
+  admin: MongoGenericRepository<Admin>;
 
   constructor(
     @InjectModel(User.name)
@@ -66,8 +68,12 @@ export class MongoDataServices
 
     @InjectModel(FavoriteGroups.name)
     private FavoriteGroupsRepository: Model<FavoriteGroupsDocument>,
+
     @InjectModel(Tags.name)
     private TagsRepository: Model<TagsDocument>,
+
+    @InjectModel(Admin.name)
+    private AdminRepository: Model<AdminDocument>,
   ) {}
 
   onApplicationBootstrap() {
@@ -91,5 +97,6 @@ export class MongoDataServices
       this.FavoriteGroupsRepository,
     );
     this.tags = new MongoGenericRepository<Tags>(this.TagsRepository);
+    this.admin = new MongoGenericRepository<Admin>(this.AdminRepository);
   }
 }
