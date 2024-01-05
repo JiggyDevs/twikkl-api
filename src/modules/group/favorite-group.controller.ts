@@ -32,7 +32,7 @@ export class FavoriteGroupsController {
     @Body() body: AddGroupToFavoritesDto,
   ) {
     const userId = req.user._id;
-    const payload: IAddGroupToFavorites = { userId, ...body };
+    const payload: IAddGroupToFavorites = { ...body, userId };
 
     const response = await this.service.addGroupToFavorites(payload);
     return res.status(response.status).json(response);
@@ -65,9 +65,14 @@ export class FavoriteGroupsController {
 
   @Delete('/:groupId')
   @UseGuards(StrictAuthGuard)
-  async removeGroupFromFavorites(@Res() res: Response, @Param() params: any) {
+  async removeGroupFromFavorites(
+    @Req() req: Request,
+    @Res() res: Response,
+    @Param() params: any,
+  ) {
     const { groupId } = params;
-    const payload: IRemoveGroupFromFavorites = { groupId };
+    const userId = req.user._id;
+    const payload: IRemoveGroupFromFavorites = { groupId, userId };
 
     const response = await this.service.removeGroupFromFavorites(payload);
     return res.status(response.status).json(response);

@@ -33,10 +33,20 @@ export class FavoriteGroupsService {
     try {
       const { groupId, userId } = payload;
 
-      const group = await this.data.group.findOne({ _id: groupId });
+      const [group, markedGroup] = await Promise.all([
+        this.data.group.findOne({
+          _id: groupId,
+        }),
+        this.data.favoriteGroups.findOne({
+          group: groupId,
+          user: userId,
+        }),
+      ]);
       if (!group) throw new DoesNotExistsException('Group does not exist');
+      if (markedGroup)
+        throw new DoesNotExistsException('Group has been marked');
 
-      const favoriteGroupPayload: OptionalQuery<FavoriteGroups> = {
+      const favoriteGroupPayload: FavoriteGroups = {
         group: groupId,
         user: userId,
         createdAt: new Date(),
@@ -44,9 +54,7 @@ export class FavoriteGroupsService {
       };
 
       const factory = this.favoriteGroupFactory.create(favoriteGroupPayload);
-
       const data = await this.data.favoriteGroups.create(factory);
-
       return {
         message: 'Group added to favorites',
         status: HttpStatus.OK,
@@ -81,38 +89,18 @@ export class FavoriteGroupsService {
     }
   }
 
-  // async getFavoriteGroup(payload: IGetFavoriteGroup) {
-  //   try {
-  //     const { groupId } = payload;
-
-  //     const favoriteGroup = await this.data.favoriteGroups.findOne({
-  //       group: groupId,
-  //     });
-  //     if (!favoriteGroup)
-  //       throw new DoesNotExistsException('Favorite group not found.');
-
-  //     return {
-  //       message: 'Favorite group retrieved',
-  //       status: HttpStatus.OK,
-  //       data: favoriteGroup,
-  //     };
-  //   } catch (error) {
-  //     Logger.error(error);
-  //     if (error.name === 'TypeError')
-  //       throw new HttpException(error.message, 500);
-  //     throw error;
-  //   }
-  // }
-
   async removeGroupFromFavorites(payload: IRemoveGroupFromFavorites) {
     try {
-      const { groupId } = payload;
+      const { groupId, userId } = payload;
 
-      const group = await this.data.favoriteGroups.findOne({ group: groupId });
+      const group = await this.data.favoriteGroups.findOne({
+        group: groupId,
+        user: userId,
+      });
       if (!group)
         throw new DoesNotExistsException('Group not found in favorite groups');
 
-      await this.data.favoriteGroups.delete({ group: groupId });
+      await this.data.favoriteGroups.delete({ group: groupId, user: userId });
 
       return {
         message: 'Group removed from favorites',
