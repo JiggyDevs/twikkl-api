@@ -20,6 +20,10 @@ import {
   Notification,
   NotificationSchema,
 } from 'src/modules/notifications/schemas/notification.schema';
+import {
+  BookmarkedPost,
+  BookmarkedPostSchema,
+} from 'src/modules/post/schemas/bookmarked-post.schema';
 import { Likes, LikesSchema } from 'src/modules/post/schemas/likes.schema';
 import { Post, PostSchema } from 'src/modules/post/schemas/post.schema';
 import { Tags, TagsSchema } from 'src/modules/post/schemas/tags.schema';
@@ -33,6 +37,10 @@ export const SCHEMA_LIST = [
   {
     name: Post.name,
     schema: PostSchema,
+  },
+  {
+    name: BookmarkedPost.name,
+    schema: BookmarkedPostSchema,
   },
   {
     name: Group.name,

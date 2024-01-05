@@ -1,5 +1,10 @@
 import { DateType, PaginationType } from 'src/core/types/database';
-import { AddTagDto, CreatePostDto, EditPostDto } from './dto/create-post.dto';
+import {
+  AddPostToBookmarksDto,
+  AddTagDto,
+  CreatePostDto,
+  EditPostDto,
+} from './dto/create-post.dto';
 
 export type ICreatePost = CreatePostDto & {
   userId: string;
@@ -49,6 +54,16 @@ export type IGetTags = PaginationType &
     _id: string;
     post: string;
     name: string;
+  };
+
+export type IAddPostToBookmarks = AddPostToBookmarksDto & {
+  userId: string;
+};
+
+export type IGetAllUserBookmarks = PaginationType &
+  DateType & {
+    _id: string;
+    post: string;
   };
 
 export type IEditPost = EditPostDto & {

@@ -24,6 +24,10 @@ import { FavoriteGroupsDocument } from 'src/modules/group/schemas/favorite-group
 import { Tags } from 'src/modules/post/entities/tags.entity';
 import { TagsDocument } from 'src/modules/post/schemas/tags.schema';
 import { Admin, AdminDocument } from 'src/modules/admin/schemas/admin.schema';
+import {
+  BookmarkedPost,
+  BookmarkedPostDocument,
+} from 'src/modules/post/schemas/bookmarked-post.schema';
 
 @Injectable()
 export class MongoDataServices
@@ -31,6 +35,7 @@ export class MongoDataServices
 {
   users: MongoGenericRepository<User>;
   post: MongoGenericRepository<Post>;
+  bookmarkedPost: MongoGenericRepository<BookmarkedPost>;
   group: MongoGenericRepository<Group>;
   likes: MongoGenericRepository<Likes>;
   comments: MongoGenericRepository<Comment>;
@@ -47,6 +52,9 @@ export class MongoDataServices
 
     @InjectModel(Post.name)
     private PostRepository: Model<PostDocument>,
+
+    @InjectModel(BookmarkedPost.name)
+    private BookmarkedPostRepository: Model<BookmarkedPostDocument>,
 
     @InjectModel(Group.name)
     private GroupRepository: Model<Group>,
@@ -79,6 +87,9 @@ export class MongoDataServices
   onApplicationBootstrap() {
     this.users = new MongoGenericRepository<User>(this.UserRepository);
     this.post = new MongoGenericRepository<Post>(this.PostRepository);
+    this.bookmarkedPost = new MongoGenericRepository<BookmarkedPost>(
+      this.BookmarkedPostRepository,
+    );
     this.likes = new MongoGenericRepository<Likes>(this.LikesRepository);
     this.group = new MongoGenericRepository<Group>(this.GroupRepository);
     this.comments = new MongoGenericRepository<Comment>(

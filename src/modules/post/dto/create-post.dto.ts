@@ -57,3 +57,9 @@ export class EditPostDto {
   @IsEnum(PostVisibilityEnum)
   visibility: PostVisibilityEnum;
 }
+
+export class AddPostToBookmarksDto {
+  @IsNotEmpty()
+  @IsString()
+  postId: string;
+}

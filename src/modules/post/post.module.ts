@@ -13,6 +13,9 @@ import { FirebaseService } from '../firebase/firebase.service';
 import { TagsFactoryService } from './tags-factory.service';
 import { TagsService } from './tags.service';
 import { TagsController } from './tags.controller';
+import { BookmarkedPostController } from './bookmarked-post.controller';
+import { BookmarkedPostFactoryService } from './bookmarked-post.factory';
+import { BookmarkedPostService } from './bookmarked-post.service';
 
 @Module({
   imports: [
@@ -21,10 +24,12 @@ import { TagsController } from './tags.controller';
     DiscordServicesModule,
     FileSystemModule,
   ],
-  controllers: [PostController, TagsController],
+  controllers: [PostController, TagsController, BookmarkedPostController],
   providers: [
     PostService,
     PostFactoryService,
+    BookmarkedPostService,
+    BookmarkedPostFactoryService,
     LikesFactoryService,
     NotificationFactoryService,
     FirebaseService,
@@ -34,6 +39,8 @@ import { TagsController } from './tags.controller';
   exports: [
     PostService,
     PostFactoryService,
+    BookmarkedPostService,
+    BookmarkedPostFactoryService,
     LikesFactoryService,
     TagsFactoryService,
     TagsService,
