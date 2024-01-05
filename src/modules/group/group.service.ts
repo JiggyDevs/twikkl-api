@@ -30,7 +30,8 @@ export class GroupService {
   ) {}
   async create(payload: CreateGroupDto) {
     try {
-      const { creator, description, name, avatar, coverImg } = payload;
+      const { creator, description, name, avatar, coverImg, isPrivate } =
+        payload;
       const groupPayload: OptionalQuery<Group> = {
         creator: creator,
         description,
@@ -38,6 +39,7 @@ export class GroupService {
         avatar,
         coverImg,
         members: [creator],
+        isPrivate,
       };
 
       const factory = this.groupFactory.create(groupPayload);

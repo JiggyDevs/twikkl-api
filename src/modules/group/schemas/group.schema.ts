@@ -31,6 +31,9 @@ export class Group {
   isDeleted: boolean;
 
   @Prop({ default: false })
+  isPrivate: boolean;
+
+  @Prop({ default: false })
   isAdminDeleted: boolean;
 }
 

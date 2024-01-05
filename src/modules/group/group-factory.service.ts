@@ -10,8 +10,9 @@ export class GroupFactoryService {
     if (data.coverImg) group.coverImg = data.coverImg;
     if (data.creator) group.creator = data.creator;
     if (data.description) group.description = data.description;
-    // if (data.isAdminDeleted) group.isAdminDeleted = data.isAdminDeleted;
-    // if (data.isDeleted) group.isDeleted = data.isDeleted;
+    if (data.isAdminDeleted) group.isAdminDeleted = false;
+    if (data.isDeleted) group.isDeleted = false;
+    if (data.isPrivate) group.isPrivate = data.isPrivate;
     if (data.members) group.members = data.members;
     if (data.name) group.name = data.name;
 
