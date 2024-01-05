@@ -42,6 +42,7 @@ export type IGetFavoriteGroup = {
 
 export type IRemoveGroupFromFavorites = {
   groupId: string;
+  userId: string;
 };
 
 export enum GroupPrivacy {

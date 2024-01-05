@@ -66,6 +66,7 @@ export class MongoDataServices
 
     @InjectModel(FavoriteGroups.name)
     private FavoriteGroupsRepository: Model<FavoriteGroupsDocument>,
+
     @InjectModel(Tags.name)
     private TagsRepository: Model<TagsDocument>,
   ) {}

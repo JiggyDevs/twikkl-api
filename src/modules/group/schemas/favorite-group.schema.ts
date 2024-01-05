@@ -1,8 +1,9 @@
-import { Prop, SchemaFactory } from '@nestjs/mongoose';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Types } from 'mongoose';
 
 export type FavoriteGroupsDocument = Document & FavoriteGroups;
 
+@Schema()
 export class FavoriteGroups {
   @Prop({ type: Types.ObjectId, ref: 'Group', required: true })
   group: string;
