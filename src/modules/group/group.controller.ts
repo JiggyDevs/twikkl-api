@@ -87,14 +87,15 @@ export class GroupController {
 
   @Get('/:groupId/posts')
   @UseGuards(StrictAuthGuard)
-  async getGroupPosts(@Res() res: Response, @Param() param: IGetGroup) {
+  async getGroupPosts(
+    @Res() res: Response,
+    @Param() param: IGetGroup,
+    @Query() query: any,
+  ) {
     const { groupId } = param;
     const payload: IGetGroupPosts = {
+      ...query,
       groupId,
-      perpage: '10',
-      page: '1',
-      sort: '-1',
-      q: '',
     };
 
     const response = await this.groupService.getGroupPosts(payload);

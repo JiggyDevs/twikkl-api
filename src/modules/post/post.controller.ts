@@ -69,7 +69,7 @@ export class PostController {
     @Query() query: any,
   ) {
     const userId = req.user._id;
-    query = { isDeleted: false };
+    query = { ...query, isDeleted: false };
     const payload: IGetUserPosts = { ...query };
     const response = await this.service.getUserFeed(payload);
 
