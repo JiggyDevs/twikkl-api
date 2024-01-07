@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Types } from 'mongoose';
+import { Document, Types } from 'mongoose';
 
 export type PostDocument = Post & Document;
 
@@ -37,6 +37,12 @@ export class Post {
 
   @Prop({ default: 'public' })
   visibility: string;
+
+  @Prop({ type: Number, default: 0 })
+  totalLikes: number;
+
+  @Prop({ type: Number, default: 0 })
+  totalComments: number;
 
   @Prop()
   tags: string[];
