@@ -73,6 +73,17 @@ export class GroupService {
         findQuery = { ...otherQueryParams };
       }
 
+      if (findQuery.q) {
+        const { data, pagination } = await this.data.group.search(findQuery);
+
+        return {
+          message: 'User Posts retrieved successfully',
+          data,
+          pagination,
+          status: HttpStatus.OK,
+        };
+      }
+
       let { data, pagination } = await this.data.group.findAllWithPagination(
         findQuery,
       );

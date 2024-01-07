@@ -137,14 +137,40 @@ export class PostService {
 
   async getUserFeed(payload: IGetUserPosts) {
     try {
-      let filterQuery = this.cleanGetUserPostsQuery(payload);
+      let filterQuery: any = this.cleanGetUserPostsQuery(payload);
       delete filterQuery['isDeleted'];
 
-      // const { data, pagination } = await this.data.post.findAllWithPagination(
-      //   filterQuery,
-      //   { populate: 'creator' },
-      // );
-      console.log({ filterQuery });
+      if (filterQuery.q) {
+        const { data, pagination } = await this.data.post.search(filterQuery);
+        let returnedData = [];
+
+        for (let i = 0; i < data.length; i++) {
+          const postId = data[i]._id.toString();
+          const likes = await this.data.likes.find(
+            { post: postId },
+            { isLean: true, populate: 'user' },
+          );
+          const comments = await this.data.comments.find(
+            { post: postId },
+            { isLean: true, populate: 'user' },
+          );
+
+          const newData = {
+            ...data[i]._doc,
+            likes,
+            comments,
+          };
+
+          returnedData.push(newData);
+        }
+
+        return {
+          message: 'User Posts retrieved successfully',
+          data: returnedData,
+          pagination,
+          status: HttpStatus.OK,
+        };
+      }
       const { data, pagination } = await this.data.likes.findAllWithPagination(
         filterQuery,
       );
@@ -201,7 +227,6 @@ export class PostService {
 
       if (filterQuery.q) {
         const { data, pagination } = await this.data.post.search(filterQuery);
-
         let returnedData = [];
 
         for (let i = 0; i < data.length; i++) {

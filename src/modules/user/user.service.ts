@@ -39,7 +39,19 @@ export class UserService {
 
   async getAllUsers(payload: IGetAllUsers) {
     try {
-      const filterQuery = this.cleanUserQuery(payload);
+      const filterQuery: any = this.cleanUserQuery(payload);
+
+      if (filterQuery.q) {
+        const { data, pagination } = await this.data.users.search(filterQuery);
+
+        return {
+          message: 'Users retrieved successfully',
+          data,
+          pagination,
+          status: HttpStatus.OK,
+        };
+      }
+
       const { data, pagination } = await this.data.users.findAllWithPagination(
         filterQuery,
       );
