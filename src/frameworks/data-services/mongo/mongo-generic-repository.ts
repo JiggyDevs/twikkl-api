@@ -1,4 +1,11 @@
-import { ClientSession, FilterQuery, Model, UpdateQuery } from 'mongoose';
+import { populate } from 'dotenv';
+import {
+  ClientSession,
+  FilterQuery,
+  Model,
+  PipelineStage,
+  UpdateQuery,
+} from 'mongoose';
 import { IGenericRepository } from 'src/core/abstracts';
 import { convertDate, isEmpty } from 'src/lib/utils';
 
@@ -200,6 +207,32 @@ export class MongoGenericRepository<T> implements IGenericRepository<T> {
           lastPage: Math.ceil(total / perpage),
         },
       });
+    } catch (e) {
+      return Promise.reject(e);
+    }
+  }
+
+  async aggregate(
+    pipeline: PipelineStage[],
+    options: {
+      populate?: {
+        from: string;
+        localField: string;
+        foreignField: string;
+        as: string;
+      };
+      session?: ClientSession;
+    } = {},
+  ) {
+    try {
+      let aggregation = this._repository.aggregate(pipeline);
+
+      if (options?.populate) {
+        aggregation = aggregation.lookup(options.populate);
+      }
+
+      const result = await aggregation.session(options?.session || null).exec();
+      return Promise.resolve(result);
     } catch (e) {
       return Promise.reject(e);
     }
