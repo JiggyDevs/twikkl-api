@@ -154,12 +154,10 @@ export class CommentService {
       }
 
       // Fetch all replies to the given comment
-      const replies = await this.data.comments
-        .findAllWithPagination({
-          replyTo: commentId,
-          isDeleted: false,
-        })
-        .exec();
+      const replies = await this.data.comments.findAllWithPagination({
+        replyTo: commentId,
+        isDeleted: false,
+      });
 
       return {
         message: 'Replies retrieved successfully',
