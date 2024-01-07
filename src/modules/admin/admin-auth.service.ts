@@ -10,10 +10,17 @@ import { AdminAuthFactoryService } from './admin-auth-factory.service';
 import {
   DAY_IN_SECONDS,
   JWT_USER_PAYLOAD_TYPE,
+  RESET_PASSWORD_EXPIRY,
   RedisPrefix,
 } from 'src/lib/constants';
 import { randomBytes } from 'crypto';
-import { compareHash, hash, isEmpty } from 'src/lib/utils';
+import {
+  compareHash,
+  hash,
+  isEmpty,
+  randomFixedInteger,
+  secondsToDhms,
+} from 'src/lib/utils';
 import {
   ADMIN_FRONTEND_URL,
   DISCORD_VERIFICATION_CHANNEL_LINK,
@@ -24,10 +31,17 @@ import { DiscordService } from 'src/frameworks/notification-services/discord/dis
 import {
   AlreadyExistsException,
   BadRequestsException,
+  DoesNotExistsException,
+  TooManyRequestsException,
 } from 'src/lib/exceptions';
 import { AdminLoginDto } from './dto/login-admin-dto';
 import { Admin } from './entities/admin.entity';
 import jwtLib from 'src/lib/jwtLib';
+import {
+  IRecoverPassword,
+  IResetAdminPassword,
+  IResetPassword,
+} from '../auth/types/auth.types';
 
 @Injectable()
 export class AdminAuthService {
@@ -138,41 +152,215 @@ export class AdminAuthService {
 
   async login(payload: ILoginAdmin) {
     try {
-      const { email, password, res } = payload;
+      const { email, userName, password, res } = payload;
+
+      if (email) {
+        const admin = await this.data.admin.findOne({ email });
+
+        if (admin.status === AdminStatus.TERMINATED)
+          throw new BadRequestsException('Account terminated.');
+
+        if (isEmpty(admin))
+          throw new BadRequestsException('Email or password incorrect');
+
+        if (isEmpty(admin?.password))
+          throw new BadRequestsException('Reset password.');
+
+        const correctPassword: boolean = await compareHash(
+          password,
+          admin?.password,
+        );
+        if (!correctPassword)
+          throw new BadRequestsException('Email or password incorrect.');
+
+        const data: JWT_USER_PAYLOAD_TYPE = {
+          _id: admin?._id,
+          email: admin.email,
+          username: admin.userName,
+          firstName: admin.firstName,
+          lastName: admin.lastName,
+        };
+
+        const token = await jwtLib.jwtSign(data);
+        res.set('Authorization', `Bearer ${token}`);
+
+        return {
+          status: HttpStatus.OK,
+          message: 'Admin logged in successfully',
+          token: `Bearer ${token}`,
+          data,
+        };
+      }
+
+      if (userName) {
+        const admin = await this.data.admin.findOne({ userName });
+
+        if (admin.status === AdminStatus.TERMINATED)
+          throw new BadRequestsException('Account terminated.');
+
+        if (isEmpty(admin))
+          throw new BadRequestsException('Email or password incorrect');
+
+        if (isEmpty(admin?.password))
+          throw new BadRequestsException('Reset password.');
+
+        const correctPassword: boolean = await compareHash(
+          password,
+          admin?.password,
+        );
+        if (!correctPassword)
+          throw new BadRequestsException('Email or password incorrect.');
+
+        const data: JWT_USER_PAYLOAD_TYPE = {
+          _id: admin?._id,
+          email: admin.email,
+          username: admin.userName,
+          firstName: admin.firstName,
+          lastName: admin.lastName,
+        };
+
+        const token = await jwtLib.jwtSign(data);
+        res.set('Authorization', `Bearer ${token}`);
+
+        return {
+          status: HttpStatus.OK,
+          message: 'Admin logged in successfully',
+          token: `Bearer ${token}`,
+          data,
+        };
+      }
+    } catch (error) {
+      Logger.error(error);
+      if (error.name === 'TypeError')
+        throw new HttpException(error.message, 500);
+      throw error;
+    }
+  }
+
+  async recoverPassword(payload: IRecoverPassword) {
+    try {
+      let { email } = payload;
+      const passwordResetCountKey = `${RedisPrefix.passwordResetCount}/${email}`;
+      const resetCodeRedisKey = `${RedisPrefix.resetCode}/${email}`;
+
+      const resetInPast24H = await this.inMemoryServices.get(
+        passwordResetCountKey,
+      );
+      if (resetInPast24H) {
+        const ttl = await this.inMemoryServices.ttl(passwordResetCountKey);
+        const timeToRetry = Math.ceil(Number(ttl));
+        const nextTryOpening = secondsToDhms(timeToRetry);
+        throw new TooManyRequestsException(
+          `Password was recently updated. Try again in ${nextTryOpening}`,
+        );
+      }
 
       const admin = await this.data.admin.findOne({ email });
+      if (!admin) {
+        throw new BadRequestsException(`code is invalid or has expired`);
+      }
 
-      if (admin.status === AdminStatus.TERMINATED)
-        throw new BadRequestsException('Account terminated.');
+      const codeSent = await this.inMemoryServices.get(resetCodeRedisKey);
+      if (codeSent) {
+        const codeExpiry =
+          ((await this.inMemoryServices.ttl(resetCodeRedisKey)) as Number) || 0;
+        return {
+          status: 202,
+          message: `Provide the code sent to your email or request another one in ${Math.ceil(
+            Number(codeExpiry) / 60,
+          )} minute`,
+          nextRequestInSecs: Number(codeExpiry),
+        };
+      }
 
-      if (isEmpty(admin))
-        throw new BadRequestsException('Email or password incorrect');
+      try {
+        const phoneCode = randomFixedInteger(4);
+        const hashedPhoneCode = await hash(String(phoneCode));
+        await this.inMemoryServices.set(
+          resetCodeRedisKey,
+          hashedPhoneCode,
+          String(RESET_PASSWORD_EXPIRY),
+        );
 
-      if (isEmpty(admin?.password))
-        throw new BadRequestsException('Reset password.');
+        //Send to discord
+        await this.discordServices.inHouseNotification({
+          title: `Forgot password otp code :- ${env.env} environment`,
+          content: `Provide the code sent to your email ${admin.email} \n code: ${phoneCode}`,
+          link: DISCORD_VERIFICATION_CHANNEL_LINK,
+        });
 
-      const correctPassword: boolean = await compareHash(
-        password,
-        admin?.password,
+        return {
+          status: 202,
+          message: `Provide the code sent to your email - ${admin.email}`,
+          code: env.isProd ? null : phoneCode,
+        };
+      } catch (error) {
+        if (error.name === 'TypeError') {
+          throw new HttpException(error.message, 500);
+        }
+        Logger.error(error);
+        throw error;
+      }
+    } catch (error) {
+      Logger.error(error);
+      if (error.name === 'TypeError')
+        throw new HttpException(error.message, 500);
+      throw error;
+    }
+  }
+
+  async resetpassword(payload: IResetAdminPassword) {
+    try {
+      const { email, password, code, res } = payload;
+      const passwordResetCountKey = `${RedisPrefix.passwordResetCount}/${email}`;
+      const resetCodeRedisKey = `${RedisPrefix.resetCode}/${email}`;
+
+      const userRequestReset = await this.inMemoryServices.get(
+        resetCodeRedisKey,
       );
-      if (!correctPassword)
-        throw new BadRequestsException('Email or password incorrect.');
+      if (!userRequestReset)
+        throw new BadRequestsException('Invalid or expired reset code');
 
-      const data: JWT_USER_PAYLOAD_TYPE = {
-        _id: admin?._id,
-        email: admin.email,
-        firstName: admin.firstName,
-        lastName: admin.lastName,
-      };
+      const admin = await this.data.admin.findOne({ email });
+      if (!admin)
+        throw new DoesNotExistsException('Admin user does not exists');
 
-      const token = await jwtLib.jwtSign(data);
-      res.set('Authorization', `Bearer ${token}`);
+      // // If reset link is valid and not expired
+      // const validReset = await compareHash(String(token), userRequestReset);
+      // if (!validReset)
+      //   throw new BadRequestsException('Invalid or expired reset token');
+
+      const validResetCode = await compareHash(code, userRequestReset);
+      if (!validResetCode)
+        throw new BadRequestsException('Invalid or expired reset code');
+
+      const hashedPassword = await hash(password);
+      const twenty4H = 1 * 60 * 60 * 24;
+
+      // Remove reset token for this user
+      await this.inMemoryServices.del(resetCodeRedisKey);
+      await this.inMemoryServices.set(
+        passwordResetCountKey,
+        1,
+        String(twenty4H),
+      );
+
+      // save reset count for next 24 hours
+      // remove stored cookie so it reinstate otp
+      res.cookie('deviceTag', '');
+      await this.data.admin.update(
+        { email: admin.email },
+        {
+          $set: {
+            password: hashedPassword,
+          },
+        },
+      );
 
       return {
-        status: HttpStatus.OK,
-        message: 'Admin logged in successfully',
-        token: `Bearer ${token}`,
-        data,
+        status: 200,
+        message: 'Password updated successfully',
+        data: null,
       };
     } catch (error) {
       Logger.error(error);
