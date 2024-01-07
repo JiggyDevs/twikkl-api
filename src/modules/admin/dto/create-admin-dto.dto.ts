@@ -15,6 +15,10 @@ export class CreateAdminDto {
   email: string;
 
   @IsNotEmpty()
-  @IsEnum(AdminRole)
-  role: AdminRole;
+  @IsString()
+  userName: string;
+
+  // @IsNotEmpty()
+  // @IsEnum(AdminRole)
+  // role: AdminRole;
 }

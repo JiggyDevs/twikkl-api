@@ -56,6 +56,20 @@ export class ResetPasswordDto {
   token: string;
 }
 
+export class ResetAdminPasswordDto {
+  @IsNotEmpty()
+  @IsString()
+  email: string;
+
+  @IsNotEmpty()
+  @IsString()
+  password: string;
+
+  @IsNotEmpty()
+  @IsString()
+  code: string;
+}
+
 export class VerifyEmailDto {
   @IsNotEmpty()
   @IsString()
