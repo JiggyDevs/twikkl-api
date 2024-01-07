@@ -3,6 +3,7 @@ import {
   CreateUsernameDto,
   LoginDto,
   RecoverPasswordDto,
+  ResetAdminPasswordDto,
   ResetPasswordDto,
   SignUpDto,
   VerifyEmailDto,
@@ -20,6 +21,10 @@ export type ILogin = LoginDto & {
 export type IRecoverPassword = RecoverPasswordDto;
 
 export type IResetPassword = ResetPasswordDto & {
+  res: Response;
+};
+
+export type IResetAdminPassword = ResetAdminPasswordDto & {
   res: Response;
 };
 
