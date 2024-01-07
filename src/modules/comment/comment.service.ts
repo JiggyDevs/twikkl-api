@@ -123,6 +123,7 @@ export class CommentService {
         await this.data.comments.findAllWithPagination({
           post: postId,
           replyTo: null,
+          isAdminDeleted: false,
           isDeleted: false,
         });
 
@@ -143,7 +144,11 @@ export class CommentService {
   async getRepliesToComment({ commentId }: { commentId: string }) {
     try {
       // Check if the parent comment exists
-      const parentComment = await this.data.comments.find({ _id: commentId });
+      const parentComment = await this.data.comments.find({
+        _id: commentId,
+        isAdminDeleted: false,
+        isDeleted: false,
+      });
       if (!parentComment) {
         throw new DoesNotExistsException('Parent comment not found');
       }

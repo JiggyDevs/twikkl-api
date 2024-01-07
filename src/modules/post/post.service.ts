@@ -139,7 +139,8 @@ export class PostService {
   async getUserFeed(payload: IGetUserPosts) {
     try {
       let filterQuery = this.cleanGetUserPostsQuery(payload);
-      delete filterQuery['isDeleted'];
+      filterQuery['isDeleted'] = false;
+      filterQuery['isAdminDeleted'] = false;
 
       // const { data, pagination } = await this.data.post.findAllWithPagination(
       //   filterQuery,
@@ -177,6 +178,8 @@ export class PostService {
   async getUserPosts(payload: IGetUserPosts) {
     try {
       const filterQuery: any = this.cleanGetUserPostsQuery(payload);
+      filterQuery['isDeleted'] = false;
+      filterQuery['isAdminDeleted'] = false;
 
       if (filterQuery.q) {
         const { data, pagination } = await this.data.post.search(
@@ -271,7 +274,11 @@ export class PostService {
     try {
       const { postId, userId } = payload;
 
-      const post: PostDocument = await this.data.post.findOne({ _id: postId });
+      const post: PostDocument = await this.data.post.findOne({
+        _id: postId,
+        isAdminDeleted: false,
+        isDeleted: false,
+      });
       if (!post) throw new DoesNotExistsException('Post not found');
 
       const likedPost = await this.data.likes.findOne({
@@ -357,7 +364,11 @@ export class PostService {
     try {
       const { postId, userId } = payload;
 
-      const post = await this.data.post.findOne({ _id: postId });
+      const post = await this.data.post.findOne({
+        _id: postId,
+        isAdminDeleted: false,
+        isDeleted: false,
+      });
       if (!post) throw new DoesNotExistsException('Post not found');
 
       const likedPost = await this.data.likes.findOne({
@@ -395,7 +406,11 @@ export class PostService {
     try {
       const { postId } = payload;
 
-      const post = await this.data.post.findOne({ _id: postId });
+      const post = await this.data.post.findOne({
+        _id: postId,
+        isAdminDeleted: false,
+        isDeleted: false,
+      });
       if (!post) throw new DoesNotExistsException('Post not found');
 
       const likes = await this.data.likes.find(
@@ -420,7 +435,11 @@ export class PostService {
     try {
       const { postId, allowDuet, allowStitch, visibility } = payload;
 
-      const post = await this.data.post.findOne({ _id: postId });
+      const post = await this.data.post.findOne({
+        _id: postId,
+        isAdminDeleted: false,
+        isDeleted: false,
+      });
       if (!post) throw new DoesNotExistsException('Post not found.');
 
       const postPayload: OptionalQuery<Post> = {
