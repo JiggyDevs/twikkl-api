@@ -14,7 +14,7 @@ import { NotificationServiceModule } from './modules/notifications/notification.
 import { FollowingModule } from './modules/following/following.module';
 import { FirebaseServiceModule } from './modules/firebase/firebase.module';
 import { GroupsModule } from './modules/group/group.module';
-import { CategoryServiceModule } from './modules/category/category.module';
+import { CategoryModule } from './modules/category/category.module';
 import { Admin } from './modules/admin/entities/admin.entity';
 import { AdminServiceModule } from './modules/admin/admin-auth.module';
 
@@ -41,7 +41,7 @@ declare global {
     FollowingModule,
     FirebaseServiceModule,
     GroupsModule,
-    CategoryServiceModule,
+    CategoryModule,
     AdminServiceModule,
   ],
   controllers: [AppController],

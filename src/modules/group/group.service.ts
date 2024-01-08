@@ -21,17 +21,28 @@ import {
   IGroupAction,
 } from './group.type';
 import { Types } from 'mongoose';
+import { isEmpty } from 'src/lib/utils';
+import { Category } from '../category/entities/category.entity';
+import { CategoryFactoryService } from '../category/category-factory.service';
 
 @Injectable()
 export class GroupService {
   constructor(
     private groupFactory: GroupFactoryService,
+    private categoryFactory: CategoryFactoryService,
     private data: IDataServices,
   ) {}
   async create(payload: CreateGroupDto) {
     try {
-      const { creator, description, name, avatar, coverImg, isPrivate } =
-        payload;
+      const {
+        creator,
+        description,
+        name,
+        avatar,
+        coverImg,
+        isPrivate,
+        categories,
+      } = payload;
       const groupPayload: OptionalQuery<Group> = {
         creator: creator,
         description,
@@ -40,11 +51,32 @@ export class GroupService {
         coverImg,
         members: [creator],
         isPrivate,
+        categories,
       };
 
       const factory = this.groupFactory.create(groupPayload);
       const data = await this.data.group.create(factory);
 
+      if (categories && !isEmpty(categories)) {
+        categories.forEach(async (baseCategory) => {
+          const category = await this.data.categories.findOne({
+            name: baseCategory.toLowerCase(),
+          });
+          if (!category) {
+            const categoryPayload: Category = {
+              name: baseCategory.toLowerCase(),
+              description: '',
+              createdAt: new Date(),
+              updatedAt: new Date(),
+            };
+
+            const categoryFactory =
+              this.categoryFactory.create(categoryPayload);
+
+            await this.data.categories.create(categoryFactory);
+          }
+        });
+      }
       return {
         message: 'Group created successfully',
         data,
@@ -106,7 +138,7 @@ export class GroupService {
     try {
       const query = {
         ...payload,
-        group: payload.groupId,
+        // group: payload.groupId,
       };
       let { data, pagination } = await this.data.post.findAllWithPagination(
         query,

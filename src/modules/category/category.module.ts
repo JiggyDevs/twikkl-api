@@ -17,5 +17,6 @@ import { CategoryFactoryService } from './category-factory.service';
   ],
   controllers: [CategoryController],
   providers: [CategoryService, CategoryFactoryService],
+  exports: [CategoryFactoryService],
 })
-export class CategoryServiceModule {}
+export class CategoryModule {}

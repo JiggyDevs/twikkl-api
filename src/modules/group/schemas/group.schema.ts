@@ -35,6 +35,9 @@ export class Group {
 
   @Prop({ default: false })
   isAdminDeleted: boolean;
+
+  @Prop({ type: Types.ObjectId, ref: 'Category' })
+  category: string;
 }
 
 export const GroupSchema = SchemaFactory.createForClass(Group);
