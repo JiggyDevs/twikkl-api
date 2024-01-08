@@ -94,12 +94,12 @@ export class MongoGenericRepository<T> implements IGenericRepository<T> {
     options?: { fields?: FilterQuery<T>; populate?: string | string[] },
   ) {
     try {
-      const perpage = Number(query.perpage) || 10;
-      const page = Number(query.page) || 1;
-      const dateFrom: any = query.dateFrom || 'Jan 1 1970';
-      const dateTo: any = query.dateTo || `${Date()}`;
-      const sortBy: any = query.sortBy || 'createdAt';
-      const orderBy = query.orderBy || '-1';
+      const perpage = Number(query?.perpage) || 10;
+      const page = Number(query?.page) || 1;
+      const dateFrom: any = query?.dateFrom || 'Jan 1 1970';
+      const dateTo: any = query?.dateTo || `${Date()}`;
+      const sortBy: any = query?.sortBy || 'createdAt';
+      const orderBy = query?.orderBy || '-1';
       const sortQuery = { [sortBy]: orderBy };
       var andArr = [];
 
