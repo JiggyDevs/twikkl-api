@@ -142,14 +142,12 @@ export class PostService {
       filterQuery['isDeleted'] = false;
       filterQuery['isAdminDeleted'] = false;
 
-      console.log({ filterQuery });
       const data = await this.data.likes.find({
         user: payload.user,
       });
-      console.log({ data });
 
       const likedPostIds = data.map((like) => like.post);
-      console.log({ likedPostIds });
+      Logger.log({ likedPostIds });
 
       const { data: similarPosts, pagination } =
         await this.data.post.findAllWithPagination(
@@ -160,7 +158,7 @@ export class PostService {
           },
           { populate: 'creator' },
         );
-      console.log({ similarPosts, filterQuery });
+      Logger.log({ similarPosts, filterQuery });
 
       return {
         message: 'User Feed retrieved successfully',
@@ -346,7 +344,7 @@ export class PostService {
         'Like',
         `${userDetails.username} liked your video`,
       );
-      console.log({ sendNotification });
+      Logger.log({ sendNotification });
 
       return {
         message: 'Post liked successfully',
