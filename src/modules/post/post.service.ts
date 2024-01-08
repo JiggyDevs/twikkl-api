@@ -26,6 +26,7 @@ import { FirebaseService } from '../firebase/firebase.service';
 import { Tags } from './entities/tags.entity';
 import { TagsFactoryService } from './tags-factory.service';
 import { isEmpty } from 'src/lib/utils';
+import { PostDocument } from './schemas/post.schema';
 
 @Injectable()
 export class PostService {
@@ -137,42 +138,17 @@ export class PostService {
 
   async getUserFeed(payload: IGetUserPosts) {
     try {
-      let filterQuery: any = this.cleanGetUserPostsQuery(payload);
-      delete filterQuery['isDeleted'];
+      let filterQuery = this.cleanGetUserPostsQuery(payload);
+      filterQuery['isDeleted'] = false;
+      filterQuery['isAdminDeleted'] = false;
 
-      if (filterQuery.q) {
-        const { data, pagination } = await this.data.post.search(filterQuery);
-        let returnedData = [];
-
-        for (let i = 0; i < data.length; i++) {
-          const postId = data[i]._id.toString();
-          const likes = await this.data.likes.find(
-            { post: postId },
-            { isLean: true, populate: 'user' },
-          );
-          const comments = await this.data.comments.find(
-            { post: postId },
-            { isLean: true, populate: 'user' },
-          );
-
-          const newData = {
-            ...data[i]._doc,
-            likes,
-            comments,
-          };
-
-          returnedData.push(newData);
-        }
-
-        return {
-          message: 'User Posts retrieved successfully',
-          data: returnedData,
-          pagination,
-          status: HttpStatus.OK,
-        };
-      }
+      // const { data, pagination } = await this.data.post.findAllWithPagination(
+      //   filterQuery,
+      // );
+      console.log({ filterQuery });
       const { data, pagination } = await this.data.likes.findAllWithPagination(
         filterQuery,
+        { populate: 'creator' },
       );
       console.log({ data });
 
@@ -185,31 +161,9 @@ export class PostService {
       });
       console.log({ similarPosts });
 
-      let returnedData = [];
-
-      for (let i = 0; i < similarPosts.length; i++) {
-        const postId = similarPosts[i]._id.toString();
-        const likes = await this.data.likes.find(
-          { post: postId },
-          { isLean: true, populate: 'user' },
-        );
-        const comments = await this.data.comments.find(
-          { post: postId },
-          { isLean: true, populate: 'user' },
-        );
-
-        const newData = {
-          ...similarPosts[i]._doc,
-          likes,
-          comments,
-        };
-
-        returnedData.push(newData);
-      }
-
       return {
         message: 'User Feed retrieved successfully',
-        data: returnedData,
+        data: similarPosts,
         pagination,
         status: HttpStatus.OK,
       };
@@ -224,34 +178,18 @@ export class PostService {
   async getUserPosts(payload: IGetUserPosts) {
     try {
       const filterQuery: any = this.cleanGetUserPostsQuery(payload);
+      filterQuery['isDeleted'] = false;
+      filterQuery['isAdminDeleted'] = false;
 
       if (filterQuery.q) {
-        const { data, pagination } = await this.data.post.search(filterQuery);
-        let returnedData = [];
-
-        for (let i = 0; i < data.length; i++) {
-          const postId = data[i]._id.toString();
-          const likes = await this.data.likes.find(
-            { post: postId },
-            { isLean: true, populate: 'user' },
-          );
-          const comments = await this.data.comments.find(
-            { post: postId },
-            { isLean: true, populate: 'user' },
-          );
-
-          const newData = {
-            ...data[i]._doc,
-            likes,
-            comments,
-          };
-
-          returnedData.push(newData);
-        }
+        const { data, pagination } = await this.data.post.search(
+          filterQuery,
+          'creator',
+        );
 
         return {
           message: 'User Posts retrieved successfully',
-          data: returnedData,
+          data,
           pagination,
           status: HttpStatus.OK,
         };
@@ -262,31 +200,9 @@ export class PostService {
         { populate: 'creator' },
       );
 
-      let returnedData = [];
-
-      for (let i = 0; i < data.length; i++) {
-        const postId = data[i]._id.toString();
-        const likes = await this.data.likes.find(
-          { post: postId },
-          { isLean: true, populate: 'user' },
-        );
-        const comments = await this.data.comments.find(
-          { post: postId },
-          { isLean: true, populate: 'user' },
-        );
-
-        const newData = {
-          ...data[i]._doc,
-          likes,
-          comments,
-        };
-
-        returnedData.push(newData);
-      }
-
       return {
         message: 'User Posts retrieved successfully',
-        data: returnedData,
+        data,
         pagination,
         status: HttpStatus.OK,
       };
@@ -358,7 +274,11 @@ export class PostService {
     try {
       const { postId, userId } = payload;
 
-      const post: Post = await this.data.post.findOne({ _id: postId });
+      const post: PostDocument = await this.data.post.findOne({
+        _id: postId,
+        isAdminDeleted: false,
+        isDeleted: false,
+      });
       if (!post) throw new DoesNotExistsException('Post not found');
 
       const likedPost = await this.data.likes.findOne({
@@ -375,9 +295,19 @@ export class PostService {
       };
 
       const likeFactory = this.likesFactory.create(likeFactoryPayload);
-      await this.data.likes.create(likeFactory);
 
-      const userDetails: User = await this.data.users.findOne({ _id: userId });
+      const [userDetails, ..._] = await Promise.all([
+        this.data.users.findOne({ _id: userId }),
+        this.data.likes.create(likeFactory),
+        this.data.post.update(
+          { _id: post?._id },
+          {
+            $set: {
+              totalLikes: post.totalLikes + 1,
+            },
+          },
+        ),
+      ]);
 
       const notificationPayload: OptionalQuery<Notification> = {
         title: 'Post liked',
@@ -405,8 +335,10 @@ export class PostService {
         likedNotificationPayload,
       );
 
-      await this.data.notification.create(notificationFactory);
-      await this.data.notification.create(likedNotificationFactory);
+      await Promise.all([
+        this.data.notification.create(notificationFactory),
+        this.data.notification.create(likedNotificationFactory),
+      ]);
 
       const sendNotification = await this.firebase.sendToUser(
         userDetails,
@@ -432,7 +364,11 @@ export class PostService {
     try {
       const { postId, userId } = payload;
 
-      const post = await this.data.post.findOne({ _id: postId });
+      const post = await this.data.post.findOne({
+        _id: postId,
+        isAdminDeleted: false,
+        isDeleted: false,
+      });
       if (!post) throw new DoesNotExistsException('Post not found');
 
       const likedPost = await this.data.likes.findOne({
@@ -441,7 +377,17 @@ export class PostService {
       });
       if (!likedPost) throw new DoesNotExistsException('Liked post not found');
 
-      await this.data.likes.delete({ _id: likedPost._id });
+      await Promise.all([
+        this.data.likes.delete({ _id: likedPost._id }),
+        this.data.post.update(
+          { _id: post?._id },
+          {
+            $set: {
+              totalLikes: Math.max(post.totalLikes - 1, 0),
+            },
+          },
+        ),
+      ]);
 
       return {
         message: 'Post unLiked successfully',
@@ -460,7 +406,11 @@ export class PostService {
     try {
       const { postId } = payload;
 
-      const post = await this.data.post.findOne({ _id: postId });
+      const post = await this.data.post.findOne({
+        _id: postId,
+        isAdminDeleted: false,
+        isDeleted: false,
+      });
       if (!post) throw new DoesNotExistsException('Post not found');
 
       const likes = await this.data.likes.find(
@@ -485,7 +435,11 @@ export class PostService {
     try {
       const { postId, allowDuet, allowStitch, visibility } = payload;
 
-      const post = await this.data.post.findOne({ _id: postId });
+      const post = await this.data.post.findOne({
+        _id: postId,
+        isAdminDeleted: false,
+        isDeleted: false,
+      });
       if (!post) throw new DoesNotExistsException('Post not found.');
 
       const postPayload: OptionalQuery<Post> = {

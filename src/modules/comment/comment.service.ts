@@ -19,6 +19,8 @@ import { Notification } from '../notifications/entities/notification.entity';
 import { Post } from '../post/entities/post.entity';
 import { User } from '../user/entities/user.entity';
 import { FirebaseService } from '../firebase/firebase.service';
+import { PostDocument } from '../post/schemas/post.schema';
+import { CommentDocument } from './schemas/comment.schema';
 
 @Injectable()
 export class CommentService {
@@ -33,7 +35,7 @@ export class CommentService {
     try {
       const { comment, postId, userId, replyTo } = payload;
 
-      const post: Post = await this.data.post.findOne({ _id: postId });
+      const post: PostDocument = await this.data.post.findOne({ _id: postId });
       if (!post) throw new DoesNotExistsException('Post not found');
 
       const commentPayload: OptionalQuery<Comment> = {
@@ -46,9 +48,19 @@ export class CommentService {
       };
 
       const commentFactory = this.commentFactory.create(commentPayload);
-      const data = await this.data.comments.create(commentFactory);
 
-      const userDetails: User = await this.data.users.findOne({ _id: userId });
+      const [userDetails, data, _] = await Promise.all([
+        this.data.users.findOne({ _id: userId }),
+        this.data.comments.create(commentFactory),
+        this.data.post.update(
+          { _id: post?._id },
+          {
+            $set: {
+              totalComments: post.totalComments + 1,
+            },
+          },
+        ),
+      ]);
 
       const notificationPayload: OptionalQuery<Notification> = {
         title: 'Comment posted',
@@ -76,9 +88,10 @@ export class CommentService {
         commentNotificationPayload,
       );
 
-      await this.data.notification.create(notificationFactory);
-      await this.data.notification.create(commentNotificationFactory);
-
+      await Promise.all([
+        this.data.notification.create(notificationFactory),
+        this.data.notification.create(commentNotificationFactory),
+      ]);
       const sendNotification = await this.firebase.sendToUser(
         userDetails,
         'Comment',
@@ -110,6 +123,7 @@ export class CommentService {
         await this.data.comments.findAllWithPagination({
           post: postId,
           replyTo: null,
+          isAdminDeleted: false,
           isDeleted: false,
         });
 
@@ -130,18 +144,20 @@ export class CommentService {
   async getRepliesToComment({ commentId }: { commentId: string }) {
     try {
       // Check if the parent comment exists
-      const parentComment = await this.data.comments.find({ _id: commentId });
+      const parentComment = await this.data.comments.find({
+        _id: commentId,
+        isAdminDeleted: false,
+        isDeleted: false,
+      });
       if (!parentComment) {
         throw new DoesNotExistsException('Parent comment not found');
       }
 
       // Fetch all replies to the given comment
-      const replies = await this.data.comments
-        .findAllWithPagination({
-          replyTo: commentId,
-          isDeleted: false,
-        })
-        .exec();
+      const replies = await this.data.comments.findAllWithPagination({
+        replyTo: commentId,
+        isDeleted: false,
+      });
 
       return {
         message: 'Replies retrieved successfully',
@@ -184,7 +200,13 @@ export class CommentService {
     try {
       const { commentId, userId } = payload;
 
-      const comment = await this.data.comments.findOne({ _id: commentId });
+      const comment: any = await this.data.comments.findOne(
+        { _id: commentId },
+        null,
+        {
+          populate: 'post',
+        },
+      );
       if (!comment) throw new DoesNotExistsException('Comment not found');
 
       if (comment.user !== userId)
@@ -192,10 +214,20 @@ export class CommentService {
           'Not permitted to perform this action',
         );
 
-      await this.data.comments.update(
-        { _id: comment._id },
-        { $set: { isDeleted: true } },
-      );
+      await Promise.all([
+        this.data.comments.update(
+          { _id: comment._id },
+          { $set: { isDeleted: true } },
+        ),
+        this.data.post.update(
+          { _id: comment.post._id },
+          {
+            $set: {
+              totalComments: Math.max(comment.post.totalComments - 1, 0),
+            },
+          },
+        ),
+      ]);
 
       return {
         message: 'Comment deleted',

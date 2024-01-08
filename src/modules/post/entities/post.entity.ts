@@ -10,6 +10,8 @@ export class Post {
   allowStitch: boolean;
   visibility: string;
   tags: string[];
+  totalLikes: number;
+  totalComments: number;
   createdAt: Date;
   updatedAt: Date;
 }
