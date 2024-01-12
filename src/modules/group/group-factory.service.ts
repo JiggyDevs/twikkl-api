@@ -15,7 +15,7 @@ export class GroupFactoryService {
     if (data.isPrivate) group.isPrivate = data.isPrivate;
     if (data.members) group.members = data.members;
     if (data.name) group.name = data.name;
-
+    if (data.categories) group.categories = data.categories;
     return group;
   }
 }
