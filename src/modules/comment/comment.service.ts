@@ -120,12 +120,15 @@ export class CommentService {
       if (!post) throw new DoesNotExistsException('Post not found');
 
       const { data, pagination } =
-        await this.data.comments.findAllWithPagination({
-          post: postId,
-          replyTo: null,
-          isAdminDeleted: false,
-          isDeleted: false,
-        });
+        await this.data.comments.findAllWithPagination(
+          {
+            post: postId,
+            replyTo: null,
+            isAdminDeleted: false,
+            isDeleted: false,
+          },
+          { populate: ['user', 'post'] },
+        );
 
       return {
         message: 'Comments retrieved successfully',
@@ -143,21 +146,15 @@ export class CommentService {
 
   async getRepliesToComment({ commentId }: { commentId: string }) {
     try {
-      // Check if the parent comment exists
-      const parentComment = await this.data.comments.find({
-        _id: commentId,
-        isAdminDeleted: false,
-        isDeleted: false,
-      });
-      if (!parentComment) {
-        throw new DoesNotExistsException('Parent comment not found');
-      }
-
       // Fetch all replies to the given comment
-      const replies = await this.data.comments.findAllWithPagination({
-        replyTo: commentId,
-        isDeleted: false,
-      });
+      const replies = await this.data.comments.findAllWithPagination(
+        {
+          replyTo: commentId,
+          isDeleted: false,
+          isAdminDeleted: false,
+        },
+        { populate: ['user', 'post'] },
+      );
 
       return {
         message: 'Replies retrieved successfully',
@@ -177,10 +174,15 @@ export class CommentService {
     try {
       const { commentId } = payload;
 
-      const comment = await this.data.comments.findOne({
-        _id: commentId,
-        isDeleted: false,
-      });
+      const comment = await this.data.comments.findOne(
+        {
+          _id: commentId,
+          isDeleted: false,
+          isAdminDeleted: false,
+        },
+        undefined,
+        { populate: ['user', 'post'] },
+      );
       if (!comment) throw new DoesNotExistsException('Comment not found');
 
       return {
