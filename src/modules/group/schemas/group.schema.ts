@@ -19,7 +19,7 @@ export class Group {
   description: string;
 
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })
-  creator: User;
+  creator: string;
 
   @Prop({ type: [{ type: Types.ObjectId, ref: 'User' }], default: [] })
   members: string[];
