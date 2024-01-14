@@ -106,7 +106,10 @@ export class GroupService {
       }
 
       if (findQuery.q) {
-        const { data, pagination } = await this.data.group.search(findQuery);
+        const { data, pagination } = await this.data.group.search(findQuery, [
+          'members',
+          'creator',
+        ]);
 
         return {
           message: 'User Posts retrieved successfully',
@@ -145,7 +148,7 @@ export class GroupService {
       let { data, pagination } = await this.data.post.findAllWithPagination(
         query,
         {
-          populate: 'members',
+          populate: 'creator',
         },
       );
 
@@ -174,7 +177,7 @@ export class GroupService {
         },
         undefined,
         {
-          populate: 'members',
+          populate: ['members', 'creator'],
         },
       );
 
@@ -297,10 +300,15 @@ export class GroupService {
       const { userId, ...restPayload } = payload;
 
       let { data: groups, pagination } =
-        await this.data.group.findAllWithPagination({
-          ...restPayload,
-          members: userId,
-        });
+        await this.data.group.findAllWithPagination(
+          {
+            ...restPayload,
+            members: userId,
+          },
+          {
+            populate: ['members', 'creator'],
+          },
+        );
       if (!groups) throw new DoesNotExistsException('No Groups found');
 
       return {
