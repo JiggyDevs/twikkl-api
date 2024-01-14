@@ -68,9 +68,13 @@ export class GroupController {
 
   @Get('/user')
   @UseGuards(StrictAuthGuard)
-  async getUserGroups(@Req() req: Request, @Res() res: Response) {
+  async getUserGroups(
+    @Req() req: Request,
+    @Res() res: Response,
+    @Query() query: any,
+  ) {
     const userId = req.user._id;
-    const payload: IGetUserGroup = { userId };
+    const payload: IGetUserGroup = { ...query, userId };
     const response = await this.groupService.getUserGroups(payload);
     return res.status(response.status).json(response);
   }

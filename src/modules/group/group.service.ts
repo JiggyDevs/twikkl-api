@@ -136,12 +136,17 @@ export class GroupService {
 
   async getGroupPosts(payload: IGetGroupPosts) {
     try {
+      const { groupId, ...restPayload } = payload;
+
       const query = {
-        ...payload,
-        // group: payload.groupId,
+        ...restPayload,
+        group: groupId,
       };
       let { data, pagination } = await this.data.post.findAllWithPagination(
         query,
+        {
+          populate: 'members',
+        },
       );
 
       return {
@@ -162,10 +167,16 @@ export class GroupService {
     try {
       const { groupId } = payload;
 
-      const group = await this.data.group.findOne({
-        _id: groupId,
-        isDeleted: false,
-      });
+      const group = await this.data.group.findOne(
+        {
+          _id: groupId,
+          isDeleted: false,
+        },
+        undefined,
+        {
+          populate: 'members',
+        },
+      );
 
       if (!group) throw new DoesNotExistsException('Group not found');
 
@@ -283,10 +294,11 @@ export class GroupService {
 
   async getUserGroups(payload: IGetUserGroup) {
     try {
-      const { userId } = payload;
+      const { userId, ...restPayload } = payload;
 
       let { data: groups, pagination } =
         await this.data.group.findAllWithPagination({
+          ...restPayload,
           members: userId,
         });
       if (!groups) throw new DoesNotExistsException('No Groups found');
@@ -309,9 +321,14 @@ export class GroupService {
     try {
       const { groupId } = payload;
 
-      const group = await this.data.group.find({
-        _id: groupId,
-      });
+      const group = await this.data.group.find(
+        {
+          _id: groupId,
+        },
+        {
+          populate: 'members',
+        },
+      );
 
       if (!group) throw new DoesNotExistsException('Group not found');
 
