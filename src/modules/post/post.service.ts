@@ -414,7 +414,7 @@ export class PostService {
 
       const likes = await this.data.likes.find(
         { post: postId },
-        { isLean: true, populate: 'user' },
+        { isLean: true, populate: ['user', 'post'] },
       );
 
       return {
