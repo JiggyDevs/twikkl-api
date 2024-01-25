@@ -1,34 +1,69 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Logger,
+  Param,
+  Patch,
+  Post,
+  Query,
+  Req,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
 import { WalletService } from './wallet.service';
 import { CreateWalletDto } from './dto/create-wallet.dto';
-import { UpdateWalletDto } from './dto/update-wallet.dto';
+import { StrictAuthGuard } from 'src/middleware-guards/auth-guard.middleware';
+import { Request, Response } from 'express';
 
-@Controller('wallet')
+@Controller('wallets')
 export class WalletController {
   constructor(private readonly walletService: WalletService) {}
 
   @Post()
-  create(@Body() createWalletDto: CreateWalletDto) {
-    return this.walletService.create(createWalletDto);
+  @UseGuards(StrictAuthGuard)
+  async create(
+    @Req() req: Request,
+    @Res() res: Response,
+    @Body() createWalletDto: CreateWalletDto,
+  ) {
+    const userId = req.user._id;
+    const response = await this.walletService.createWallet({
+      ...createWalletDto,
+      userId,
+    });
+    Logger.debug({ response });
+    return res.status(response.status).json(response);
   }
 
-  @Get()
-  findAll() {
-    return this.walletService.findAll();
+  @Get('/')
+  @UseGuards(StrictAuthGuard)
+  async getPosts(
+    @Req() req: Request,
+    @Res() res: Response,
+    @Query() query: any,
+  ) {
+    const userId = req.user._id;
+    query = { userId };
+    const payload = { userId };
+
+    const response = await this.walletService.getUserWallet(payload);
+    return res.status(response.status).json(response);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.walletService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateWalletDto: UpdateWalletDto) {
-    return this.walletService.update(+id, updateWalletDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.walletService.remove(+id);
+  @Post()
+  @UseGuards(StrictAuthGuard)
+  async makeTransaction(
+    @Req() req: Request,
+    @Res() res: Response,
+    @Body() createWalletDto: CreateWalletDto,
+  ) {
+    const userId = req.user._id;
+    const account = await this.walletService.createWallet({
+      ...createWalletDto,
+      userId,
+    });
+    Logger.debug({ account });
+    return account;
   }
 }

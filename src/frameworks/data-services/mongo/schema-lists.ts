@@ -28,11 +28,16 @@ import { Likes, LikesSchema } from 'src/modules/post/schemas/likes.schema';
 import { Post, PostSchema } from 'src/modules/post/schemas/post.schema';
 import { Tags, TagsSchema } from 'src/modules/post/schemas/tags.schema';
 import { User, UserSchema } from 'src/modules/user/schemas/user.schema';
+import { Wallet, WalletSchema } from 'src/modules/wallet/schemas/wallet.schema';
 
 export const SCHEMA_LIST = [
   {
     name: User.name,
     schema: UserSchema,
+  },
+  {
+    name: Wallet.name,
+    schema: WalletSchema,
   },
   {
     name: Post.name,

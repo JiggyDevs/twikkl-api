@@ -41,3 +41,4 @@ export const DISCORD_VERIFICATION_CHANNEL_LINK = getEnv(
   true,
 );
 export const ADMIN_FRONTEND_URL = getEnv('ADMIN_FRONTEND_URL', true);
+export const PRIVATE_KEY = getEnv('PRIVATE_KEY', true);
