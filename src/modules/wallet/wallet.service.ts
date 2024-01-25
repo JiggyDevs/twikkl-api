@@ -15,7 +15,12 @@ import {
   DEFAULT_ENTRYPOINT_ADDRESS,
   BiconomySmartAccountV2,
 } from '@biconomy/account';
-import { compareHash, generatePrivateKey, hash } from 'src/lib/utils';
+import {
+  compareHash,
+  encryptPrivateKeyWithPin,
+  generatePrivateKey,
+  hash,
+} from 'src/lib/utils';
 import { IDataServices } from 'src/core/abstracts';
 import { WalletFactoryService } from './wallet-factory.service';
 import { OptionalQuery } from 'src/core/types/database';
@@ -23,6 +28,7 @@ import { Wallet as WalletEntity } from 'src/modules/wallet/entities/wallet.entit
 import {
   AlreadyExistsException,
   DoesNotExistsException,
+  ForbiddenRequestException,
 } from 'src/lib/exceptions';
 
 @Injectable()
@@ -101,7 +107,7 @@ export class WalletService {
       const smartAccount = await this.createSmartAccount(privateKey);
       const walletPayload: OptionalQuery<WalletEntity> = {
         pin: hashedPin,
-        privateKey,
+        privateKey: encryptPrivateKeyWithPin(pin, privateKey),
         address: await smartAccount.getAccountAddress(),
         owner: userId,
       };
@@ -204,6 +210,27 @@ export class WalletService {
     } catch (e) {
       // Log any errors encountered during the transaction
       console.log('Error encountered: ', e);
+    }
+  }
+
+  async deleteWallet(payload: any) {
+    try {
+      const { userId } = payload;
+
+      const wallet = await this.data.wallets.findOne({ owner: userId });
+      if (!wallet) throw new DoesNotExistsException('Wallet not found');
+
+      await this.data.wallets.delete({ _id: wallet._id });
+
+      return {
+        message: 'Wallet deleted',
+        status: HttpStatus.OK,
+      };
+    } catch (error) {
+      Logger.error(error);
+      if (error.name === 'TypeError')
+        throw new HttpException(error.message, 500);
+      throw error;
     }
   }
 }

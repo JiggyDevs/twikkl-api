@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Logger,
   Param,
@@ -38,7 +39,7 @@ export class WalletController {
 
   @Get('/')
   @UseGuards(StrictAuthGuard)
-  async getPosts(
+  async getWallet(
     @Req() req: Request,
     @Res() res: Response,
     @Query() query: any,
@@ -48,6 +49,21 @@ export class WalletController {
     const payload = { userId };
 
     const response = await this.walletService.getUserWallet(payload);
+    return res.status(response.status).json(response);
+  }
+
+  @Delete('/')
+  @UseGuards(StrictAuthGuard)
+  async deleteWallet(
+    @Req() req: Request,
+    @Res() res: Response,
+    @Query() query: any,
+  ) {
+    const userId = req.user._id;
+    query = { userId };
+    const payload = { userId };
+
+    const response = await this.walletService.deleteWallet(payload);
     return res.status(response.status).json(response);
   }
 
