@@ -1,1 +1,3 @@
-export class CreateWalletDto {}
+export class CreateWalletDto {
+  pin: string;
+}

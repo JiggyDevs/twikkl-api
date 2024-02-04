@@ -28,12 +28,18 @@ import {
   BookmarkedPost,
   BookmarkedPostDocument,
 } from 'src/modules/post/schemas/bookmarked-post.schema';
+// import { Wallet } from 'src/modules/wallet/entities/wallet.entity';
+import {
+  Wallet,
+  WalletDocument,
+} from 'src/modules/wallet/schemas/wallet.schema';
 
 @Injectable()
 export class MongoDataServices
   implements IDataServices, OnApplicationBootstrap
 {
   users: MongoGenericRepository<User>;
+  wallets: MongoGenericRepository<Wallet>;
   post: MongoGenericRepository<Post>;
   bookmarkedPost: MongoGenericRepository<BookmarkedPost>;
   group: MongoGenericRepository<Group>;
@@ -49,6 +55,9 @@ export class MongoDataServices
   constructor(
     @InjectModel(User.name)
     private UserRepository: Model<UserDocument>,
+
+    @InjectModel(Wallet.name)
+    private WalletRepository: Model<WalletDocument>,
 
     @InjectModel(Post.name)
     private PostRepository: Model<PostDocument>,
@@ -86,6 +95,7 @@ export class MongoDataServices
 
   onApplicationBootstrap() {
     this.users = new MongoGenericRepository<User>(this.UserRepository);
+    this.wallets = new MongoGenericRepository<Wallet>(this.WalletRepository);
     this.post = new MongoGenericRepository<Post>(this.PostRepository);
     this.bookmarkedPost = new MongoGenericRepository<BookmarkedPost>(
       this.BookmarkedPostRepository,
