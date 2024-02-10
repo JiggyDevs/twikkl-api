@@ -42,7 +42,7 @@ export const hash = async (password: string) => {
 };
 
 /** compare hash password */
-export const compareHash = async (password: string, hashedPassword: string) => {
+export const compareHash = async (password: string, hashedPassword: string): Promise<boolean> => {
   const bool = await compare(password, hashedPassword);
   return bool;
 };
