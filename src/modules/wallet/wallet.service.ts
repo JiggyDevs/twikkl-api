@@ -1,7 +1,7 @@
 import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
-import { providers, Signer, Wallet, utils } from 'ethers';
+import { providers, Signer, Wallet, utils, BigNumber } from 'ethers';
 import { IBundler, Bundler } from '@biconomy/bundler';
-import { ChainId } from '@biconomy/core-types';
+import { ChainId, Transaction } from '@biconomy/core-types';
 import {
   IPaymaster,
   BiconomyPaymaster,
@@ -29,6 +29,7 @@ import {
   AlreadyExistsException,
   DoesNotExistsException,
   ForbiddenRequestException,
+  UnAuthorizedException
 } from 'src/lib/exceptions';
 
 @Injectable()
@@ -128,6 +129,33 @@ export class WalletService {
     }
   }
 
+  async changePin(payload: { oldPin: string; pin: string; userId: string }) {
+    try {
+      const { oldPin, pin, userId } = payload;
+
+      const wallet = await this.data.wallets.findOne({ owner: userId });
+      if (!wallet) throw new DoesNotExistsException('Wallet not found!');
+      
+      if (!(await compareHash(oldPin, wallet.pin))) throw new UnAuthorizedException('Incorrect wallet pin!');
+      const hashedPin = await hash(pin);
+
+      wallet.pin = hashedPin
+      await wallet.save()
+  
+      return {
+        message: 'Wallet pin updated successfully',
+        data: wallet,
+        status: HttpStatus.CREATED,
+      };
+    } catch (error) {
+      Logger.error(error);
+      if (error.name === 'TypeError')
+        throw new HttpException(error.message, 500);
+      throw error;
+    }
+  }
+
+
   async getWallet(payload: { walletId: string }) {
     try {
       const { walletId } = payload;
@@ -166,9 +194,20 @@ export class WalletService {
     }
   }
 
-  async makeTransaction(privateKey: string) {
+  async makeNFTTransaction({
+    userId,
+    pin
+  }: {
+    userId: string;
+    pin: string;
+  }) {
+    const wallet = await this.data.wallets.findOne({ owner: userId });
+    if (!wallet) throw new DoesNotExistsException('Wallet not found!');
+
+    if (!(await compareHash(pin, wallet.pin))) throw new UnAuthorizedException('Incorrect wallet pin!');
+
     // Specify the address of the NFT contract
-    const smartAccount = await this.createSmartAccount(privateKey);
+    const smartAccount = await this.createSmartAccount(wallet.privateKey);
     // Retrieve the address of the initialized smart account
     const address = await smartAccount.getAccountAddress();
 
@@ -184,9 +223,63 @@ export class WalletService {
     const nftAddress = '0x1758f42Af7026fBbB559Dc60EcE0De3ef81f665e';
 
     // Define the transaction to be sent to the NFT contract
-    const transaction = {
+    const transaction: Transaction = {
       to: nftAddress,
       data: data,
+    };
+
+    // Build a partial User Operation (UserOp) with the transaction and set it to be sponsored
+    let partialUserOp = await smartAccount.buildUserOp([transaction], {
+      paymasterServiceData: {
+        mode: PaymasterMode.SPONSORED,
+      },
+    });
+
+    // Try to execute the UserOp and handle any errors
+    try {
+      // Send the UserOp through the smart account
+      const userOpResponse = await smartAccount.sendUserOp(partialUserOp);
+      // Wait for the transaction to complete and retrieve details
+      const transactionDetails = await userOpResponse.wait();
+      // Log the transaction details URL and the URL to view minted NFTs
+      console.log(
+        `Transaction Details: https://mumbai.polygonscan.com/tx/${transactionDetails.receipt.transactionHash}`,
+      );
+      console.log(`View Minted NFTs: https://testnets.opensea.io/${address}`);
+    } catch (e) {
+      // Log any errors encountered during the transaction
+      console.log('Error encountered: ', e);
+    }
+  }
+
+  async makeTransaction({
+    userId,
+    pin,
+    toAddress,
+    amount
+  }: {
+    userId: string;
+    pin: string;
+    toAddress: string
+    amount: BigNumber; 
+  }) {
+    const wallet = await this.data.wallets.findOne({ owner: userId });
+    if (!wallet) throw new DoesNotExistsException('Wallet not found!');
+
+    if (!(await compareHash(pin, wallet.pin))) throw new UnAuthorizedException('Incorrect wallet pin!');
+
+    // Specify the address of the NFT contract
+    const smartAccount = await this.createSmartAccount(wallet.privateKey);
+    // Retrieve the address of the initialized smart account
+    const address = await smartAccount.getAccountAddress();
+
+ // Specify the amount to send
+ const value = amount;
+
+    // Define the transaction to be sent to the NFT contract
+    const transaction: Transaction = {
+      to: toAddress,
+      value
     };
 
     // Build a partial User Operation (UserOp) with the transaction and set it to be sponsored
