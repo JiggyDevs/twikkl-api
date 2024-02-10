@@ -16,6 +16,8 @@ import { WalletService } from './wallet.service';
 import { CreateWalletDto } from './dto/create-wallet.dto';
 import { StrictAuthGuard } from 'src/middleware-guards/auth-guard.middleware';
 import { Request, Response } from 'express';
+import { MakeTransactionDto } from './dto/make-transaction.dto';
+import { UpdateWalletPinDto } from './dto/update-wallet-pin.dto';
 
 @Controller('wallets')
 export class WalletController {
@@ -67,16 +69,32 @@ export class WalletController {
     return res.status(response.status).json(response);
   }
 
-  @Post()
+  @Post("/transaction")
   @UseGuards(StrictAuthGuard)
   async makeTransaction(
     @Req() req: Request,
     @Res() res: Response,
-    @Body() createWalletDto: CreateWalletDto,
+    @Body() makeTransactionDto: MakeTransactionDto,
   ) {
     const userId = req.user._id;
-    const account = await this.walletService.createWallet({
-      ...createWalletDto,
+    const account = await this.walletService.makeTransaction({
+      ...makeTransactionDto,
+      userId,
+    });
+    Logger.debug({ account });
+    return account;
+  }
+
+  @Patch("/")
+  @UseGuards(StrictAuthGuard)
+  async updatePin(
+    @Req() req: Request,
+    @Res() res: Response,
+    @Body() updateWalletPinDto: UpdateWalletPinDto,
+  ) {
+    const userId = req.user._id;
+    const account = await this.walletService.changePin({
+      ...updateWalletPinDto,
       userId,
     });
     Logger.debug({ account });
