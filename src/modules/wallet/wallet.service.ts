@@ -1,7 +1,18 @@
 import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { providers, Signer, Wallet, utils, BigNumber } from 'ethers';
-import { IBundler, Bundler } from '@biconomy/bundler';
+import { Bundler } from '@biconomy/bundler';
 import { ChainId, Transaction } from '@biconomy/core-types';
+import {
+  Hex,
+  createWalletClient,
+  encodeFunctionData,
+  http,
+  parseAbi,
+  zeroAddress,
+} from 'viem';
+import { privateKeyToAccount } from 'viem/accounts';
+import { polygonMumbai } from 'viem/chains';
+
 import {
   IPaymaster,
   BiconomyPaymaster,
@@ -17,6 +28,7 @@ import {
 } from '@biconomy/account';
 import {
   compareHash,
+  decryptPrivateKeyWithPin,
   encryptPrivateKeyWithPin,
   generatePrivateKey,
   hash,
@@ -34,43 +46,37 @@ import {
 
 @Injectable()
 export class WalletService {
-  private readonly provider: providers.JsonRpcProvider;
-  private readonly bundler: IBundler;
-  private readonly paymaster: IPaymaster;
-  // private readonly signer: Signer;
-
   constructor(
     private data: IDataServices,
     private walletFactory: WalletFactoryService,
-  ) {
-    this.provider = new providers.JsonRpcProvider(
+  ) {}
+
+  private async createSmartAccount(
+    privateKey: string,
+  ): Promise<BiconomySmartAccountV2> {
+    const provider = new providers.JsonRpcProvider(
       'https://rpc.ankr.com/polygon_mumbai',
     );
 
-    this.bundler = new Bundler({
+    const wallet = new Wallet(privateKey || '', provider);
+
+    const module = await this.createModule(wallet);
+
+    const bundler = new Bundler({
       bundlerUrl:
         'https://bundler.biconomy.io/api/v2/80001/nJPK7B3ru.dd7f7861-190d-41bd-af80-6877f74b8f44',
       chainId: ChainId.POLYGON_MUMBAI,
       entryPointAddress: DEFAULT_ENTRYPOINT_ADDRESS,
     });
 
-    this.paymaster = new BiconomyPaymaster({
+    const paymaster = new BiconomyPaymaster({
       paymasterUrl:
         'https://paymaster.biconomy.io/api/v1/80001/Tpk8nuCUd.70bd3a7f-a368-4e5a-af14-80c7f1fcda1a',
     });
-  }
-
-  private async createSmartAccount(
-    privateKey: string,
-  ): Promise<BiconomySmartAccountV2> {
-    const wallet = new Wallet(privateKey || '', this.provider);
-
-    const module = await this.createModule(wallet);
-
     return BiconomySmartAccountV2.create({
       chainId: ChainId.POLYGON_MUMBAI,
-      bundler: this.bundler,
-      paymaster: this.paymaster,
+      bundler: bundler,
+      paymaster: paymaster,
       entryPointAddress: DEFAULT_ENTRYPOINT_ADDRESS,
       defaultValidationModule: module,
       activeValidationModule: module,
@@ -141,12 +147,40 @@ export class WalletService {
       const hashedPin = await hash(pin);
 
       wallet.pin = hashedPin;
+      // wallet.privateKey = encryptPrivateKeyWithPin(pin, privateKey),
       await wallet.save();
 
       return {
         message: 'Wallet pin updated successfully',
         data: wallet,
         status: HttpStatus.CREATED,
+      };
+    } catch (error) {
+      Logger.error(error);
+      if (error.name === 'TypeError')
+        throw new HttpException(error.message, 500);
+      throw error;
+    }
+  }
+
+  async checkPin(payload: { pin: string; userId: string }) {
+    try {
+      const { pin, userId } = payload;
+
+      const wallet = await this.data.wallets.findOne({ owner: userId });
+      if (!wallet) throw new DoesNotExistsException('Wallet not found!');
+
+      if (!(await compareHash(pin, wallet.pin)))
+        return {
+          message: 'Wallet pin checked',
+          data: false,
+          status: HttpStatus.OK,
+        };
+
+      return {
+        message: 'Wallet pin checked',
+        data: true,
+        status: HttpStatus.OK,
       };
     } catch (error) {
       Logger.error(error);
@@ -175,16 +209,55 @@ export class WalletService {
     }
   }
 
-  async getUserWallet(payload: { userId: string }) {
+  async getUserWallet(payload: { userId: string; pin?: string }) {
     try {
       const { userId } = payload;
       const wallet = await this.data.wallets.findOne({ owner: userId });
       if (!wallet) throw new DoesNotExistsException('Wallet not found!');
-
+      let smartAccount: BiconomySmartAccountV2 | undefined = undefined;
+      let address = wallet.address;
+      if (payload.pin) {
+        smartAccount = await this.createSmartAccount(
+          decryptPrivateKeyWithPin(payload.pin, wallet.privateKey),
+        );
+        address = await smartAccount.getAccountAddress();
+        // await smartAccount.init();
+      }
       return {
         message: 'Wallet retrieved successfully',
         status: HttpStatus.OK,
-        data: wallet,
+        data: {
+          address,
+          balance: wallet.balance,
+          owner: wallet.owner,
+          _id: wallet._id,
+          ...(smartAccount && {
+            // smartAccount,
+            // tokenBalances: await smartAccount
+            //   .paymaster({
+            //     address: address,
+            //     chainId: ChainId.POLYGON_MUMBAI,
+            //     tokenAddresses: [],
+            //   })
+            //   .catch((err) => console.log({ err })),
+            totalBalance: await smartAccount
+              .getTotalBalanceInUsd({
+                address: address,
+                // eoaAddress: address,
+                chainId: ChainId.POLYGON_MUMBAI,
+                tokenAddresses: [''],
+              })
+              .catch((err) => console.log({ err })),
+
+            // supportedChains: await smartAccount
+            //   .getAllSupportedChains()
+            //   .catch((err) => console.log({ err })),
+
+            transactions: await smartAccount
+              .getTransactionsByAddress(ChainId.POLYGON_MUMBAI, wallet.address)
+              .catch((err) => console.log({ err })),
+          }),
+        },
       };
     } catch (error) {
       Logger.error(error);
@@ -210,7 +283,6 @@ export class WalletService {
     const nftInterface = new utils.Interface([
       'function safeMint(address _to)',
     ]);
-
     // Encode the data for the 'safeMint' function call with the smart account address
     const data = nftInterface.encodeFunctionData('safeMint', [address]);
 
@@ -218,7 +290,7 @@ export class WalletService {
     const nftAddress = '0x1758f42Af7026fBbB559Dc60EcE0De3ef81f665e';
 
     // Define the transaction to be sent to the NFT contract
-    const transaction: Transaction = {
+    const transaction = {
       to: nftAddress,
       data: data,
     };
@@ -227,6 +299,10 @@ export class WalletService {
     let partialUserOp = await smartAccount.buildUserOp([transaction], {
       paymasterServiceData: {
         mode: PaymasterMode.SPONSORED,
+      },
+      overrides: {
+        maxFeePerGas: 1000,
+        maxPriorityFeePerGas: 1000,
       },
     });
 
@@ -256,7 +332,7 @@ export class WalletService {
     userId: string;
     pin: string;
     toAddress: string;
-    amount: BigNumber;
+    amount: bigint;
   }) {
     const wallet = await this.data.wallets.findOne({ owner: userId });
     if (!wallet) throw new DoesNotExistsException('Wallet not found!');
@@ -265,40 +341,60 @@ export class WalletService {
       throw new UnAuthorizedException('Incorrect wallet pin!');
 
     // Specify the address of the NFT contract
-    const smartAccount = await this.createSmartAccount(wallet.privateKey);
+    const smartAccount = await this.createSmartAccount(
+      decryptPrivateKeyWithPin(pin, wallet.privateKey),
+    );
     // Retrieve the address of the initialized smart account
     const address = await smartAccount.getAccountAddress();
 
     // Specify the amount to send
     const value = amount;
+    const erc20Interface = new utils.Interface([
+      'function transfer(address _to,uint256 _value)',
+    ]);
+    const data = erc20Interface.encodeFunctionData('transfer', [
+      toAddress,
+      utils.parseEther(value.toString()),
+    ]);
 
     // Define the transaction to be sent to the NFT contract
     const transaction: Transaction = {
+      // to: address,
       to: toAddress,
-      value,
+      data: '0x',
+      value: utils.parseEther(value.toString()),
     };
-
+    await smartAccount.init();
     // Build a partial User Operation (UserOp) with the transaction and set it to be sponsored
     let partialUserOp = await smartAccount.buildUserOp([transaction], {
       paymasterServiceData: {
         mode: PaymasterMode.SPONSORED,
+        // calculateGasLimits: true,
       },
+      // overrides: {
+      //   maxFeePerGas: 10000,
+      //   maxPriorityFeePerGas: 10000,
+      // },
+      skipBundlerGasEstimation: true,
     });
 
-    // Try to execute the UserOp and handle any errors
-    try {
-      // Send the UserOp through the smart account
-      const userOpResponse = await smartAccount.sendUserOp(partialUserOp);
-      // Wait for the transaction to complete and retrieve details
-      const transactionDetails = await userOpResponse.wait();
-      // Log the transaction details URL and the URL to view minted NFTs
-      console.log(
-        `Transaction Details: https://mumbai.polygonscan.com/tx/${transactionDetails.receipt.transactionHash}`,
-      );
-    } catch (e) {
-      // Log any errors encountered during the transaction
-      console.log('Error encountered: ', e);
-    }
+    // Send the UserOp through the smart account
+    const userOpResponse = await smartAccount.sendUserOp(partialUserOp);
+    // Wait for the transaction to complete and retrieve details
+    const transactionDetails = await userOpResponse.wait();
+    // // Log the transaction details URL and the URL to view minted NFTs
+    console.log(
+      `Transaction Details: https://mumbai.polygonscan.com/tx/${transactionDetails.receipt.transactionHash}`,
+    );
+
+    return {
+      message: 'Wallet Transaction completed!',
+      data: {
+        receipt: transactionDetails.receipt,
+        receiptLink: `https://mumbai.polygonscan.com/tx/${transactionDetails.receipt.transactionHash}`,
+      },
+      status: HttpStatus.CREATED,
+    };
   }
 
   async deleteWallet(payload: any) {
