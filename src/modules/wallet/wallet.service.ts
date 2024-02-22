@@ -51,15 +51,22 @@ export class WalletService {
     private walletFactory: WalletFactoryService,
   ) {}
 
-  private async createSmartAccount(
-    privateKey: string,
-  ): Promise<BiconomySmartAccountV2> {
+  private getWalletSetup(privateKey: string) {
+    // new providers.AnkrProvider()
     const provider = new providers.JsonRpcProvider(
       'https://rpc.ankr.com/polygon_mumbai',
     );
-
     const wallet = new Wallet(privateKey || '', provider);
 
+    return {
+      wallet,
+      provider,
+    };
+  }
+
+  private async createSmartAccount(
+    wallet: Wallet,
+  ): Promise<BiconomySmartAccountV2> {
     const module = await this.createModule(wallet);
 
     const bundler = new Bundler({
@@ -90,6 +97,20 @@ export class WalletService {
     });
   }
 
+  async getTransactions(provider: providers.JsonRpcProvider, address) {
+    try {
+      // Get the block number of the latest block
+      const latestBlockNumber = await provider.getBlockNumber();
+      // provider.
+      // Initialize an array to store transactions
+      let transactions = [];
+
+      return { transactions, latestBlockNumber };
+    } catch (error) {
+      console.error('Error fetching transactions:', error.message);
+    }
+  }
+
   async hashPin(pin: string) {
     pin = await hash(pin);
   }
@@ -111,7 +132,8 @@ export class WalletService {
 
       const hashedPin = await hash(pin);
       const privateKey = generatePrivateKey();
-      const smartAccount = await this.createSmartAccount(privateKey);
+      const { wallet: baseWallet } = this.getWalletSetup(privateKey || '');
+      const smartAccount = await this.createSmartAccount(baseWallet);
       const walletPayload: OptionalQuery<WalletEntity> = {
         pin: hashedPin,
         privateKey: encryptPrivateKeyWithPin(pin, privateKey),
@@ -215,11 +237,16 @@ export class WalletService {
       const wallet = await this.data.wallets.findOne({ owner: userId });
       if (!wallet) throw new DoesNotExistsException('Wallet not found!');
       let smartAccount: BiconomySmartAccountV2 | undefined = undefined;
+      let baseWallet: Wallet | undefined;
+      let baseProvider: providers.JsonRpcProvider | undefined;
       let address = wallet.address;
       if (payload.pin) {
-        smartAccount = await this.createSmartAccount(
+        const { wallet: walletData, provider } = this.getWalletSetup(
           decryptPrivateKeyWithPin(payload.pin, wallet.privateKey),
         );
+        baseProvider = provider;
+        baseWallet = walletData;
+        smartAccount = await this.createSmartAccount(baseWallet);
         address = await smartAccount.getAccountAddress();
         // await smartAccount.init();
       }
@@ -228,7 +255,7 @@ export class WalletService {
         status: HttpStatus.OK,
         data: {
           address,
-          balance: wallet.balance,
+          balance: utils.formatEther(await baseProvider.getBalance(address)),
           owner: wallet.owner,
           _id: wallet._id,
           ...(smartAccount && {
@@ -253,9 +280,7 @@ export class WalletService {
             //   .getAllSupportedChains()
             //   .catch((err) => console.log({ err })),
 
-            transactions: await smartAccount
-              .getTransactionsByAddress(ChainId.POLYGON_MUMBAI, wallet.address)
-              .catch((err) => console.log({ err })),
+            transactions: await this.getTransactions(baseProvider, address),
           }),
         },
       };
@@ -341,9 +366,10 @@ export class WalletService {
       throw new UnAuthorizedException('Incorrect wallet pin!');
 
     // Specify the address of the NFT contract
-    const smartAccount = await this.createSmartAccount(
+    const { wallet: baseWallet } = this.getWalletSetup(
       decryptPrivateKeyWithPin(pin, wallet.privateKey),
     );
+    const smartAccount = await this.createSmartAccount(baseWallet);
     // Retrieve the address of the initialized smart account
     const address = await smartAccount.getAccountAddress();
 
