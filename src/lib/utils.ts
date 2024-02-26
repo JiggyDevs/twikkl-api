@@ -7,6 +7,9 @@ import {
   pbkdf2Sync,
   createCipheriv,
   createDecipheriv,
+  createHash,
+  Decipher,
+  Cipher,
 } from 'crypto';
 import { ethers } from 'ethers';
 
@@ -42,45 +45,58 @@ export const hash = async (password: string) => {
 };
 
 /** compare hash password */
-export const compareHash = async (password: string, hashedPassword: string): Promise<boolean> => {
+export const compareHash = async (
+  password: string,
+  hashedPassword: string,
+): Promise<boolean> => {
   const bool = await compare(password, hashedPassword);
   return bool;
 };
 
-export const encryptPrivateKeyWithPin = (pin: string, privateKey: string) => {
-  const salt = randomBytes(16).toString('hex');
-  const key = pbkdf2Sync(pin, salt, 100000, 32, 'sha256');
-  const cipher = createCipheriv('aes-256-cbc', key, Buffer.from(salt, 'hex'));
-  let encryptedPrivateKey = cipher.update(privateKey, 'utf-8', 'hex');
-  encryptedPrivateKey += cipher.final('hex');
-  return encryptedPrivateKey;
+export const encryptPrivateKeyWithPin = (
+  pin: string,
+  secret: string,
+): string => {
+  // Derive a key from the pin using a secure hash function
+  const key: Buffer = createHash('sha256').update(pin).digest();
+
+  // Generate a random initialization vector (IV)
+  const iv: Buffer = randomBytes(16);
+
+  // Create a cipher object with the AES algorithm in CBC mode
+  const cipher: Cipher = createCipheriv('aes-256-cbc', key, iv);
+
+  // Encrypt the secret
+  let encryptedSecret: Buffer = cipher.update(secret, 'utf-8');
+  encryptedSecret = Buffer.concat([encryptedSecret, cipher.final()]);
+
+  // Combine IV and encrypted data into a single string separated by a delimiter
+  const encryptedData: string =
+    iv.toString('hex') + ':' + encryptedSecret.toString('hex');
+
+  return encryptedData;
 };
 
 export const decryptPrivateKeyWithPin = (
   pin: string,
-  privateKey: string,
-): string | null => {
-  try {
-    // Derive key using PIN and decrypt private key
-    const salt = privateKey.slice(0, 32); // Assuming the salt is stored at the beginning
-    const key = pbkdf2Sync(pin, salt, 100000, 32, 'sha256');
-    const decipher = createDecipheriv(
-      'aes-256-cbc',
-      key,
-      Buffer.from(salt, 'hex'),
-    );
-    let decryptedPrivateKey = decipher.update(
-      privateKey.slice(32),
-      'hex',
-      'utf-8',
-    );
-    decryptedPrivateKey += decipher.final('utf-8');
+  encryptedData: string,
+): string => {
+  // Split the encrypted data into IV and encrypted secret
+  const parts: string[] = encryptedData.split(':');
+  const iv: Buffer = Buffer.from(parts.shift(), 'hex');
+  const encryptedSecret: Buffer = Buffer.from(parts.join(':'), 'hex');
 
-    return decryptedPrivateKey;
-  } catch (error) {
-    console.error('Error decrypting private key:', error.message);
-    return null;
-  }
+  // Derive a key from the pin using a secure hash function
+  const key: Buffer = createHash('sha256').update(pin).digest();
+
+  // Create a decipher object with the AES algorithm in CBC mode
+  const decipher: Decipher = createDecipheriv('aes-256-cbc', key, iv);
+
+  // Decrypt the secret
+  let decryptedSecret: Buffer = decipher.update(encryptedSecret);
+  decryptedSecret = Buffer.concat([decryptedSecret, decipher.final()]);
+
+  return decryptedSecret.toString();
 };
 
 export const generatePrivateKey = () => {

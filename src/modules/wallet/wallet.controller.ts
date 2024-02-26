@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  HttpStatus,
   Logger,
   Param,
   Patch,
@@ -54,6 +55,22 @@ export class WalletController {
     return res.status(response.status).json(response);
   }
 
+  @Post('/details')
+  @UseGuards(StrictAuthGuard)
+  async getWalletDetails(
+    @Req() req: Request,
+    @Res() res: Response,
+    @Query() query: any,
+    @Body() body: any,
+  ) {
+    const userId = req.user._id;
+    query = { userId };
+    const payload = { userId, pin: body?.pin };
+
+    const response = await this.walletService.getUserWallet(payload);
+    return res.status(response.status).json(response);
+  }
+
   @Delete('/')
   @UseGuards(StrictAuthGuard)
   async deleteWallet(
@@ -69,23 +86,46 @@ export class WalletController {
     return res.status(response.status).json(response);
   }
 
-  @Post("/transaction")
+  @Post('/send')
   @UseGuards(StrictAuthGuard)
   async makeTransaction(
     @Req() req: Request,
     @Res() res: Response,
     @Body() makeTransactionDto: MakeTransactionDto,
   ) {
+    try {
+      const userId = req.user._id;
+      const account = await this.walletService.makeTransaction({
+        ...makeTransactionDto,
+        userId,
+      });
+      Logger.debug({ account });
+      return res.status(account.status).json(account);
+    } catch (error) {
+      console.log({ error });
+      return res.status(HttpStatus.BAD_REQUEST).json({
+        message: error.message,
+      });
+    }
+  }
+
+  @Post('/check-pin')
+  @UseGuards(StrictAuthGuard)
+  async checkPin(
+    @Req() req: Request,
+    @Res() res: Response,
+    @Body() makeTransactionDto: MakeTransactionDto,
+  ) {
     const userId = req.user._id;
-    const account = await this.walletService.makeTransaction({
+    const account = await this.walletService.checkPin({
       ...makeTransactionDto,
       userId,
     });
     Logger.debug({ account });
-    return account;
+    return res.status(account.status).json(account);
   }
 
-  @Patch("/")
+  @Patch('/')
   @UseGuards(StrictAuthGuard)
   async updatePin(
     @Req() req: Request,
@@ -98,6 +138,6 @@ export class WalletController {
       userId,
     });
     Logger.debug({ account });
-    return account;
+    return res.status(account.status).json(account);
   }
 }

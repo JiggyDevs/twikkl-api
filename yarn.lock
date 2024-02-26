@@ -331,9 +331,9 @@
     "@babel/helper-plugin-utils" "^7.20.2"
 
 "@babel/runtime@^7.21.0":
-  version "7.23.8"
-  resolved "https://registry.yarnpkg.com/@babel/runtime/-/runtime-7.23.8.tgz#8ee6fe1ac47add7122902f257b8ddf55c898f650"
-  integrity sha512-Y7KbAP984rn1VGMbGqKmBLio9V7y5Je9GvU4rQPCPinCyNfUcToxIXl06d59URp/F3LwinvODxab5N/G6qggkw==
+  version "7.23.9"
+  resolved "https://registry.yarnpkg.com/@babel/runtime/-/runtime-7.23.9.tgz#47791a15e4603bb5f905bc0753801cf21d6345f7"
+  integrity sha512-0CX6F+BI2s9dkUqr08KFrAIZgNFj75rdBU/DjCyYLIaV/quFjkk6T+EJ2LkZHyZTbEV4L5p97mNkUsHl2wLFAw==
   dependencies:
     regenerator-runtime "^0.14.0"
 
@@ -387,6 +387,27 @@
     axios "^1.4.0"
     dotenv "^16.0.3"
     ethereumjs-util "^7.1.0"
+
+"@biconomy-devx/core-types@^2.0.61":
+  version "2.0.61"
+  resolved "https://registry.yarnpkg.com/@biconomy-devx/core-types/-/core-types-2.0.61.tgz#761c0e233119d57a6f4a2a3ece5bdfcae5794202"
+  integrity sha512-TuqCPIwydO9JyNfY0XKFTe1BzhRar75V19prs6k4fng33+ELNMXjwxWoEHe6QHO78u8vMZZgmdZqI0FSn0RbQg==
+  dependencies:
+    "@ethersproject/bignumber" "^5.6.0"
+    "@ethersproject/contracts" "^5.6.0"
+    "@ethersproject/providers" "^5.7.0"
+    ethers "^5.7.2"
+    web3-core "^1.7.1"
+
+"@biconomy-devx/node-client@^2.0.61":
+  version "2.0.61"
+  resolved "https://registry.yarnpkg.com/@biconomy-devx/node-client/-/node-client-2.0.61.tgz#abe441e194d67207d73bf6ec36594d8d0f472385"
+  integrity sha512-LMK6SrdMq9RCvI0oSuTep9/9bJQLvLywJyv1SDwu/WbYT9Xey4QjyRqhlo+sKnm4tQQHl+glA7jDZvfnNHa9aA==
+  dependencies:
+    "@biconomy-devx/core-types" "^2.0.61"
+    "@ethersproject/abstract-signer" "^5.6.0"
+    "@nomiclabs/hardhat-ethers" "^2.1.0"
+    node-fetch "^2.6.6"
 
 "@biconomy/account@^3.1.3":
   version "3.1.3"
@@ -1867,7 +1888,7 @@
 
 "@types/prettier@^2.1.1", "@types/prettier@^2.1.5":
   version "2.7.3"
-  resolved "https://registry.npmjs.org/@types/prettier/-/prettier-2.7.3.tgz"
+  resolved "https://registry.yarnpkg.com/@types/prettier/-/prettier-2.7.3.tgz#3e51a17e291d01d17d3fc61422015a933af7a08f"
   integrity sha512-+68kP9yzs4LMp7VNh8gdzMSPZFL44MLGqiHWvttYJe+6qnuVr4Ek9wSBQoveqY/r+LwjCcU29kNVkidwim+kYA==
 
 "@types/qs@*":
@@ -2775,7 +2796,7 @@ chalk@4.1.2, chalk@^4.0.0, chalk@^4.1.0, chalk@^4.1.1, chalk@^4.1.2:
 
 chalk@^2.0.0, chalk@^2.4.2:
   version "2.4.2"
-  resolved "https://registry.npmjs.org/chalk/-/chalk-2.4.2.tgz"
+  resolved "https://registry.yarnpkg.com/chalk/-/chalk-2.4.2.tgz#cd42541677a54333cf541a49108c1432b44c9424"
   integrity sha512-Mti+f9lpJNcwF4tWV8/OrTTtF1gZi+f8FqlyAdouralcFWFQWF2+NgCHShjkCb+IFBLq9buZwE1xckQU4peSuQ==
   dependencies:
     ansi-styles "^3.2.1"
@@ -3272,7 +3293,12 @@ doctrine@^3.0.0:
   dependencies:
     esutils "^2.0.2"
 
-dotenv@^16.0.3, dotenv@^16.3.1:
+dotenv@^16.0.3:
+  version "16.4.4"
+  resolved "https://registry.yarnpkg.com/dotenv/-/dotenv-16.4.4.tgz#a26e7bb95ebd36272ebb56edb80b826aecf224c1"
+  integrity sha512-XvPXc8XAQThSjAbY6cQ/9PcBXmFoWuw1sQ3b8HqUCR6ziGXjkTi//kB9SWa2UwqlgdAIuRqAa/9hVljzPehbYg==
+
+dotenv@^16.3.1:
   version "16.3.1"
   resolved "https://registry.npmjs.org/dotenv/-/dotenv-16.3.1.tgz"
   integrity sha512-IPzF4w4/Rd94bA9imS68tZBaYyBWSCE47V1RGuMrB94iyTOIEwRmVL2x/4An+6mETpLrKJ5hQkB8W4kFAadeIQ==
@@ -5440,9 +5466,9 @@ log-symbols@^4.1.0:
     is-unicode-supported "^0.1.0"
 
 loglevel@^1.8.1:
-  version "1.8.1"
-  resolved "https://registry.yarnpkg.com/loglevel/-/loglevel-1.8.1.tgz#5c621f83d5b48c54ae93b6156353f555963377b4"
-  integrity sha512-tCRIJM51SHjAayKwC+QAg8hT8vg6z7GSgLJKGvzuPb1Wc+hLzqtuVLxp6/HzSPOozuK+8ErAhy7U/sVzw8Dgfg==
+  version "1.9.1"
+  resolved "https://registry.yarnpkg.com/loglevel/-/loglevel-1.9.1.tgz#d63976ac9bcd03c7c873116d41c2a85bafff1be7"
+  integrity sha512-hP3I3kCrDIMuRwAwHltphhDM1r8i55H33GgqjXbrisuJhF4kRhW1dNuxsRklp4bXl8DSdLaNLuiL4A/LWRfxvg==
 
 long@^5.0.0:
   version "5.2.3"
@@ -5450,9 +5476,9 @@ long@^5.0.0:
   integrity sha512-lcHwpNoggQTObv5apGNCTdJrO69eHOZMi4BNC+rTLER8iHAqGrUVeLh/irVIM7zTw2bOXA8T6uNPeujwOLg/2Q==
 
 lru-cache@^10.0.1:
-  version "10.1.0"
-  resolved "https://registry.yarnpkg.com/lru-cache/-/lru-cache-10.1.0.tgz#2098d41c2dc56500e6c88584aa656c84de7d0484"
-  integrity sha512-/1clY/ui8CzjKFyjdvwPWJUYKiFVXG2I2cY0ssG7h4+hwk+XOIX7ZSG9Q7TW8TW3Kp3BUSqgFWBLgL4PJ+Blag==
+  version "10.2.0"
+  resolved "https://registry.yarnpkg.com/lru-cache/-/lru-cache-10.2.0.tgz#0bd445ca57363465900f4d1f9bd8db343a4d95c3"
+  integrity sha512-2bIM8x+VAf6JT4bKAljS1qUWgMsqZRPGJS6FSahIMPVvctcNhyVp7AJu7quxOW9jwkryBReKZY5tY5JYv2n/7Q==
 
 lru-cache@^5.1.1:
   version "5.1.1"
@@ -6181,7 +6207,7 @@ prettier-linter-helpers@^1.0.0:
 
 prettier@^2.3.1, prettier@^2.3.2:
   version "2.8.8"
-  resolved "https://registry.npmjs.org/prettier/-/prettier-2.8.8.tgz"
+  resolved "https://registry.yarnpkg.com/prettier/-/prettier-2.8.8.tgz#e8c5d7e98a4305ffe3de2e1fc4aca1a71c28b1da"
   integrity sha512-tdN8qQGvNjw4CHbY+XXk0JgCXn9QiF21a55rBe5LJAU+kDyC4WQn4+awm2Xfk2lQMk5fKup9XgzTZtGkjBdP9Q==
 
 pretty-format@^29.0.0, pretty-format@^29.5.0:
@@ -6517,7 +6543,7 @@ run-parallel@^1.1.9:
 
 rxjs@7.8.1, rxjs@^7.0.0, rxjs@^7.2.0, rxjs@^7.5.5:
   version "7.8.1"
-  resolved "https://registry.npmjs.org/rxjs/-/rxjs-7.8.1.tgz"
+  resolved "https://registry.yarnpkg.com/rxjs/-/rxjs-7.8.1.tgz#6f6f3d99ea8044291efd92e7c7fcf562c4057543"
   integrity sha512-AA3TVj+0A2iuIoQkWEK/tqFjBq2j+6PO6Y0zJcvzLAFhEFIO3HL0vls9hWLncZbAAbK0mar7oZ4V079I/qPMxg==
   dependencies:
     tslib "^2.1.0"
@@ -6912,7 +6938,7 @@ supports-color@^7.1.0:
 
 supports-color@^8.0.0, supports-color@^8.1.0:
   version "8.1.1"
-  resolved "https://registry.npmjs.org/supports-color/-/supports-color-8.1.1.tgz"
+  resolved "https://registry.yarnpkg.com/supports-color/-/supports-color-8.1.1.tgz#cd6fc17e28500cff56c1b86c0a7fd4a54a73005c"
   integrity sha512-MpUEN2OodtUzxvKQl72cUF7RQ5EiHsGvSsVG0ia9c5RbWGL2CI4C7EpPS8UTBIplnlzZiNuV56w+FuNxy3ty2Q==
   dependencies:
     has-flag "^4.0.0"
@@ -7060,7 +7086,7 @@ tr46@~0.0.3:
 
 tree-kill@1.2.2, tree-kill@^1.2.2:
   version "1.2.2"
-  resolved "https://registry.npmjs.org/tree-kill/-/tree-kill-1.2.2.tgz"
+  resolved "https://registry.yarnpkg.com/tree-kill/-/tree-kill-1.2.2.tgz#4ca09a9092c88b73a7cdc5e8a01b507b0790a0cc"
   integrity sha512-L0Orpi8qGpRG//Nd+H90vFB+3iHnue1zSSGmNOOCh1GLJ7rUKVwV2HvijphGQS2UmhUZewS9VgvxYIdgr+fG1A==
 
 treeify@^1.1.0:
