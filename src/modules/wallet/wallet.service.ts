@@ -6,6 +6,7 @@ import {
   Hex,
   createWalletClient,
   encodeFunctionData,
+  createPublicClient,
   http,
   parseAbi,
   zeroAddress,
@@ -43,24 +44,48 @@ import {
   ForbiddenRequestException,
   UnAuthorizedException,
 } from 'src/lib/exceptions';
+import { Polygonscan } from 'src/lib/block-explorers/polygonScan';
+import { POLYSCAN_API_TOKEN } from 'src/config';
 
 @Injectable()
 export class WalletService {
+  private polygonscan = new Polygonscan(POLYSCAN_API_TOKEN);
   constructor(
     private data: IDataServices,
     private walletFactory: WalletFactoryService,
   ) {}
 
-  private getWalletSetup(privateKey: string) {
+  private getWalletSetup(privateKey?: string) {
     // new providers.AnkrProvider()
     const provider = new providers.JsonRpcProvider(
       'https://rpc.ankr.com/polygon_mumbai',
     );
+
+    const publicClient = createPublicClient({
+      chain: polygonMumbai,
+      transport: http('https://rpc.ankr.com/polygon_mumbai'),
+    });
+
+    if (!privateKey)
+      return {
+        provider,
+      };
+
+    const account = privateKeyToAccount(`0x${privateKey.replace('0x', '')}`);
+
+    const walletClient = createWalletClient({
+      account,
+      chain: polygonMumbai,
+      transport: http('https://rpc.ankr.com/polygon_mumbai'),
+    });
+
     const wallet = new Wallet(privateKey || '', provider);
 
     return {
       wallet,
       provider,
+      publicClient,
+      walletClient,
     };
   }
 
@@ -97,15 +122,14 @@ export class WalletService {
     });
   }
 
-  async getTransactions(provider: providers.JsonRpcProvider, address) {
+  async getTransactions(address: string) {
     try {
-      // Get the block number of the latest block
-      const latestBlockNumber = await provider.getBlockNumber();
-      // provider.
-      // Initialize an array to store transactions
-      let transactions = [];
+      const transactions = await this.polygonscan.getTransactionHistory(
+        address,
+      );
 
-      return { transactions, latestBlockNumber };
+      console.log('Transaction History:', transactions);
+      return transactions;
     } catch (error) {
       console.error('Error fetching transactions:', error.message);
     }
@@ -236,52 +260,32 @@ export class WalletService {
       const { userId } = payload;
       const wallet = await this.data.wallets.findOne({ owner: userId });
       if (!wallet) throw new DoesNotExistsException('Wallet not found!');
-      let smartAccount: BiconomySmartAccountV2 | undefined = undefined;
-      let baseWallet: Wallet | undefined;
-      let baseProvider: providers.JsonRpcProvider | undefined;
+
       let address = wallet.address;
-      if (payload.pin) {
-        const { wallet: walletData, provider } = this.getWalletSetup(
-          decryptPrivateKeyWithPin(payload.pin, wallet.privateKey),
-        );
-        baseProvider = provider;
-        baseWallet = walletData;
-        smartAccount = await this.createSmartAccount(baseWallet);
-        address = await smartAccount.getAccountAddress();
-        // await smartAccount.init();
-      }
+
+      // const { publicClient } = this.getWalletSetup('');
+      const { wallet: baseWallet, publicClient } = this.getWalletSetup(
+        payload.pin
+          ? decryptPrivateKeyWithPin(payload.pin, wallet.privateKey)
+          : undefined,
+      );
+
+      const [balance, transactions] = await Promise.all([
+        publicClient.getBalance({
+          address,
+        }),
+        this.getTransactions(address),
+      ]);
+
       return {
         message: 'Wallet retrieved successfully',
         status: HttpStatus.OK,
         data: {
           address,
-          balance: utils.formatEther(await baseProvider.getBalance(address)),
+          balance: utils.formatEther(balance),
           owner: wallet.owner,
           _id: wallet._id,
-          ...(smartAccount && {
-            // smartAccount,
-            // tokenBalances: await smartAccount
-            //   .paymaster({
-            //     address: address,
-            //     chainId: ChainId.POLYGON_MUMBAI,
-            //     tokenAddresses: [],
-            //   })
-            //   .catch((err) => console.log({ err })),
-            totalBalance: await smartAccount
-              .getTotalBalanceInUsd({
-                address: address,
-                // eoaAddress: address,
-                chainId: ChainId.POLYGON_MUMBAI,
-                tokenAddresses: [''],
-              })
-              .catch((err) => console.log({ err })),
-
-            // supportedChains: await smartAccount
-            //   .getAllSupportedChains()
-            //   .catch((err) => console.log({ err })),
-
-            transactions: await this.getTransactions(baseProvider, address),
-          }),
+          transactions,
         },
       };
     } catch (error) {
