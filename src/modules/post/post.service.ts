@@ -158,19 +158,21 @@ export class PostService {
       filterQuery['isDeleted'] = false;
       filterQuery['isAdminDeleted'] = false;
 
-      const data = await this.data.likes.find({
-        user: payload.user,
-      });
+      // const data = await this.data.likes.find({
+      //   user: payload.user,
+      // });
 
-      const likedPostIds = data.map((like) => like.post);
-      Logger.log({ likedPostIds });
+      // const likedPostIds = data.map((like) => like.post);
+      // Logger.log({ likedPostIds });
 
       const { data: similarPosts, pagination } =
         await this.data.post.findAllWithPagination(
           {
             // _id: { $nin: likedPostIds },
             // tags: { $in: data.map((like) => like.tags) },
+
             ...filterQuery,
+            $or: [{ group: null }, { group: { $exists: false } }],
           },
           { populate: 'creator' },
         );
