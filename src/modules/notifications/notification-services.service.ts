@@ -21,28 +21,29 @@ export class NotificationService {
   ) {}
 
   cleanNotificationsQuery(data: IGetNotifications) {
-    let key = {};
+    const key: Partial<IGetNotifications> = {};
 
-    if (data._id) key['_id'] = data._id;
-    if (data.content) key['content'] = data.content;
-    if (data.title) key['title'] = data.title;
-    if (data.user) key['user'] = data.user;
-    if (data.clicked === false || data.clicked) key['clicked'] = data.clicked;
-    if (data.page) key['page'] = data.page;
-    if (data.perpage) key['perpage'] = data.perpage;
-    if (data.sort) key['sort'] = data.sort;
+    if (data._id) key._id = data._id;
+    if (data.content) key.content = data.content;
+    if (data.title) key.title = data.title;
+    if (data.user) key.user = data.user;
+    if (data.clicked === false || data.clicked) key.clicked = data.clicked;
+    if (data.page) key.page = data.page;
+    if (data.perpage) key.perpage = data.perpage;
+    if (data.sort) key.sort = data.sort;
 
     return key;
   }
 
   async create(payload: ICreateNotification) {
     try {
-      const { title, content, user, post } = payload;
+      const { title, content, user, post, from } = payload;
 
       const notificationPayload: OptionalQuery<Notification> = {
         title,
         content,
         user,
+        from,
         post,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -53,7 +54,7 @@ export class NotificationService {
       const data = await this.data.notification.create(factory);
 
       return {
-        message: 'Post created successfully',
+        message: 'Notification created successfully',
         data,
         status: HttpStatus.CREATED,
       };
@@ -71,7 +72,7 @@ export class NotificationService {
 
       const { data, pagination } =
         await this.data.notification.findAllWithPagination(filterQuery, {
-          populate: ['post', 'user'],
+          populate: ['post', 'user', 'from'],
         });
 
       return {

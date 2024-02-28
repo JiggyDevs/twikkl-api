@@ -40,26 +40,26 @@ export class PostService {
   ) {}
 
   cleanGetUserPostsQuery(data: IGetUserPosts) {
-    let key = {};
+    const key: Partial<IGetUserPosts> = {};
 
-    if (data._id) key['_id'] = data._id;
-    if (data.contentUrl) key['contentUrl'] = data.contentUrl;
-    if (data.creator) key['creator'] = data.creator;
-    if (data.description) key['description'] = data.description;
-    if (data.group) key['group'] = data.group;
+    if (data._id) key._id = data._id;
+    if (data.contentUrl) key.contentUrl = data.contentUrl;
+    if (data.creator) key.creator = data.creator;
+    if (data.description) key.description = data.description;
+    if (data.group) key.group = data.group;
     if (data.isAdminDeleted === false || data.isAdminDeleted)
-      key['isAdminDeleted'] = data.isAdminDeleted;
+      key.isAdminDeleted = data.isAdminDeleted;
     if (data.allowDuet === false || data.allowDuet)
-      key['allowDuet'] = data.allowDuet;
+      key.allowDuet = data.allowDuet;
     if (data.allowStitch === false || data.allowStitch)
-      key['allowStitch'] = data.allowStitch;
+      key.allowStitch = data.allowStitch;
     if (data.isDeleted === false || data.isDeleted)
-      key['isDeleted'] = data.isDeleted;
-    if (data.user) key['user'] = data.user;
-    if (data.page) key['page'] = data.page;
-    if (data.perpage) key['perpage'] = data.perpage;
-    if (data.sort) key['sort'] = data.sort;
-    if (data.q) key['q'] = data.q;
+      key.isDeleted = data.isDeleted;
+    if (data.user) key.user = data.user;
+    if (data.page) key.page = data.page;
+    if (data.perpage) key.perpage = data.perpage;
+    if (data.sort) key.sort = data.sort;
+    if (data.q) key.q = data.q;
 
     return key;
   }
@@ -92,11 +92,11 @@ export class PostService {
       const data = await this.data.post.create(factory);
 
       if (tags && !isEmpty(tags)) {
-        for (let i = 0; i < tags.length; i++) {
-          const tag = await this.data.tags.findOne({ name: tags[i] });
+        for (const tagName of tags) {
+          const tag = await this.data.tags.findOne({ name: tagName });
           if (!tag) {
             const tagPayload: OptionalQuery<Tags> = {
-              name: tags[i],
+              name: tagName,
               post: data._id,
               createdAt: new Date(),
               updatedAt: new Date(),
@@ -119,6 +119,22 @@ export class PostService {
 
       const notificationFactory =
         this.notificationFactory.create(notificationPayload);
+
+      // if (user && user.followersNotification && user.following.length > 0) {
+      //   const followerIds = user.following;
+      //   const notifications = [];
+      //   for (const followerId of followerIds) {
+      //     notifications.push({
+      //       title: 'New Post by ' + user.username,
+      //       content: 'Check out the latest post by ' + user.username,
+      //       user: followerId,
+      //       createdAt: new Date(),
+      //       updatedAt: new Date(),
+      //     });
+      //   }
+      //   await this.data.notification.insertMany(notifications);
+      // }
+
       await this.data.notification.create(notificationFactory);
 
       //Could send a general message to users followers
