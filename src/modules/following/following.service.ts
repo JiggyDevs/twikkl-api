@@ -28,15 +28,15 @@ export class FollowingService {
   ) {}
 
   cleanFollowersQuery(data: IGetAllFollowers) {
-    let key = {};
+    const key: Partial<IGetAllFollowers> = {};
 
-    if (data._id) key['_id'] = data._id;
-    if (data.follower) key['follower'] = data.follower;
-    if (data.page) key['page'] = data.page;
-    if (data.perpage) key['perpage'] = data.perpage;
-    if (data.q) key['q'] = data.q;
-    if (data.sort) key['sort'] = data.sort;
-    if (data.user) key['user'] = data.user;
+    if (data._id) key._id = data._id;
+    if (data.follower) key.follower = data.follower;
+    if (data.page) key.page = data.page;
+    if (data.perpage) key.perpage = data.perpage;
+    if (data.q) key.q = data.q;
+    if (data.sort) key.sort = data.sort;
+    if (data.user) key.user = data.user;
 
     return key;
   }
@@ -45,7 +45,7 @@ export class FollowingService {
     try {
       const { userToFollow, userId } = payload;
 
-      const user: User = await this.data.users.findOne({ _id: userToFollow });
+      const user = await this.data.users.findOne({ _id: userToFollow });
       if (!user) throw new DoesNotExistsException('User to follow not found');
 
       if (userToFollow === userId)
@@ -67,12 +67,13 @@ export class FollowingService {
       const factory = this.followFactory.create(followPayload);
       const data = await this.data.followers.create(factory);
 
-      const userDetails: User = await this.data.users.findOne({ _id: userId });
+      const userDetails = await this.data.users.findOne({ _id: userId });
 
       const followNotificationPayload: OptionalQuery<Notification> = {
         title: 'Follow',
         content: `You followed ${user.username}`,
         type: 'following',
+        from: user._id,
         user: userId,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -83,6 +84,7 @@ export class FollowingService {
         content: `${userDetails.username} started following you`,
         type: 'following',
         user: userToFollow,
+        from: userDetails._id,
         createdAt: new Date(),
         updatedAt: new Date(),
       };

@@ -4,6 +4,7 @@ export class Notification {
   clicked: boolean;
   type: string;
   user: string;
+  from: string;
   post: string;
   link?: string;
   createdAt: Date;

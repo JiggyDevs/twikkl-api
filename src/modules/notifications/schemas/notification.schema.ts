@@ -23,6 +23,9 @@ export class Notification {
   @Prop({ type: Types.ObjectId, ref: 'User' })
   user: string;
 
+  @Prop({ type: Types.ObjectId, ref: 'User' })
+  from: string;
+
   @Prop({ type: Types.ObjectId, ref: 'Post' })
   post: string;
 

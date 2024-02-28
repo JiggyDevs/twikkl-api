@@ -6,6 +6,7 @@ export type ICreateNotification = {
   content: string;
   type: string;
   user: string;
+  from: string;
   post?: string;
 };
 

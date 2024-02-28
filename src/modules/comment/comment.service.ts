@@ -66,6 +66,7 @@ export class CommentService {
         title: 'Comment posted',
         content: 'Commented on TwikkL post',
         type: 'comments',
+        from: post.creator,
         user: userId,
         post: postId,
         createdAt: new Date(),
@@ -202,7 +203,7 @@ export class CommentService {
     try {
       const { commentId, userId } = payload;
 
-      const comment: any = await this.data.comments.findOne(
+      const comment = await this.data.comments.findOne(
         { _id: commentId },
         null,
         {
