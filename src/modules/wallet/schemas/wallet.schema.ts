@@ -6,6 +6,12 @@ export type WalletDocument = Wallet & Document;
 
 @Schema()
 export class Wallet {
+  @Prop({ type: String, default: 'Wallet 1' })
+  name: string;
+
+  @Prop({ type: Array<String>, required: true })
+  recoveryPhrases: string[];
+
   @Prop({ type: String, required: true })
   pin: string;
 
@@ -14,9 +20,26 @@ export class Wallet {
 
   @Prop({ type: String, required: true })
   privateKey: string;
-  
-  @Prop({ type: Number, default: 0})
+
+  @Prop({ type: Number, default: 0 })
   balance: number;
+
+  //   assets: [{
+  //     name: {
+  //         type: String
+  //     },
+  //     address: {
+  //         type: String
+  //     },
+  //     quantity: {
+  //         type: Schema.Types.Decimal128,
+  //         default: 0,
+  //         get: (v: Schema.Types.Decimal128): string => (+v.toString()).toFixed(2)
+  //     },
+  //     unit: {
+  //         type: String
+  //     }
+  // }],
 
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })
   owner: string;

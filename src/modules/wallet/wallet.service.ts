@@ -135,10 +135,6 @@ export class WalletService {
     }
   }
 
-  async hashPin(pin: string) {
-    pin = await hash(pin);
-  }
-
   async createWallet(payload: { pin: string; userId: string }) {
     try {
       const { pin, userId } = payload;
@@ -153,6 +149,8 @@ export class WalletService {
         //   status: HttpStatus.CONFLICT,
         // };
       }
+
+      // generateMultiple(25, { length: 1, uppercase: false, numbers: false, titlecase: true, fast: true }))
 
       const hashedPin = await hash(pin);
       const privateKey = generatePrivateKey();
@@ -236,6 +234,16 @@ export class WalletService {
     }
   }
 
+  async verifySecretPassPhrase(user: string, secrets: string[]) {
+    const response = await this.data.wallets.findOne({ _id: user });
+
+    return {
+      message: 'User retrieved successfully',
+      status: HttpStatus.OK,
+      data: response?.recoveryPhrases.join(',') === secrets.join(','),
+    };
+  }
+
   async getWallet(payload: { walletId: string }) {
     try {
       const { walletId } = payload;
@@ -261,7 +269,7 @@ export class WalletService {
       const wallet = await this.data.wallets.findOne({ owner: userId });
       if (!wallet) throw new DoesNotExistsException('Wallet not found!');
 
-      let address = wallet.address;
+      const address = wallet.address;
 
       // const { publicClient } = this.getWalletSetup('');
       const { wallet: baseWallet, publicClient } = this.getWalletSetup(
@@ -325,7 +333,7 @@ export class WalletService {
     };
 
     // Build a partial User Operation (UserOp) with the transaction and set it to be sponsored
-    let partialUserOp = await smartAccount.buildUserOp([transaction], {
+    const partialUserOp = await smartAccount.buildUserOp([transaction], {
       paymasterServiceData: {
         mode: PaymasterMode.SPONSORED,
       },
@@ -396,7 +404,7 @@ export class WalletService {
     };
     await smartAccount.init();
     // Build a partial User Operation (UserOp) with the transaction and set it to be sponsored
-    let partialUserOp = await smartAccount.buildUserOp([transaction], {
+    const partialUserOp = await smartAccount.buildUserOp([transaction], {
       paymasterServiceData: {
         mode: PaymasterMode.SPONSORED,
         // calculateGasLimits: true,
@@ -427,7 +435,9 @@ export class WalletService {
     };
   }
 
-  async deleteWallet(payload: any) {
+  async deleteWallet(payload: {
+    userId: string
+  }) {
     try {
       const { userId } = payload;
 
