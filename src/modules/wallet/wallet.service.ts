@@ -44,7 +44,7 @@ import {
   ForbiddenRequestException,
   UnAuthorizedException,
 } from 'src/lib/exceptions';
-import { Polygonscan } from 'src/lib/block-explorers/polygonScan';
+import { Polygonscan } from 'src/lib/block-explorers/polygonscan';
 import { POLYSCAN_API_TOKEN } from 'src/config';
 
 @Injectable()
