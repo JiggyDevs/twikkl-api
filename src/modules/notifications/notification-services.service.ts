@@ -72,7 +72,7 @@ export class NotificationService {
 
       const { data, pagination } =
         await this.data.notification.findAllWithPagination(filterQuery, {
-          populate: ['post', 'user'],
+          populate: ['post', 'user', 'from'],
         });
 
       return {
