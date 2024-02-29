@@ -97,9 +97,10 @@ export class GroupController {
     @Query() query: any,
   ) {
     const { groupId } = param;
+    console.log({ groupId });
     const payload: IGetGroupPosts = {
       ...query,
-      group: groupId,
+      groupId,
     };
 
     const response = await this.groupService.getGroupPosts(payload);
