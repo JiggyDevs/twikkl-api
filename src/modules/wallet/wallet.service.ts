@@ -216,6 +216,7 @@ export class WalletService {
       const wallet = await this.data.wallets.findOne({ owner: userId });
       if (!wallet) throw new DoesNotExistsException('Wallet not found!');
 
+      //TODO: The pin should be on the user table. Also this check pin endpoint could be a decorator instead.
       if (!(await compareHash(pin, wallet.pin)))
         return {
           message: 'Wallet pin checked',
