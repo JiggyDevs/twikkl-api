@@ -68,6 +68,7 @@ export class WalletService {
 
     if (!privateKey)
       return {
+        publicClient,
         provider,
       };
 
@@ -270,10 +271,14 @@ export class WalletService {
       if (!wallet) throw new DoesNotExistsException('Wallet not found!');
 
       const address = wallet.address;
-
-      // const { publicClient } = this.getWalletSetup('');
-      const { wallet: baseWallet, publicClient } = this.getWalletSetup(
+      console.log(
         payload.pin
+          ? decryptPrivateKeyWithPin(payload.pin, wallet.privateKey)
+          : undefined,
+      );
+      // const { publicClient } = this.getWalletSetup('');
+      const { publicClient } = this.getWalletSetup(
+        payload.pin && payload.pin.trim().length > 0
           ? decryptPrivateKeyWithPin(payload.pin, wallet.privateKey)
           : undefined,
       );
@@ -435,9 +440,7 @@ export class WalletService {
     };
   }
 
-  async deleteWallet(payload: {
-    userId: string
-  }) {
+  async deleteWallet(payload: { userId: string }) {
     try {
       const { userId } = payload;
 
