@@ -63,6 +63,7 @@ export class WalletController {
     @Query() query: any,
     @Body() body: any,
   ) {
+    //TODO: This should be a Get request
     const userId = req.user._id;
     query = { userId };
     const payload = { userId, pin: body?.pin };
