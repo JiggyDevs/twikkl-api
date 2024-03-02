@@ -141,4 +141,19 @@ export class WalletController {
     Logger.debug({ account });
     return res.status(account.status).json(account);
   }
+
+  @Post('/verify-phrase')
+  @UseGuards(StrictAuthGuard)
+  async verifyPhrase(
+    @Req() req: Request,
+    @Res() res: Response,
+    @Body() makeTransactionDto: MakeTransactionDto,
+  ) {
+    const userId = req.user._id;
+    const account = await this.walletService.verifySecretPassPhrase(userId, [
+      '',
+    ]);
+    Logger.debug({ account });
+    return res.status(account.status).json(account);
+  }
 }
