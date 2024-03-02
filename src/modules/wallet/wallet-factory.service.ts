@@ -10,6 +10,7 @@ export class WalletFactoryService {
     if (data.address) wallet.address = data.address;
     if (data.privateKey) wallet.privateKey = data.privateKey;
     if (data.owner) wallet.owner = data.owner;
+    if (data.recoveryPhrase) wallet.recoveryPhrase = data.recoveryPhrase;
 
     return wallet;
   }

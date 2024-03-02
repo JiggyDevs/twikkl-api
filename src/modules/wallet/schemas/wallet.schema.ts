@@ -1,5 +1,6 @@
 import { User } from '../../user/schemas/user.schema';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Mnemonic } from 'ethers/lib/utils';
 import { Document, Types } from 'mongoose';
 
 export type WalletDocument = Wallet & Document;
@@ -9,8 +10,8 @@ export class Wallet {
   @Prop({ type: String, default: 'Wallet 1' })
   name: string;
 
-  @Prop({ type: Array<String>, required: true })
-  recoveryPhrases: string[];
+  @Prop({ type: Array<string>, required: true })
+  recoveryPhrase: Mnemonic;
 
   @Prop({ type: String, required: true })
   pin: string;

@@ -99,8 +99,14 @@ export const decryptPrivateKeyWithPin = (
   return decryptedSecret.toString();
 };
 
-export const generatePrivateKey = () => {
-  return ethers.Wallet.createRandom().privateKey;
+export const generateWallet = () => {
+  const wallet = ethers.Wallet.createRandom();
+
+  return {
+    recoveryPhrase: wallet.mnemonic,
+    privateKey: wallet.privateKey,
+    // a: wallet.
+  };
 };
 
 export const maybePluralize = (count: number, noun: string, suffix = 's') =>

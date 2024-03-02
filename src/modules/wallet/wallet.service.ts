@@ -31,7 +31,7 @@ import {
   compareHash,
   decryptPrivateKeyWithPin,
   encryptPrivateKeyWithPin,
-  generatePrivateKey,
+  generateWallet,
   hash,
 } from 'src/lib/utils';
 import { IDataServices } from 'src/core/abstracts';
@@ -154,7 +154,7 @@ export class WalletService {
       // generateMultiple(25, { length: 1, uppercase: false, numbers: false, titlecase: true, fast: true }))
 
       const hashedPin = await hash(pin);
-      const privateKey = generatePrivateKey();
+      const { privateKey, recoveryPhrase } = generateWallet();
       const { wallet: baseWallet } = this.getWalletSetup(privateKey || '');
       const smartAccount = await this.createSmartAccount(baseWallet);
       const walletPayload: OptionalQuery<WalletEntity> = {
@@ -162,6 +162,7 @@ export class WalletService {
         privateKey: encryptPrivateKeyWithPin(pin, privateKey),
         address: await smartAccount.getAccountAddress(),
         owner: userId,
+        recoveryPhrase,
       };
       console.log({ walletPayload });
       const walletFactory = this.walletFactory.create(walletPayload);
@@ -271,18 +272,11 @@ export class WalletService {
       if (!wallet) throw new DoesNotExistsException('Wallet not found!');
 
       const address = wallet.address;
-      console.log(
-        payload.pin
-          ? decryptPrivateKeyWithPin(payload.pin, wallet.privateKey)
-          : undefined,
-      );
-      // const { publicClient } = this.getWalletSetup('');
-      const { publicClient } = this.getWalletSetup(
-        payload.pin && payload.pin.trim().length > 0
-          ? decryptPrivateKeyWithPin(payload.pin, wallet.privateKey)
-          : undefined,
-      );
 
+      // const { publicClient } = this.getWalletSetup('');
+      console.log('beforepublicClient');
+      const { publicClient } = this.getWalletSetup();
+      console.log('publicClient');
       const [balance, transactions] = await Promise.all([
         publicClient.getBalance({
           address,
