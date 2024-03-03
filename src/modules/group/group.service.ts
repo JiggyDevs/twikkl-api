@@ -145,10 +145,10 @@ export class GroupService {
         ...restPayload,
         group: groupId,
       };
-      let { data, pagination } = await this.data.post.findAllWithPagination(
+      const { data, pagination } = await this.data.post.findAllWithPagination(
         query,
         {
-          populate: 'creator',
+          populate: ['creator', 'category'],
         },
       );
 
