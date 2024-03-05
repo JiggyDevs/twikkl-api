@@ -162,25 +162,25 @@ export class PostService {
         user: payload.user,
       });
 
-      const likedPostIds = data.map((like) => like.post);
-      const likedPosts = await this.data.post.find({
-        _id: { $in: likedPostIds },
-      });
+      // const likedPostIds = data.map((like) => like.post);
+      // const likedPosts = await this.data.post.find({
+      //   _id: { $in: likedPostIds },
+      // });
 
-      const likedCreators = likedPosts.map((post) => post.creator);
-      const likedGroups = likedPosts.map((post) => post.group);
+      // const likedCreators = likedPosts.map((post) => post.creator);
+      // const likedGroups = likedPosts.map((post) => post.group);
 
       const { data: similarPosts, pagination } =
         await this.data.post.findAllWithPagination(
           {
-            _id: { $nin: likedPostIds },
+            // _id: { $nin: likedPostIds },
             // tags: { $in: data.map((like) => like.tags) },
 
-            // ...filterQuery,
-            $or: [
-              { creator: { $in: likedCreators } },
-              { group: { $in: likedGroups } },
-            ],
+            ...filterQuery,
+            // $or: [
+            //   { creator: { $in: likedCreators } },
+            //   { group: { $in: likedGroups } },
+            // ],
           },
           { populate: 'creator' },
         );
