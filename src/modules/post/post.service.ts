@@ -158,9 +158,9 @@ export class PostService {
       filterQuery['isDeleted'] = false;
       filterQuery['isAdminDeleted'] = false;
 
-      const data = await this.data.likes.find({
-        user: payload.user,
-      });
+      // const data = await this.data.likes.find({
+      //   user: payload.user,
+      // });
 
       // const likedPostIds = data.map((like) => like.post);
       // const likedPosts = await this.data.post.find({
@@ -170,25 +170,24 @@ export class PostService {
       // const likedCreators = likedPosts.map((post) => post.creator);
       // const likedGroups = likedPosts.map((post) => post.group);
 
-      const { data: similarPosts, pagination } =
-        await this.data.post.findAllWithPagination(
-          {
-            // _id: { $nin: likedPostIds },
-            // tags: { $in: data.map((like) => like.tags) },
+      const { data, pagination } = await this.data.post.findAllWithPagination(
+        {
+          // _id: { $nin: likedPostIds },
+          // tags: { $in: data.map((like) => like.tags) },
 
-            ...filterQuery,
-            // $or: [
-            //   { creator: { $in: likedCreators } },
-            //   { group: { $in: likedGroups } },
-            // ],
-          },
-          { populate: 'creator' },
-        );
+          ...filterQuery,
+          // $or: [
+          //   { creator: { $in: likedCreators } },
+          //   { group: { $in: likedGroups } },
+          // ],
+        },
+        { populate: 'creator' },
+      );
       // Logger.log({ similarPosts, filterQuery });
 
       return {
         message: 'User Feed retrieved successfully',
-        data: similarPosts,
+        data,
         pagination,
         status: HttpStatus.OK,
       };
