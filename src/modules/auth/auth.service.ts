@@ -500,6 +500,12 @@ export class AuthService {
             String(RESET_PASSWORD_EXPIRY),
           );
 
+          await this.inMemoryServices.set(
+            resetPasswordRedisKey,
+            hashedPhoneCode,
+            String(RESET_PASSWORD_EXPIRY),
+          );
+
           //Send to discord
           await this.discordServices.inHouseNotification({
             title: `Forgot password otp code :- ${env.env} environment`,
@@ -570,9 +576,14 @@ export class AuthService {
 
   async resetpassword(payload: IResetPassword) {
     try {
-      const { email, password, token, res } = payload;
+      const { email, password, code, res } = payload;
       const passwordResetCountKey = `${RedisPrefix.passwordResetCount}/${email}`;
       const resetPasswordRedisKey = `${RedisPrefix.resetpassword}/${email}`;
+      const resetCodeRedisKey = `${RedisPrefix.resetCode}/${email}`;
+
+      const resetInPast24H = await this.inMemoryServices.get(
+        passwordResetCountKey,
+      );
 
       const userRequestReset = await this.inMemoryServices.get(
         resetPasswordRedisKey,
@@ -580,13 +591,39 @@ export class AuthService {
       if (!userRequestReset)
         throw new BadRequestsException('Invalid or expired reset token');
 
+      if (resetInPast24H) {
+        const ttl = await this.inMemoryServices.ttl(passwordResetCountKey);
+        const timeToRetry = Math.ceil(Number(ttl));
+        const nextTryOpening = secondsToDhms(timeToRetry);
+        throw new TooManyRequestsException(
+          `Password was recently updated. Try again in ${nextTryOpening}`,
+        );
+      }
+
       const user = await this.data.users.findOne({ email });
       if (!user) throw new DoesNotExistsException('user does not exists');
 
+      const codeSent = await this.inMemoryServices.get(resetCodeRedisKey);
+
+      const phoneVerifyDocument = codeSent as string;
+      if (isEmpty(phoneVerifyDocument)) {
+        throw new BadRequestsException(`code is invalid or has expired`);
+      }
+      const correctCode = await compareHash(
+        String(code).trim(),
+        (phoneVerifyDocument || '').trim(),
+      );
+      if (!correctCode) {
+        throw new BadRequestsException(`code is invalid or has expired`);
+      }
+
+      // Remove all reset token for this user if it exists
+      await this.inMemoryServices.del(resetCodeRedisKey);
+
       // If reset link is valid and not expired
-      const validReset = await compareHash(String(token), userRequestReset);
-      if (!validReset)
-        throw new BadRequestsException('Invalid or expired reset token');
+      // const validReset = await compareHash(String(token), userRequestReset);
+      // if (!validReset)
+      //   throw new BadRequestsException('Invalid or expired reset token');
 
       const hashedPassword = await hash(password);
       const twenty4H = 1 * 60 * 60 * 24;
