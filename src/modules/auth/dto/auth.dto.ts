@@ -51,9 +51,13 @@ export class ResetPasswordDto {
   @IsString()
   password: string;
 
-  @IsNotEmpty()
+  // @IsNotEmpty()
+  // @IsString()
+  // token: string;
+
+  @IsOptional()
   @IsString()
-  token: string;
+  code: string;
 }
 
 export class ResetAdminPasswordDto {
