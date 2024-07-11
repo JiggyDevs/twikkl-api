@@ -43,3 +43,7 @@ export const DISCORD_VERIFICATION_CHANNEL_LINK = getEnv(
 export const ADMIN_FRONTEND_URL = getEnv('ADMIN_FRONTEND_URL', true);
 export const POLYSCAN_API_TOKEN = getEnv('POLYSCAN_API_TOKEN', true);
 export const POLYGON_API_URL = getEnv('POLYGON_API_URL', true);
+export const ZORA_CONTRACT_ADDRESS = getEnv('ZORA_CONTRACT_ADDRESS', true);
+export const ALCHEMY_API_KEY = getEnv('ALCHEMY_API_KEY', true);
+export const ALCHEMY_POLYGON_API_URL = getEnv('ALCHEMY_POLYGON_API_URL', true);
+export const ALCHEMY_ZORA_API_URL = getEnv('ALCHEMY_ZORA_API_URL', true);

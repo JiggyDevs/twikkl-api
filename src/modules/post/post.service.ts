@@ -27,6 +27,8 @@ import { Tags } from './entities/tags.entity';
 import { TagsFactoryService } from './tags-factory.service';
 import { isEmpty } from 'src/lib/utils';
 import { PostDocument } from './schemas/post.schema';
+import { createPublicClient, http } from 'viem';
+import { WalletService } from '../wallet/wallet.service';
 
 @Injectable()
 export class PostService {
@@ -37,7 +39,10 @@ export class PostService {
     private notificationFactory: NotificationFactoryService,
     private firebase: FirebaseService,
     private tagFactory: TagsFactoryService,
-  ) {}
+    private walletService: WalletService,
+  ) {
+    
+  }
 
   cleanGetUserPostsQuery(data: IGetUserPosts) {
     const key: Partial<IGetUserPosts> = {};
@@ -152,6 +157,26 @@ export class PostService {
     }
   }
 
+  async mintNFT(postId: string, userId: string, pin: string) {
+    try {
+      const post = await this.data.post.findOne({ _id: postId });
+      if (!post) {
+        throw new HttpException('Post not found', HttpStatus.NOT_FOUND);
+      }
+
+      const { description: desc, contentUrl } = post;
+      const response = await this.walletService.mintNFT({ title: "", desc, contentUrl, userId, pin });
+      return {
+        message: 'NFT minted successfully',
+        data: response,
+        status: HttpStatus.OK,
+      };
+    } catch (error) {
+      Logger.error(error);
+      throw new HttpException(error.message, 500);
+    }
+  }
+
   async getUserFeed(payload: IGetUserPosts) {
     try {
       let filterQuery = this.cleanGetUserPostsQuery(payload);
@@ -238,6 +263,8 @@ export class PostService {
     }
   }
 
+ 
+
   async deletePost(payload: IDeletePost) {
     try {
       const { postId, userId } = payload;
@@ -280,7 +307,6 @@ export class PostService {
         { populate: 'creator' },
       );
       if (!post) throw new DoesNotExistsException('Post not found');
-
       return {
         message: 'Post retrieved successfully',
         data: post,

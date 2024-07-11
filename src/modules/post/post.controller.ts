@@ -14,6 +14,7 @@ import { PostService } from './post.service';
 import { StrictAuthGuard } from 'src/middleware-guards/auth-guard.middleware';
 import { Request, Response } from 'express';
 import { CreatePostDto, EditPostDto } from './dto/create-post.dto';
+
 import {
   FindPostById,
   ICreatePost,
@@ -173,6 +174,21 @@ export class PostController {
     const payload: IEditPost = { ...body, postId };
 
     const response = await this.service.editPost(payload);
+    return res.status(response.status).json(response);
+  }
+
+  @Post('/mint-nft/:postId')
+  @UseGuards(StrictAuthGuard)
+  async mintNFT(
+    @Req() req: Request,
+    @Res() res: Response,
+    @Param() param: FindPostById,
+    @Body() body: {pin: string}
+  ) {
+    const userId = req.user._id;
+    const { postId } = param;
+    
+    const response = await this.service.mintNFT(postId, userId, body.pin);
     return res.status(response.status).json(response);
   }
 }

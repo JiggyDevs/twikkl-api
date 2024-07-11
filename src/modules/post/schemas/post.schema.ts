@@ -35,6 +35,12 @@ export class Post {
   @Prop({ default: true })
   allowStitch: boolean;
 
+  @Prop({ default: true })
+  mintable: boolean;
+
+  @Prop({ default: false })
+  minted: boolean;
+
   @Prop({ default: 'public' })
   visibility: string;
 

@@ -16,6 +16,8 @@ import { TagsController } from './tags.controller';
 import { BookmarkedPostController } from './bookmarked-post.controller';
 import { BookmarkedPostFactoryService } from './bookmarked-post.factory';
 import { BookmarkedPostService } from './bookmarked-post.service';
+import { WalletService } from '../wallet/wallet.service';
+import { WalletFactoryService } from '../wallet/wallet-factory.service';
 
 @Module({
   imports: [
@@ -35,6 +37,8 @@ import { BookmarkedPostService } from './bookmarked-post.service';
     FirebaseService,
     TagsFactoryService,
     TagsService,
+    WalletService,
+    WalletFactoryService,
   ],
   exports: [
     PostService,

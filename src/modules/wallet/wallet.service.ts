@@ -1,5 +1,5 @@
 import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
-import { providers, Signer, Wallet, utils, BigNumber } from 'ethers';
+import { providers, Signer, Wallet, utils, BigNumber, Contract } from 'ethers';
 import { Bundler } from '@biconomy/bundler';
 import { ChainId, Transaction } from '@biconomy/core-types';
 import {
@@ -12,7 +12,7 @@ import {
   zeroAddress,
 } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
-import { polygonMumbai } from 'viem/chains';
+import { polygon, polygonMumbai, polygonZkEvmCardona } from 'viem/chains';
 
 import {
   IPaymaster,
@@ -45,7 +45,7 @@ import {
   UnAuthorizedException,
 } from 'src/lib/exceptions';
 import { Polygonscan } from 'src/lib/block-explorers/polygonscan';
-import { POLYSCAN_API_TOKEN } from 'src/config';
+import { ALCHEMY_POLYGON_API_URL, POLYSCAN_API_TOKEN, ZORA_CONTRACT_ADDRESS } from 'src/config';
 
 @Injectable()
 export class WalletService {
@@ -58,12 +58,12 @@ export class WalletService {
   private getWalletSetup(privateKey?: string) {
     // new providers.AnkrProvider()
     const provider = new providers.JsonRpcProvider(
-      'https://rpc.ankr.com/polygon_mumbai',
+      ALCHEMY_POLYGON_API_URL,
     );
 
     const publicClient = createPublicClient({
-      chain: polygonMumbai,
-      transport: http('https://rpc.ankr.com/polygon_mumbai'),
+      chain: polygon,
+      transport: http(ALCHEMY_POLYGON_API_URL),
     });
 
     if (!privateKey)
@@ -76,11 +76,11 @@ export class WalletService {
 
     const walletClient = createWalletClient({
       account,
-      chain: polygonMumbai,
-      transport: http('https://rpc.ankr.com/polygon_mumbai'),
+      chain: polygon,
+      transport: http(ALCHEMY_POLYGON_API_URL),
     });
 
-    const wallet = new Wallet(privateKey || '', provider);
+    const wallet = new Wallet(privateKey, provider);
 
     return {
       wallet,
@@ -274,26 +274,25 @@ export class WalletService {
 
       const address = wallet.address;
 
-      // const { publicClient } = this.getWalletSetup('');
       console.log('beforepublicClient');
       const { publicClient } = this.getWalletSetup();
       console.log('publicClient');
-      const [balance, transactions] = await Promise.all([
-        publicClient.getBalance({
-          address,
-        }),
-        this.getTransactions(address),
-      ]);
+      // const [balance, transactions] = await Promise.all([
+      //   publicClient.getBalance({
+      //     address,
+      //   }),
+      //   this.getTransactions(address),
+      // ]);
 
       return {
         message: 'Wallet retrieved successfully',
         status: HttpStatus.OK,
         data: {
           address,
-          balance: utils.formatEther(balance),
+          // balance: utils.formatEther(balance),
           owner: wallet.owner,
           _id: wallet._id,
-          transactions,
+          // transactions,
         },
       };
     } catch (error) {
@@ -433,6 +432,81 @@ export class WalletService {
       },
       status: HttpStatus.CREATED,
     };
+  }
+
+   async mintNFT({title, 
+    desc,
+    contentUrl,
+    userId,
+    pin}: {
+      title: string,
+      desc: string,
+      contentUrl: string
+      userId: string
+      pin: string
+    }): Promise<any> {
+
+    console.log("Interacting with the contract using the account:");
+
+    // ABI of the Zora contract
+    const zoraAbi = [
+        "function createEditionWithReferral(string memory name, string memory symbol, string memory description, string memory animationUrl, bytes32 animationHash, string memory imageUrl, bytes32 imageHash, uint256 editionSize, uint256 royaltyBPS) external",
+        "function checkNFT(uint256 tokenId) external payable",
+        "function initialize(address editionsAddress) public"
+    ];
+    const walletDetails = await this.data.wallets.findOne({ owner: userId });
+    if (!walletDetails) throw new DoesNotExistsException('Wallet not found!');
+
+    // Connect to the contract
+    const { wallet, provider } = this.getWalletSetup(decryptPrivateKeyWithPin(pin, walletDetails.privateKey));
+    console.log({ priv: walletDetails.privateKey, ZORA_CONTRACT_ADDRESS, wallet });
+  
+    // Check if the provider is connected
+    try {
+      await provider.getNetwork();
+      console.log("Provider is connected to the network.");
+    } catch (error) {
+      console.error("Error connecting to the network:", error);
+      throw new HttpException("Network connection error", HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  
+    const zoraNFT = new Contract(ZORA_CONTRACT_ADDRESS, zoraAbi, wallet);
+
+    // Example: Create a new edition
+    const name = title;
+    const symbol = title.substring(0, 3).toUpperCase(); // Generate a symbol from the title
+    const description = desc;
+    const animationUrl = "N/A";
+    const animationHash = utils.formatBytes32String(""); // Replace with actual hash if available
+    const imageUrl = contentUrl;
+    const imageHash = utils.formatBytes32String(""); // Replace with actual hash if available
+    const editionSize = 100;
+    const royaltyBPS = 500; // 5% royalty
+
+    console.log("initialize contract...")
+    await zoraNFT.initialize("0x4500590AfC7f12575d613457aF01F06b1eEE57a3");
+
+    console.log("Creating a new edition...");
+    const txCreate = await zoraNFT.createEditionWithReferral(
+        name,
+        symbol,
+        description,
+        animationUrl,
+        animationHash,
+        imageUrl,
+        imageHash,
+        editionSize,
+        royaltyBPS
+    );
+    await txCreate.wait();
+    console.log("New edition created successfully!");
+
+    // Example: Check NFT (this would normally be a minting process)
+    const tokenId = 1; // Replace with the actual tokenId you want to check
+    console.log("Checking NFT...");
+    const txCheck = await zoraNFT.checkNFT(tokenId, { value: utils.parseEther("0.1") }); // Adjust value as needed
+    await txCheck.wait();
+    console.log("NFT checked successfully!");
   }
 
   async deleteWallet(payload: { userId: string }) {
