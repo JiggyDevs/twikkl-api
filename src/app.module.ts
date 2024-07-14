@@ -17,6 +17,8 @@ import { GroupsModule } from './modules/group/group.module';
 import { CategoryModule } from './modules/category/category.module';
 import { Admin } from './modules/admin/entities/admin.entity';
 import { AdminServiceModule } from './modules/admin/admin-auth.module';
+import { AxiosServiceModule } from './frameworks/axios/axios-service.module';
+import { EventEmitterServiceModule } from './lib/event-emitter-service.module';
 
 declare global {
   namespace Express {
@@ -43,6 +45,8 @@ declare global {
     GroupsModule,
     CategoryModule,
     AdminServiceModule,
+    AxiosServiceModule,
+    EventEmitterServiceModule,
   ],
   controllers: [AppController],
   providers: [AppService],

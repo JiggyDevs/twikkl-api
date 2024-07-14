@@ -44,6 +44,7 @@ import { IInMemoryServices } from 'src/core/abstracts/in-memory.abstract';
 import { randomBytes } from 'crypto';
 import { DISCORD_VERIFICATION_CHANNEL_LINK, env } from 'src/config';
 import { DiscordService } from 'src/frameworks/notification-services/discord/discord-service.service';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 @Injectable()
 export class AuthService {
@@ -52,6 +53,7 @@ export class AuthService {
     private userFactory: UserFactoryService,
     private inMemoryServices: IInMemoryServices,
     private discordServices: DiscordService,
+    private event: EventEmitter2,
   ) {}
 
   async signUp(payload: ISignUp) {
@@ -170,7 +172,14 @@ export class AuthService {
         link: DISCORD_VERIFICATION_CHANNEL_LINK,
       });
 
-      //Send to Email when mailgun is configured
+      //Send to Email
+      const emailPayload = {
+        from: 'support@twikkl.com',
+        to: user?.email,
+        subject: 'Email Verification Code',
+        body: message,
+      };
+      this.event.emit('send.plunkEmail', emailPayload);
 
       return {
         status: HttpStatus.OK,
@@ -509,9 +518,18 @@ export class AuthService {
           //Send to discord
           await this.discordServices.inHouseNotification({
             title: `Forgot password otp code :- ${env.env} environment`,
-            content: `Provide the code sent to your mobile number \n code: ${phoneCode}`,
+            content: `Provide the code sent to your mobile number/email \n code: ${phoneCode}`,
             link: DISCORD_VERIFICATION_CHANNEL_LINK,
           });
+
+          //Send to Email
+          const emailPayload = {
+            from: 'support@twikkl.com',
+            to: user?.email,
+            subject: 'Email Verification Code',
+            body: `Provide the code sent to your mobile number/email \n code: ${phoneCode}`,
+          };
+          this.event.emit('send.plunkEmail', emailPayload);
 
           return {
             status: 202,
