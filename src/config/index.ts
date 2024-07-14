@@ -43,3 +43,6 @@ export const DISCORD_VERIFICATION_CHANNEL_LINK = getEnv(
 export const ADMIN_FRONTEND_URL = getEnv('ADMIN_FRONTEND_URL', true);
 export const POLYSCAN_API_TOKEN = getEnv('POLYSCAN_API_TOKEN', true);
 export const POLYGON_API_URL = getEnv('POLYGON_API_URL', true);
+export const PLUNK_PUBLIC_API_KEY = getEnv('PLUNK_PUBLIC_API_KEY', true);
+export const PLUNK_SECRET_KEY = getEnv('PLUNK_SECRET_KEY', true);
+export const PLUNK_SEND_EMAIL_URL = getEnv('PLUNK_SEND_EMAIL_URL', true);
