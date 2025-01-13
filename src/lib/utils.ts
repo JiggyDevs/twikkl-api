@@ -1,7 +1,7 @@
 import * as moment from 'moment';
 import { hash as bcryptHash, compare } from 'bcrypt';
 import slugify from 'slugify';
-import { env } from 'src/config';
+import { COIN_BASE_KEY_NAME, COIN_BASE_SECRET_KEY, env } from 'src/config';
 import {
   randomBytes,
   pbkdf2Sync,
@@ -12,6 +12,7 @@ import {
   Cipher,
 } from 'crypto';
 import { ethers } from 'ethers';
+import { Coinbase, Wallet } from '@coinbase/coinbase-sdk';
 
 export const convertDate = (date: any) => {
   return new Date(date).toISOString();
@@ -99,14 +100,241 @@ export const decryptPrivateKeyWithPin = (
   return decryptedSecret.toString();
 };
 
-export const generateWallet = () => {
-  const wallet = ethers.Wallet.createRandom();
+export const generateWallet = async () => {
+  Coinbase.configure({
+    apiKeyName: COIN_BASE_KEY_NAME,
+    privateKey: COIN_BASE_SECRET_KEY,
+  });
+
+  // const response = await Wallet.listWallets();
+
+  const wallet = await Wallet.create();
+  const address = await wallet.getDefaultAddress();
+  const mnemonic = generateRecoveryPhrase();
+  const walletNetworkId = address.getNetworkId();
+  const walletAddress = address.getId();
+  const walletId = address.getWalletId();
 
   return {
-    recoveryPhrase: wallet.mnemonic,
-    privateKey: wallet.privateKey,
-    // a: wallet.
+    recoveryPhrase: mnemonic,
+    address: walletAddress,
+    networkId: walletNetworkId,
+    walletId,
+    // privateKey: wallet.privateKey,
   };
+};
+
+export const getWallet = async (walletId: string) => {
+  console.log({ walletId });
+  Coinbase.configureFromJson({
+    filePath: 'src/config/apiKey.json',
+  });
+  const wallet = await Wallet.fetch(walletId);
+  console.log({ wallet });
+};
+
+const generateRecoveryPhrase = (): string => {
+  // Common BIP39 words used in crypto wallet recovery phrases
+  const wordList = [
+    'abandon',
+    'ability',
+    'able',
+    'about',
+    'above',
+    'bacon',
+    'badge',
+    'balance',
+    'balcony',
+    'banner',
+    'base',
+    'basket',
+    'battle',
+    'cabin',
+    'cable',
+    'cactus',
+    'cage',
+    'cake',
+    'call',
+    'calm',
+    'camera',
+    'canvas',
+    'damage',
+    'dance',
+    'danger',
+    'daring',
+    'dash',
+    'daughter',
+    'dawn',
+    'decade',
+    'eagle',
+    'early',
+    'earn',
+    'earth',
+    'easy',
+    'echo',
+    'ecology',
+    'edge',
+    'fabric',
+    'face',
+    'faculty',
+    'fade',
+    'faint',
+    'faith',
+    'fall',
+    'false',
+    'galaxy',
+    'gallery',
+    'game',
+    'gap',
+    'garage',
+    'garden',
+    'garlic',
+    'gather',
+    'habit',
+    'hair',
+    'half',
+    'hammer',
+    'hamster',
+    'hand',
+    'happy',
+    'harbor',
+    'ice',
+    'idea',
+    'identify',
+    'idle',
+    'ignore',
+    'ill',
+    'image',
+    'imitate',
+    'jacket',
+    'jail',
+    'jar',
+    'jazz',
+    'jealous',
+    'jelly',
+    'jump',
+    'keen',
+    'keep',
+    'kettle',
+    'key',
+    'kick',
+    'kid',
+    'kidney',
+    'kind',
+    'lab',
+    'label',
+    'labor',
+    'ladder',
+    'lady',
+    'lake',
+    'lamp',
+    'language',
+    'magic',
+    'magnet',
+    'mail',
+    'main',
+    'major',
+    'make',
+    'mammal',
+    'man',
+    'naive',
+    'name',
+    'napkin',
+    'narrow',
+    'nasty',
+    'nation',
+    'nature',
+    'obey',
+    'object',
+    'observe',
+    'obtain',
+    'obvious',
+    'occur',
+    'ocean',
+    'paddle',
+    'page',
+    'pair',
+    'palace',
+    'palm',
+    'panda',
+    'paper',
+    'quality',
+    'quantum',
+    'quarter',
+    'queen',
+    'question',
+    'quick',
+    'quiet',
+    'rabbit',
+    'raccoon',
+    'race',
+    'rack',
+    'radar',
+    'radio',
+    'rail',
+    'rain',
+    'sad',
+    'saddle',
+    'safe',
+    'safety',
+    'sail',
+    'salad',
+    'salmon',
+    'salon',
+    'table',
+    'tackle',
+    'tail',
+    'talent',
+    'talk',
+    'tank',
+    'tape',
+    'target',
+    'ugly',
+    'umbrella',
+    'uncle',
+    'uncover',
+    'under',
+    'unfold',
+    'unit',
+    'vacuum',
+    'valid',
+    'valley',
+    'valve',
+    'van',
+    'vanish',
+    'vapor',
+    'wagon',
+    'wait',
+    'walk',
+    'wall',
+    'walnut',
+    'want',
+    'warfare',
+    'yard',
+    'year',
+    'yellow',
+    'you',
+    'young',
+    'youth',
+    'zebra',
+    'zero',
+    'zone',
+    'zoo',
+  ];
+
+  const selectedWords: string[] = [];
+
+  // Select 12 unique random words
+  while (selectedWords.length < 12) {
+    const randomIndex = Math.floor(Math.random() * wordList.length);
+    const word = wordList[randomIndex];
+
+    if (!selectedWords.includes(word)) {
+      selectedWords.push(word);
+    }
+  }
+
+  return selectedWords.join(' ');
 };
 
 export const maybePluralize = (count: number, noun: string, suffix = 's') =>

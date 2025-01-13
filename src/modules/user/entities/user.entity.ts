@@ -16,6 +16,7 @@ export class User {
   mentionsNotification: boolean;
   repostNotification: boolean;
   active: boolean;
+  transactionPin: string;
   createdAt: Date;
   updatedAt: Date;
 }

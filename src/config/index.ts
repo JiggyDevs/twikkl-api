@@ -46,3 +46,6 @@ export const POLYGON_API_URL = getEnv('POLYGON_API_URL', true);
 export const PLUNK_PUBLIC_API_KEY = getEnv('PLUNK_PUBLIC_API_KEY', true);
 export const PLUNK_SECRET_KEY = getEnv('PLUNK_SECRET_KEY', true);
 export const PLUNK_SEND_EMAIL_URL = getEnv('PLUNK_SEND_EMAIL_URL', true);
+export const COIN_BASE_KEY_NAME = getEnv('COIN_BASE_KEY_NAME', true);
+export const COIN_BASE_SECRET_KEY = getEnv('COIN_BASE_SECRET_KEY', true);
+export const COIN_BASE_API_KEY = getEnv('COIN_BASE_API_KEY', true);

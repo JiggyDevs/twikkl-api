@@ -3,11 +3,14 @@ import { Mnemonic } from 'ethers/lib/utils';
 export class Wallet {
   address: string;
   privateKey: string;
-  pin: string;
+  // pin: string;
   owner: string;
   name: string;
   balance: number;
-  recoveryPhrase: Mnemonic;
-  //   createdAt: Date;
-  //   updatedAt: Date;
+  // recoveryPhrase: Mnemonic;
+  recoveryPhrase: string;
+  walletId: string;
+  networkId: string;
+  createdAt: Date;
+  updatedAt: Date;
 }

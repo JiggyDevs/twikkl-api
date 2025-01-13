@@ -32,6 +32,7 @@ import {
   decryptPrivateKeyWithPin,
   encryptPrivateKeyWithPin,
   generateWallet,
+  getWallet,
   hash,
 } from 'src/lib/utils';
 import { IDataServices } from 'src/core/abstracts';
@@ -46,6 +47,9 @@ import {
 } from 'src/lib/exceptions';
 import { Polygonscan } from 'src/lib/block-explorers/polygonscan';
 import { POLYSCAN_API_TOKEN } from 'src/config';
+import { IGetUserWallets, IGetWallet } from './wallet.type';
+import databaseHelper from 'src/frameworks/data-services/mongo/database-helper';
+import { filter } from 'rxjs';
 
 @Injectable()
 export class WalletService {
@@ -54,6 +58,24 @@ export class WalletService {
     private data: IDataServices,
     private walletFactory: WalletFactoryService,
   ) {}
+
+  cleanWalletsQuery(data: IGetUserWallets) {
+    let key = {};
+
+    if (data.owner) key['owner'] = data.owner;
+    if (data.networkId) key['networkId'] = data.networkId;
+    if (data.address) key['address'] = data.address;
+    if (data.page) key['page'] = data.page;
+    if (data.perpage) key['perpage'] = data.perpage;
+    if (data.sort) key['sort'] = data.sort;
+    if (data.q) key['q'] = data.q;
+
+    if (data.to || data.from) {
+      const dateQuery = databaseHelper.queryDbByDateFilter(data);
+      key = { ...key, ...dateQuery };
+    }
+    return key;
+  }
 
   private getWalletSetup(privateKey?: string) {
     // new providers.AnkrProvider()
@@ -138,33 +160,27 @@ export class WalletService {
 
   async createWallet(payload: { pin: string; userId: string }) {
     try {
-      const { pin, userId } = payload;
+      const { userId } = payload;
 
       const walletExists = await this.data.wallets.findOne({ owner: userId });
       if (walletExists) {
-        throw new AlreadyExistsException('Wallet already exists!');
-
-        // return {
-        //   message: 'Wallet already exists',
-        //   data: walletExists,
-        //   status: HttpStatus.CONFLICT,
-        // };
+        throw new AlreadyExistsException('User already has wallet');
       }
 
-      // generateMultiple(25, { length: 1, uppercase: false, numbers: false, titlecase: true, fast: true }))
+      const { walletId, networkId, recoveryPhrase, address } =
+        await generateWallet();
 
-      const hashedPin = await hash(pin);
-      const { privateKey, recoveryPhrase } = generateWallet();
-      const { wallet: baseWallet } = this.getWalletSetup(privateKey || '');
-      const smartAccount = await this.createSmartAccount(baseWallet);
       const walletPayload: OptionalQuery<WalletEntity> = {
-        pin: hashedPin,
-        privateKey: encryptPrivateKeyWithPin(pin, privateKey),
-        address: await smartAccount.getAccountAddress(),
+        // privateKey,
+        walletId,
+        networkId,
+        address,
         owner: userId,
         recoveryPhrase,
+        createdAt: new Date(),
+        updatedAt: new Date(),
       };
-      console.log({ walletPayload });
+
       const walletFactory = this.walletFactory.create(walletPayload);
       const wallet = await this.data.wallets.create(walletFactory);
 
@@ -172,62 +188,6 @@ export class WalletService {
         message: 'Wallet created successfully',
         data: wallet,
         status: HttpStatus.CREATED,
-      };
-    } catch (error) {
-      Logger.error(error);
-      if (error.name === 'TypeError')
-        throw new HttpException(error.message, 500);
-      throw error;
-    }
-  }
-
-  async changePin(payload: { oldPin: string; pin: string; userId: string }) {
-    try {
-      const { oldPin, pin, userId } = payload;
-
-      const wallet = await this.data.wallets.findOne({ owner: userId });
-      if (!wallet) throw new DoesNotExistsException('Wallet not found!');
-
-      if (!(await compareHash(oldPin, wallet.pin)))
-        throw new UnAuthorizedException('Incorrect wallet pin!');
-      const hashedPin = await hash(pin);
-
-      wallet.pin = hashedPin;
-      // wallet.privateKey = encryptPrivateKeyWithPin(pin, privateKey),
-      await wallet.save();
-
-      return {
-        message: 'Wallet pin updated successfully',
-        data: wallet,
-        status: HttpStatus.CREATED,
-      };
-    } catch (error) {
-      Logger.error(error);
-      if (error.name === 'TypeError')
-        throw new HttpException(error.message, 500);
-      throw error;
-    }
-  }
-
-  async checkPin(payload: { pin: string; userId: string }) {
-    try {
-      const { pin, userId } = payload;
-
-      const wallet = await this.data.wallets.findOne({ owner: userId });
-      if (!wallet) throw new DoesNotExistsException('Wallet not found!');
-
-      //TODO: The pin should be on the user table. Also this check pin endpoint could be a decorator instead.
-      if (!(await compareHash(pin, wallet.pin)))
-        return {
-          message: 'Wallet pin checked',
-          data: false,
-          status: HttpStatus.OK,
-        };
-
-      return {
-        message: 'Wallet pin checked',
-        data: true,
-        status: HttpStatus.OK,
       };
     } catch (error) {
       Logger.error(error);
@@ -247,16 +207,18 @@ export class WalletService {
     };
   }
 
-  async getWallet(payload: { walletId: string }) {
+  async getWallet(payload: IGetWallet) {
     try {
-      const { walletId } = payload;
-      const wallet = await this.data.wallets.findOne({ _id: walletId });
+      const { id } = payload;
+      const wallet: WalletEntity = await this.data.wallets.findOne({ _id: id });
       if (!wallet) throw new DoesNotExistsException('User not found!');
+
+      await getWallet(wallet.walletId);
 
       return {
         message: 'User retrieved successfully',
         status: HttpStatus.OK,
-        data: { wallet, transactions: [] },
+        data: wallet,
       };
     } catch (error) {
       Logger.error(error);
@@ -266,35 +228,30 @@ export class WalletService {
     }
   }
 
-  async getUserWallet(payload: { userId: string; pin?: string }) {
+  async getUserWallets(payload: IGetUserWallets) {
     try {
-      const { userId } = payload;
-      const wallet = await this.data.wallets.findOne({ owner: userId });
-      if (!wallet) throw new DoesNotExistsException('Wallet not found!');
+      const filterQuery: any = this.cleanWalletsQuery(payload);
 
-      const address = wallet.address;
+      if (filterQuery.q) {
+        const searchRegex = new RegExp(filterQuery.q, 'i');
+        const data = await this.data.wallets.find({
+          networkId: { $regex: searchRegex },
+        });
+        return {
+          message: 'Wallets retrieved successfully',
+          status: HttpStatus.OK,
+          data,
+        };
+      }
 
-      // const { publicClient } = this.getWalletSetup('');
-      console.log('beforepublicClient');
-      const { publicClient } = this.getWalletSetup();
-      console.log('publicClient');
-      const [balance, transactions] = await Promise.all([
-        publicClient.getBalance({
-          address,
-        }),
-        this.getTransactions(address),
-      ]);
+      const { data, pagination } =
+        await this.data.wallets.findAllWithPagination(filterQuery);
 
       return {
-        message: 'Wallet retrieved successfully',
+        message: 'Wallets retrieved successfully',
         status: HttpStatus.OK,
-        data: {
-          address,
-          balance: utils.formatEther(balance),
-          owner: wallet.owner,
-          _id: wallet._id,
-          transactions,
-        },
+        data,
+        pagination,
       };
     } catch (error) {
       Logger.error(error);

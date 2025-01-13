@@ -4,7 +4,10 @@ import { JWT_SECRET_KEY } from 'src/config';
 import { JWT_EXPIRY_TIME, JWT_USER_PAYLOAD_TYPE } from './constants';
 
 const jwtLib = {
-  jwtSign: async (payload: JWT_USER_PAYLOAD_TYPE & { exp?: string | number }, validity = `${JWT_EXPIRY_TIME}h`) => {
+  jwtSign: async (
+    payload: JWT_USER_PAYLOAD_TYPE & { exp?: string | number },
+    validity = `${JWT_EXPIRY_TIME}h`,
+  ) => {
     const cPayload = payload;
     delete cPayload?.exp;
     try {
@@ -12,16 +15,18 @@ const jwtLib = {
         expiresIn: validity,
       });
     } catch (error) {
-      Logger.error('@jwtSign', error)
+      Logger.error('@jwtSign', error);
     }
   },
 
   jwtVerify: async (token: string): Promise<JWT_USER_PAYLOAD_TYPE | null> => {
     let decoded: JWT_USER_PAYLOAD_TYPE | null = null;
     try {
-      decoded = verify(token, JWT_SECRET_KEY) as JWT_USER_PAYLOAD_TYPE & { expiry: Date };
+      decoded = verify(token, JWT_SECRET_KEY) as JWT_USER_PAYLOAD_TYPE & {
+        expiry: Date;
+      };
     } catch (error) {
-      Logger.error('@jwtSign', error)
+      Logger.error('@jwtSign', error);
     } finally {
       return decoded;
     }
@@ -33,7 +38,7 @@ const jwtLib = {
         expiresIn: validity,
       });
     } catch (error) {
-      Logger.error('@jwtSign', error)
+      Logger.error('@jwtSign', error);
     }
   },
 
@@ -41,17 +46,17 @@ const jwtLib = {
     try {
       return Promise.resolve(verify(token, JWT_SECRET_KEY));
     } catch (error) {
-      Logger.error('@jwtSign', error)
+      Logger.error('@jwtSign', error);
     }
   },
-  
+
   encryptDevice: async (payload: any, validity = '720h') => {
     try {
       return sign(payload, JWT_SECRET_KEY, {
         expiresIn: validity,
       });
     } catch (error) {
-      Logger.error('@jwtSign', error)
+      Logger.error('@jwtSign', error);
     }
   },
 
@@ -59,9 +64,9 @@ const jwtLib = {
     try {
       return verify(token, JWT_SECRET_KEY);
     } catch (error) {
-      Logger.error('@jwtSign', error)
+      Logger.error('@jwtSign', error);
     }
   },
 };
 
-export default jwtLib
+export default jwtLib;

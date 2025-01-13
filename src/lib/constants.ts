@@ -48,6 +48,7 @@ export type JWT_USER_PAYLOAD_TYPE = {
   lastName?: string;
   status?: string;
   role?: string;
+  transactionPin?: string;
 };
 
 export const JWT_EXPIRY_TIME: number = 5;

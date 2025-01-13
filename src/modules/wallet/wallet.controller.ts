@@ -19,6 +19,8 @@ import { StrictAuthGuard } from 'src/middleware-guards/auth-guard.middleware';
 import { Request, Response } from 'express';
 import { MakeTransactionDto } from './dto/make-transaction.dto';
 import { UpdateWalletPinDto } from './dto/update-wallet-pin.dto';
+import { TransactionPinCheck } from 'src/decorators';
+import { FindByIdDto, IGetUserWallets, IGetWallet } from './wallet.type';
 
 @Controller('wallets')
 export class WalletController {
@@ -26,6 +28,7 @@ export class WalletController {
 
   @Post()
   @UseGuards(StrictAuthGuard)
+  @TransactionPinCheck(true)
   async create(
     @Req() req: Request,
     @Res() res: Response,
@@ -42,33 +45,26 @@ export class WalletController {
 
   @Get('/')
   @UseGuards(StrictAuthGuard)
-  async getWallet(
+  async getUserWallets(
     @Req() req: Request,
     @Res() res: Response,
     @Query() query: any,
   ) {
     const userId = req.user._id;
-    query = { userId };
-    const payload = { userId };
+    query = { owner: userId };
+    const payload: IGetUserWallets = { ...query };
 
-    const response = await this.walletService.getUserWallet(payload);
+    const response = await this.walletService.getUserWallets(payload);
     return res.status(response.status).json(response);
   }
 
-  @Post('/details')
+  @Get('/:id')
   @UseGuards(StrictAuthGuard)
-  async getWalletDetails(
-    @Req() req: Request,
-    @Res() res: Response,
-    @Query() query: any,
-    @Body() body: any,
-  ) {
-    //TODO: This should be a Get request
-    const userId = req.user._id;
-    query = { userId };
-    const payload = { userId, pin: body?.pin };
+  async getWallet(@Res() res: Response, @Param() params: FindByIdDto) {
+    const { id } = params;
+    const payload: IGetWallet = { id };
 
-    const response = await this.walletService.getUserWallet(payload);
+    const response = await this.walletService.getWallet(payload);
     return res.status(response.status).json(response);
   }
 
@@ -108,38 +104,6 @@ export class WalletController {
         message: error.message,
       });
     }
-  }
-
-  @Post('/check-pin')
-  @UseGuards(StrictAuthGuard)
-  async checkPin(
-    @Req() req: Request,
-    @Res() res: Response,
-    @Body() makeTransactionDto: MakeTransactionDto,
-  ) {
-    const userId = req.user._id;
-    const account = await this.walletService.checkPin({
-      ...makeTransactionDto,
-      userId,
-    });
-    Logger.debug({ account });
-    return res.status(account.status).json(account);
-  }
-
-  @Patch('/')
-  @UseGuards(StrictAuthGuard)
-  async updatePin(
-    @Req() req: Request,
-    @Res() res: Response,
-    @Body() updateWalletPinDto: UpdateWalletPinDto,
-  ) {
-    const userId = req.user._id;
-    const account = await this.walletService.changePin({
-      ...updateWalletPinDto,
-      userId,
-    });
-    Logger.debug({ account });
-    return res.status(account.status).json(account);
   }
 
   @Post('/verify-phrase')
