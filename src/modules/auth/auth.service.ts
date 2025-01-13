@@ -320,6 +320,7 @@ export class AuthService {
             username: usernameExists?.firstName,
             email: usernameExists?.email,
             emailVerified: usernameExists.emailVerified,
+            transactionPin: usernameExists?.transactionPin,
           };
 
           const token = await jwtLib.jwtSign(
@@ -385,6 +386,7 @@ export class AuthService {
             username: emailExists?.firstName,
             email: emailExists?.email,
             emailVerified: emailExists.emailVerified,
+            transactionPin: emailExists?.transactionPin,
           };
 
           const token = await jwtLib.jwtSign(

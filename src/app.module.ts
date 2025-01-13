@@ -19,6 +19,9 @@ import { Admin } from './modules/admin/entities/admin.entity';
 import { AdminServiceModule } from './modules/admin/admin-auth.module';
 import { AxiosServiceModule } from './frameworks/axios/axios-service.module';
 import { EventEmitterServiceModule } from './lib/event-emitter-service.module';
+import { APP_GUARD } from '@nestjs/core';
+import { TransactionPinGuard } from './middleware-guards/transaction-pin-guard.middleware';
+// import { StrictAuthGuard } from './middleware-guards/auth-guard.middleware';
 
 declare global {
   namespace Express {
@@ -49,7 +52,17 @@ declare global {
     EventEmitterServiceModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    // {
+    //   provide: APP_GUARD,
+    //   useClass: StrictAuthGuard,
+    // },
+    {
+      provide: APP_GUARD,
+      useClass: TransactionPinGuard,
+    },
+  ],
 })
 export class AppModule {
   configure(consumer: MiddlewareConsumer) {

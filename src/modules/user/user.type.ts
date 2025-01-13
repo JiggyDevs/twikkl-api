@@ -1,5 +1,9 @@
 import { PaginationType } from 'src/core/types/database';
 import { SetNotificationsDto, UpdateUserDto } from './dto/update-user.dto';
+import {
+  CreateTransactionPinDto,
+  UpdateTransactionPinDto,
+} from './dto/create-pin.dto';
 
 export type IGetAllUsers = PaginationType & {
   _id: number;
@@ -26,5 +30,13 @@ export type IUpdateUserProfile = UpdateUserDto & {
 };
 
 export type ISetNotifications = SetNotificationsDto & {
+  userId: string;
+};
+
+export type ICreateTransactionPin = CreateTransactionPinDto & {
+  userId: string;
+};
+
+export type IUpdateTransactionPin = UpdateTransactionPinDto & {
   userId: string;
 };

@@ -56,6 +56,9 @@ export class User {
   @Prop({ default: true })
   active: boolean;
 
+  @Prop({ type: String })
+  transactionPin: string;
+
   @Prop()
   createdAt: Date;
 
