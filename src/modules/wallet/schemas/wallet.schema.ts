@@ -1,5 +1,6 @@
+import { WalletType } from '@getpara/server-sdk';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Mnemonic } from 'ethers/lib/utils';
+
 import { Document, Types } from 'mongoose';
 
 export type WalletDocument = Wallet & Document;
@@ -12,14 +13,26 @@ export class Wallet {
   // @Prop({ type: Array<string>, required: true })
   // recoveryPhrase: Mnemonic;
 
-  @Prop({ type: String, required: true })
+  @Prop({ type: String, default: '' })
   recoveryPhrase: string;
 
   @Prop({ type: String, required: true })
   address: string;
 
-  @Prop({ type: String })
+  @Prop({ type: String, default: '' })
   privateKey: string;
+
+  @Prop({ type: String })
+  publicKey: string;
+
+  @Prop({ type: String })
+  customAuthIdId: string;
+
+  @Prop({
+    type: String,
+    enum: ['EVM', 'SOLANA', 'COSMOS'],
+  })
+  type: string;
 
   @Prop({ type: Number, default: 0 })
   balance: number;
@@ -28,6 +41,9 @@ export class Wallet {
   walletId: string;
 
   @Prop({ type: String, required: true })
+  keyShare: string;
+
+  @Prop({ type: String })
   networkId: string;
 
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })

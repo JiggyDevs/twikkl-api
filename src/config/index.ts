@@ -1,6 +1,6 @@
 require('dotenv').config();
 
-function getEnv(variable: string, optional: boolean = false) {
+function getEnv(variable: string, optional = false) {
   if (process.env[variable] === undefined) {
     if (optional) {
       console.warn(
@@ -49,3 +49,4 @@ export const PLUNK_SEND_EMAIL_URL = getEnv('PLUNK_SEND_EMAIL_URL', true);
 export const COIN_BASE_KEY_NAME = getEnv('COIN_BASE_KEY_NAME', true);
 export const COIN_BASE_SECRET_KEY = getEnv('COIN_BASE_SECRET_KEY', true);
 export const COIN_BASE_API_KEY = getEnv('COIN_BASE_API_KEY', true);
+export const PARA_ACCESS_KEY = getEnv('PARA_ACCESS_KEY', true);
