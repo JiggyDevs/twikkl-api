@@ -45,6 +45,7 @@ import { randomBytes } from 'crypto';
 import { DISCORD_VERIFICATION_CHANNEL_LINK, env } from 'src/config';
 import { DiscordService } from 'src/frameworks/notification-services/discord/discord-service.service';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { WalletService } from '../wallet/wallet.service';
 
 @Injectable()
 export class AuthService {
@@ -54,6 +55,7 @@ export class AuthService {
     private inMemoryServices: IInMemoryServices,
     private discordServices: DiscordService,
     private event: EventEmitter2,
+    private walletServices: WalletService,
   ) {}
 
   async signUp(payload: ISignUp) {
@@ -61,16 +63,12 @@ export class AuthService {
       const { email, password, res } = payload;
 
       const emailExists = await this.data.users.findOne({ email });
+
       if (emailExists) {
         throw new AlreadyExistsException(
           'User with that email already exists!',
         );
       }
-
-      // const usernameExists = await this.data.users.findOne({ username });
-      // if (usernameExists) {
-      //   throw new AlreadyExistsException('Username already in use');
-      // }
 
       const hashedPassword = await hash(password);
 
@@ -97,7 +95,15 @@ export class AuthService {
         jwtPayload,
         `${INCOMPLETE_AUTH_TOKEN_VALID_TIME}h`,
       )) as string;
+
       res.set('Authorization', `Bearer ${token}`);
+
+      const userHasPregenratedWallet =
+        await this.walletServices.checkPregeneratedWallet(user._id);
+
+      if (!userHasPregenratedWallet) {
+        await this.walletServices.addWallets(user._id);
+      }
 
       return {
         message: 'User signed up successfully',
@@ -130,7 +136,7 @@ export class AuthService {
 
       if (codeSent) {
         const codeExpiry =
-          ((await this.inMemoryServices.ttl(redisKey)) as Number) || 0;
+          ((await this.inMemoryServices.ttl(redisKey)) as number) || 0;
         // taking away 4 minutes from the wait time
         const nextRequest = Math.abs(Number(codeExpiry) / 60 - 4);
         if (Number(codeExpiry && Number(codeExpiry) > 4)) {
@@ -148,7 +154,7 @@ export class AuthService {
       await this.inMemoryServices.del(redisKey);
       const user = await this.data.users.findOne({ email: authUser?.email });
       const verification: string[] = [];
-      if (user?.emailVerified! === false) verification.push('email');
+      if (user?.emailVerified === false) verification.push('email');
 
       if (!user) {
         throw new DoesNotExistsException('User does not exists');
@@ -179,6 +185,7 @@ export class AuthService {
         subject: 'Email Verification Code',
         body: message,
       };
+
       this.event.emit('send.plunkEmail', emailPayload);
 
       return {
@@ -221,6 +228,7 @@ export class AuthService {
         String(code).trim(),
         (savedCode || '').trim(),
       );
+
       if (!correctCode) {
         throw new BadRequestsException(
           'Code is incorrect, invalid or has expired',
@@ -244,7 +252,7 @@ export class AuthService {
         emailVerified: updatedUser.emailVerified,
       };
 
-      if (updatedUser?.emailVerified! === false) verification.push('email');
+      if (updatedUser?.emailVerified === false) verification.push('email');
 
       const token = (await jwtLib.jwtSign(jwtPayload)) as string;
       if (!res.headersSent) res.set('Authorization', `Bearer ${token}`);
@@ -465,7 +473,7 @@ export class AuthService {
 
   async recoverPassword(payload: IRecoverPassword) {
     try {
-      let { email, code } = payload;
+      const { email, code } = payload;
       const passwordResetCountKey = `${RedisPrefix.passwordResetCount}/${email}`;
       const resetPasswordRedisKey = `${RedisPrefix.resetpassword}/${email}`;
       const resetCodeRedisKey = `${RedisPrefix.resetCode}/${email}`;
@@ -491,7 +499,7 @@ export class AuthService {
       if (!code) {
         if (codeSent) {
           const codeExpiry =
-            ((await this.inMemoryServices.ttl(resetCodeRedisKey)) as Number) ||
+            ((await this.inMemoryServices.ttl(resetCodeRedisKey)) as number) ||
             0;
           return {
             status: 202,

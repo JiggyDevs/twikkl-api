@@ -21,6 +21,7 @@ import { MakeTransactionDto } from './dto/make-transaction.dto';
 import { UpdateWalletPinDto } from './dto/update-wallet-pin.dto';
 import { TransactionPinCheck } from 'src/decorators';
 import { FindByIdDto, IGetUserWallets, IGetWallet } from './wallet.type';
+import { Types } from 'mongoose';
 
 @Controller('wallets')
 export class WalletController {
@@ -51,11 +52,58 @@ export class WalletController {
     @Query() query: any,
   ) {
     const userId = req.user._id;
-    query = { owner: userId };
+
+    query = { owner: new Types.ObjectId(userId) };
+
     const payload: IGetUserWallets = { ...query };
 
     const response = await this.walletService.getUserWallets(payload);
+
     return res.status(response.status).json(response);
+  }
+
+  @Get('/balance')
+  @UseGuards(StrictAuthGuard)
+  async getWalletBalances(
+    @Req() req: Request,
+    @Res() res: Response,
+    @Query() query: any,
+  ) {
+    const userId = req.user._id;
+
+    query = { owner: new Types.ObjectId(userId) };
+
+    const payload: IGetUserWallets = { ...query };
+
+    const { data, ...responseData } = await this.walletService.getUserWallets(
+      payload,
+    );
+
+    const ethUserWallet = data.find((wallet) => wallet.type === 'EVM');
+
+    const solUserWallet = data.find((wallet) => wallet.type === 'SOLANA');
+
+    const ethBalance = await this.walletService.getEthBalance(ethUserWallet);
+
+    const solBalance = await this.walletService.getSolBalance(solUserWallet);
+
+    // const claimWallets = await Promise.all(
+    //   data.map((wallet) => this.walletService.claimWallets(wallet)),
+    // );
+
+    // await this.walletService.claimWallets(userId);
+
+    // console.log('claimWallets: ', claimWallets);
+
+    return res.status(responseData.status).json({
+      message: responseData.message,
+      status: responseData.status,
+      data: {
+        // claimWallets,
+        ethBalance,
+        solBalance,
+      },
+    });
   }
 
   @Get('/:id')
@@ -65,6 +113,17 @@ export class WalletController {
     const payload: IGetWallet = { id };
 
     const response = await this.walletService.getWallet(payload);
+    return res.status(response.status).json(response);
+  }
+
+  @Get('/:id/balance')
+  @UseGuards(StrictAuthGuard)
+  async getWalletBalance(@Res() res: Response, @Param() params: FindByIdDto) {
+    const { id } = params;
+    const payload: IGetWallet = { id };
+
+    const response = await this.walletService.getWalletBalance(payload);
+
     return res.status(response.status).json(response);
   }
 

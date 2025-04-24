@@ -8,6 +8,8 @@ import { DiscordServicesModule } from 'src/frameworks/notification-services/disc
 import { JwtService } from '@nestjs/jwt';
 import { IInMemoryServices } from 'src/core/abstracts/in-memory.abstract';
 import { DiscordService } from 'src/frameworks/notification-services/discord/discord-service.service';
+import { WalletService } from '../wallet/wallet.service';
+import { WalletModule } from '../wallet/wallet.module';
 // import { JwtModule } from '@nestjs/jwt';
 // import { jwtConstants } from './auth.constant';
 // import { UserInterceptor } from '../user/interceptor/user.interceptor';
@@ -17,13 +19,20 @@ import { DiscordService } from 'src/frameworks/notification-services/discord/dis
     DataServicesModule,
     DiscordServicesModule,
     UserModule,
+    WalletModule,
     // JwtModule.register({
     //   global: true,
     //   secret: jwtConstants.secret,
     //   signOptions: { expiresIn: '10m' },
     // }),
   ],
-  providers: [AuthService, UserFactoryService, JwtService, DiscordService],
+  providers: [
+    AuthService,
+    UserFactoryService,
+    JwtService,
+    DiscordService,
+    // WalletService,
+  ],
   controllers: [AuthController],
 })
 export class AuthModule {}

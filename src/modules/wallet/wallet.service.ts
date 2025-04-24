@@ -1,24 +1,12 @@
 import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
-import { providers, Signer, Wallet, utils, BigNumber } from 'ethers';
+import { Wallet, ethers } from 'ethers';
 import { Bundler } from '@biconomy/bundler';
 import { ChainId, Transaction } from '@biconomy/core-types';
-import {
-  Hex,
-  createWalletClient,
-  encodeFunctionData,
-  createPublicClient,
-  http,
-  parseAbi,
-  zeroAddress,
-} from 'viem';
+import { createWalletClient, createPublicClient, http } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
 import { polygonMumbai } from 'viem/chains';
 
-import {
-  IPaymaster,
-  BiconomyPaymaster,
-  PaymasterMode,
-} from '@biconomy/paymaster';
+import { BiconomyPaymaster, PaymasterMode } from '@biconomy/paymaster';
 import {
   ECDSAOwnershipValidationModule,
   DEFAULT_ECDSA_OWNERSHIP_MODULE,
@@ -30,10 +18,8 @@ import {
 import {
   compareHash,
   decryptPrivateKeyWithPin,
-  encryptPrivateKeyWithPin,
   generateWallet,
   getWallet,
-  hash,
 } from 'src/lib/utils';
 import { IDataServices } from 'src/core/abstracts';
 import { WalletFactoryService } from './wallet-factory.service';
@@ -42,23 +28,167 @@ import { Wallet as WalletEntity } from 'src/modules/wallet/entities/wallet.entit
 import {
   AlreadyExistsException,
   DoesNotExistsException,
-  ForbiddenRequestException,
   UnAuthorizedException,
 } from 'src/lib/exceptions';
 import { Polygonscan } from 'src/lib/block-explorers/polygonscan';
-import { POLYSCAN_API_TOKEN } from 'src/config';
+import { PARA_ACCESS_KEY, POLYSCAN_API_TOKEN } from 'src/config';
 import { IGetUserWallets, IGetWallet } from './wallet.type';
 import databaseHelper from 'src/frameworks/data-services/mongo/database-helper';
-import { filter } from 'rxjs';
+
+import { Para, Environment, WalletType } from '@getpara/server-sdk';
+import { decryptData, encryptData } from './wallet.utils';
+import { ParaEthersSigner } from '@getpara/ethers-v6-integration';
+import {
+  Connection,
+  LAMPORTS_PER_SOL,
+  PublicKey,
+  clusterApiUrl,
+} from '@solana/web3.js';
+import { ParaSolanaWeb3Signer } from '@getpara/solana-web3.js-v1-integration';
+// import { Signer } from 'viem/_types/experimental/erc7715/types/signer';
 
 @Injectable()
 export class WalletService {
   private polygonscan = new Polygonscan(POLYSCAN_API_TOKEN);
+
+  private paraClient = new Para(Environment.BETA, PARA_ACCESS_KEY);
+
   constructor(
     private data: IDataServices,
     private walletFactory: WalletFactoryService,
   ) {}
+  // #################_PREGENERATED_WALLET_########################
 
+  async checkPregeneratedWallet(userId: string) {
+    const hasPregenratedWallet = await this.paraClient.hasPregenWallet({
+      pregenIdentifier: String(userId),
+      pregenIdentifierType: 'CUSTOM_ID',
+    });
+
+    return hasPregenratedWallet;
+  }
+
+  generateUserKeyShare(): string {
+    const userKeyShare = this.paraClient.getUserShare();
+
+    if (!userKeyShare) {
+      throw new Error(
+        'Failed to retrieve user share from the Capsule client. Confirm wallet creation steps.',
+      );
+    }
+
+    const encryptedKeyShare = encryptData(userKeyShare);
+
+    return encryptedKeyShare;
+  }
+
+  async pregenerateWallet(userId: string) {
+    const preGeneratedWallet = await this.paraClient.createPregenWalletPerType({
+      types: [WalletType['SOLANA'], WalletType['EVM']],
+      pregenIdentifier: String(userId),
+      pregenIdentifierType: 'CUSTOM_ID',
+    });
+
+    const userPregeneratedWallet = preGeneratedWallet.map((wallet) => {
+      if (!wallet) return null;
+
+      const { id, address, publicKey, type, createdAt, name } = wallet;
+
+      const userKeyShare = this.generateUserKeyShare();
+
+      return {
+        type,
+        name,
+        address,
+        walletId: id,
+        owner: userId,
+        keyShare: userKeyShare,
+        publicKey: publicKey ?? '',
+        updatedAt: new Date(createdAt),
+        createdAt: new Date(createdAt),
+      };
+    });
+
+    return userPregeneratedWallet;
+  }
+
+  async claimWallets(wallet: WalletEntity) {
+    if (!wallet) return null;
+
+    try {
+      const { owner } = wallet;
+
+      console.log('userID', owner);
+
+      const response = await this.paraClient.claimPregenWallets({
+        pregenIdentifier: String(owner),
+        pregenIdentifierType: 'CUSTOM_ID',
+      });
+
+      console.log(response);
+
+      return response;
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
+  async addWallets(userId: string) {
+    try {
+      const walletExists = await this.data.wallets.findOne({ owner: userId });
+
+      if (walletExists) {
+        const wallet = await this.data.wallets.find({ owner: userId });
+
+        return {
+          message: 'Wallet already exists',
+          data: wallet,
+          status: HttpStatus.OK,
+        };
+
+        throw new AlreadyExistsException('User already has wallet');
+      }
+
+      const pregeneratedWallets = await this.pregenerateWallet(userId);
+
+      // const walletPayload: OptionalQuery<WalletEntity> = {
+      //   // privateKey,
+      //   walletId,
+      //   networkId,
+      //   address,
+      //   owner: userId,
+      //   recoveryPhrase,
+      //   createdAt: new Date(),
+      //   updatedAt: new Date(),
+      // };
+
+      const walletFactories = pregeneratedWallets.map((wallet) => {
+        if (!wallet) return null;
+
+        return this.walletFactory.create({
+          ...wallet,
+          recoveryPhrase: '',
+          networkId: '',
+        });
+      });
+
+      const wallets = await this.data.wallets.create(walletFactories);
+
+      return {
+        message: 'Wallet(s) created successfully',
+        data: wallets,
+        // status: HttpStatus.CREATED,
+      };
+    } catch (error) {
+      Logger.error(error);
+
+      if (error.name === 'TypeError')
+        throw new HttpException(error.message, 500);
+      throw error;
+    }
+  }
+
+  // ####################_PREGENERATED_WALLET_END_########################
   cleanWalletsQuery(data: IGetUserWallets) {
     let key = {};
 
@@ -79,7 +209,7 @@ export class WalletService {
 
   private getWalletSetup(privateKey?: string) {
     // new providers.AnkrProvider()
-    const provider = new providers.JsonRpcProvider(
+    const provider = new ethers.JsonRpcProvider(
       'https://rpc.ankr.com/polygon_mumbai',
     );
 
@@ -138,7 +268,7 @@ export class WalletService {
     });
   }
 
-  private async createModule(wallet: Wallet) {
+  private async createModule(wallet: any) {
     return ECDSAOwnershipValidationModule.create({
       signer: wallet,
       moduleAddress: DEFAULT_ECDSA_OWNERSHIP_MODULE,
@@ -211,9 +341,10 @@ export class WalletService {
     try {
       const { id } = payload;
       const wallet: WalletEntity = await this.data.wallets.findOne({ _id: id });
+
       if (!wallet) throw new DoesNotExistsException('User not found!');
 
-      await getWallet(wallet.walletId);
+      // await getWallet(wallet.walletId);
 
       return {
         message: 'User retrieved successfully',
@@ -225,6 +356,133 @@ export class WalletService {
       if (error.name === 'TypeError')
         throw new HttpException(error.message, 500);
       throw error;
+    }
+  }
+
+  async getWalletBalance(payload: IGetWallet) {
+    try {
+      const { id } = payload;
+
+      const wallet: WalletEntity = await this.data.wallets.findOne({ _id: id });
+
+      if (!wallet) throw new DoesNotExistsException('User not found!');
+
+      const { keyShare, address: walletAddress } = wallet;
+
+      const decryptedKey = decryptData(keyShare);
+
+      await this.paraClient.setUserShare(decryptedKey);
+
+      const ethersProvider = new ethers.JsonRpcProvider(
+        'https://ethereum-sepolia-rpc.publicnode.com',
+      );
+
+      // The MPC wallet managed by Para is now accessible via Ethers.js.
+      const paraEthersSigner = new ParaEthersSigner(
+        this.paraClient as any,
+        ethersProvider,
+      );
+
+      // Retrieve the MPC-managed wallet address.
+      const ethersAddress = await paraEthersSigner.getAddress();
+
+      const balance = await ethersProvider.getBalance(ethersAddress);
+      // Convert balance from Wei to ETH
+      const balanceInEth = ethers.formatEther(balance);
+
+      return {
+        message: 'User retrieved successfully',
+        status: HttpStatus.OK,
+        data: {
+          // ethersAddress,
+          walletAddress,
+          balanceInEth,
+        },
+      };
+    } catch (error) {
+      Logger.error(error);
+      if (error.name === 'TypeError')
+        throw new HttpException(error.message, 500);
+      throw error;
+    }
+  }
+
+  async getEthBalance(wallet: WalletEntity) {
+    try {
+      if (!wallet) return null;
+
+      const { keyShare, name, type } = wallet;
+
+      const decryptedKey = decryptData(keyShare);
+
+      await this.paraClient.setUserShare(decryptedKey);
+
+      const ethersProvider = new ethers.JsonRpcProvider(
+        'https://ethereum-sepolia-rpc.publicnode.com',
+      );
+
+      // The MPC wallet managed by Para is now accessible via Ethers.js.
+      const paraEthersSigner = new ParaEthersSigner(
+        this.paraClient as any,
+        ethersProvider,
+      );
+
+      // Retrieve the MPC-managed wallet address.
+      const ethersAddress = await paraEthersSigner.getAddress();
+
+      const balance = await ethersProvider.getBalance(ethersAddress);
+
+      // Convert balance from Wei to ETH
+      const balanceInEth = ethers.formatEther(balance);
+
+      return {
+        name,
+        type,
+        address: ethersAddress,
+        balance: balanceInEth,
+      };
+    } catch (error) {
+      return null;
+    }
+  }
+
+  async getSolBalance(wallet: WalletEntity) {
+    try {
+      if (!wallet) return null;
+
+      const { keyShare, name, type, address } = wallet;
+
+      const decryptedKey = decryptData(keyShare);
+
+      await this.paraClient.setUserShare(decryptedKey);
+
+      // Set up Solana connection
+      const solanaConnection = new Connection(clusterApiUrl('devnet'));
+
+      // Create the Para Solana Signer
+      const solanaSigner = new ParaSolanaWeb3Signer(
+        this.paraClient as any,
+        solanaConnection,
+      );
+
+      // Retrieve the MPC-managed wallet address.
+      const solAddress = solanaSigner.address;
+
+      const publicKey = new PublicKey(address);
+
+      const solBal = await solanaConnection.getBalance(publicKey);
+
+      // Convert lamports to SOL (1 SOL = 1e9 lamports)
+      const solBalance = solBal / LAMPORTS_PER_SOL;
+
+      return {
+        name,
+        type,
+        address: solAddress,
+        balance: solBalance,
+      };
+    } catch (error) {
+      return null;
     }
   }
 
@@ -274,9 +532,10 @@ export class WalletService {
     const address = await smartAccount.getAccountAddress();
 
     // Define the interface for interacting with the NFT contract
-    const nftInterface = new utils.Interface([
+    const nftInterface = new ethers.Interface([
       'function safeMint(address _to)',
     ]);
+
     // Encode the data for the 'safeMint' function call with the smart account address
     const data = nftInterface.encodeFunctionData('safeMint', [address]);
 
@@ -344,12 +603,12 @@ export class WalletService {
 
     // Specify the amount to send
     const value = amount;
-    const erc20Interface = new utils.Interface([
+    const erc20Interface = new ethers.Interface([
       'function transfer(address _to,uint256 _value)',
     ]);
     const data = erc20Interface.encodeFunctionData('transfer', [
       toAddress,
-      utils.parseEther(value.toString()),
+      ethers.parseEther(value.toString()),
     ]);
 
     // Define the transaction to be sent to the NFT contract
@@ -357,7 +616,7 @@ export class WalletService {
       // to: address,
       to: toAddress,
       data: '0x',
-      value: utils.parseEther(value.toString()),
+      value: ethers.parseEther(value.toString()),
     };
     await smartAccount.init();
     // Build a partial User Operation (UserOp) with the transaction and set it to be sponsored

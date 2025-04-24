@@ -39,3 +39,6 @@ lerna-debug.log*
 
 #coinbase-api-key
 /src/config/apiKey.json
+.qodo
+
+*.rdb
