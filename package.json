@@ -51,7 +51,7 @@
     "dotenv": "^16.3.1",
     "ethers": "^6",
     "firebase-admin": "^11.10.1",
-    "ioredis": "^4.28.5",
+    "ioredis": "^5.4.1",
     "json-web-token": "^3.2.0",
     "lodash": "^4.17.21",
     "moment": "^2.29.4",
