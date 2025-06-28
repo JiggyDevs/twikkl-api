@@ -319,29 +319,29 @@ export class AuthService {
         if (!usernameExists)
           throw new DoesNotExistsException('Invalid username or password');
 
-        const verification: string[] = [];
+        // const verification: string[] = [];
 
-        if (!usernameExists?.emailVerified) {
-          verification.push('email');
-          const jwtPayload: JWT_USER_PAYLOAD_TYPE = {
-            _id: usernameExists?._id,
-            username: usernameExists?.firstName,
-            email: usernameExists?.email,
-            emailVerified: usernameExists.emailVerified,
-            transactionPin: usernameExists?.transactionPin,
-          };
+        // if (!usernameExists?.emailVerified) {
+        //   verification.push('email');
+        //   const jwtPayload: JWT_USER_PAYLOAD_TYPE = {
+        //     _id: usernameExists?._id,
+        //     username: usernameExists?.firstName,
+        //     email: usernameExists?.email,
+        //     emailVerified: usernameExists.emailVerified,
+        //     transactionPin: usernameExists?.transactionPin,
+        //   };
 
-          const token = await jwtLib.jwtSign(
-            jwtPayload,
-            `${INCOMPLETE_AUTH_TOKEN_VALID_TIME}h`,
-          );
-          return {
-            status: 403,
-            message: 'email is not verified',
-            token: `Bearer ${token}`,
-            verification,
-          };
-        }
+        //   const token = await jwtLib.jwtSign(
+        //     jwtPayload,
+        //     `${INCOMPLETE_AUTH_TOKEN_VALID_TIME}h`,
+        //   );
+        //   return {
+        //     status: 403,
+        //     message: 'email is not verified',
+        //     token: `Bearer ${token}`,
+        //     verification,
+        //   };
+        // }
 
         const validPassword: boolean = await compareHash(
           password,
@@ -385,29 +385,29 @@ export class AuthService {
         if (!emailExists)
           throw new DoesNotExistsException('Invalid email or password');
 
-        const verification: string[] = [];
+        // const verification: string[] = [];
 
-        if (!emailExists?.emailVerified) {
-          verification.push('email');
-          const jwtPayload: JWT_USER_PAYLOAD_TYPE = {
-            _id: emailExists?._id,
-            username: emailExists?.firstName,
-            email: emailExists?.email,
-            emailVerified: emailExists.emailVerified,
-            transactionPin: emailExists?.transactionPin,
-          };
+        // if (!emailExists?.emailVerified) {
+        //   verification.push('email');
+        //   const jwtPayload: JWT_USER_PAYLOAD_TYPE = {
+        //     _id: emailExists?._id,
+        //     username: emailExists?.firstName,
+        //     email: emailExists?.email,
+        //     emailVerified: emailExists.emailVerified,
+        //     transactionPin: emailExists?.transactionPin,
+        //   };
 
-          const token = await jwtLib.jwtSign(
-            jwtPayload,
-            `${INCOMPLETE_AUTH_TOKEN_VALID_TIME}h`,
-          );
-          return {
-            status: 403,
-            message: 'email is not verified',
-            token: `Bearer ${token}`,
-            verification,
-          };
-        }
+        //   const token = await jwtLib.jwtSign(
+        //     jwtPayload,
+        //     `${INCOMPLETE_AUTH_TOKEN_VALID_TIME}h`,
+        //   );
+        //   return {
+        //     status: 403,
+        //     message: 'email is not verified',
+        //     token: `Bearer ${token}`,
+        //     verification,
+        //   };
+        // }
 
         const validPassword: boolean = await compareHash(
           password,
