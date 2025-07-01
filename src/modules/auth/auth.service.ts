@@ -319,7 +319,7 @@ export class AuthService {
         if (!usernameExists)
           throw new DoesNotExistsException('Invalid username or password');
 
-        // const verification: string[] = []; //
+        // const verification: string[] = [];
 
         // if (!usernameExists?.emailVerified) {
         //   verification.push('email');
