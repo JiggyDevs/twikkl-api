@@ -43,7 +43,7 @@
     "@nestjs/mapped-types": "^1.2.1",
     "@nestjs/mongoose": "^9.2.2",
     "@nestjs/platform-express": "^8.4.7",
-    "@nestjs/serve-static": "^4.0.0",
+    "@nestjs/serve-static": "^3.0.0",
     "@solana/web3.js": "^1.98.0",
     "axios": "^1.4.0",
     "bcrypt": "^5.1.0",
